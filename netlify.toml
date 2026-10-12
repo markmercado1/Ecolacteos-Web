@@ -7,6 +7,8 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # El workspace tiene dos proyectos (panel y web pública): el plugin de Angular de Netlify debe usar la web pública.
+  ANGULAR_PROJECT = "web-publica"
 
 # SPA: cualquier ruta que no sea un archivo devuelve index.html (así /catalogo, /reservar… funcionan al recargar).
 # Netlify sirve primero los archivos reales (/fonts, /img, *.js) y solo después aplica esta regla.
