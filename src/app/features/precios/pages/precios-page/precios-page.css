@@ -1,0 +1,114 @@
+.precio-hero {
+  background: var(--color-surface-soft);
+  border-color: var(--brand-accent);
+  margin-bottom: var(--space-4);
+}
+.precio-hero .eyebrow {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand-700);
+  font-weight: 800;
+}
+.precio-hero .valor {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  letter-spacing: -0.03em;
+  margin: var(--space-2) 0 0.2rem;
+}
+.precio-hero .valor small {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+.precio-hero p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.hint {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.acciones-fila {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.intro-productos {
+  max-width: 60ch;
+  margin: 0 0 var(--space-4);
+}
+
+.filtros {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.filtros .field {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.filtros .field label {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: var(--color-text-muted);
+}
+.filtros .field input,
+.filtros .field select {
+  min-height: 2.375rem;
+  min-width: 12rem;
+}
+.error-inline {
+  color: var(--color-danger);
+}
+
+.familia-tag {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.celda-precio {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+}
+.celda-precio .importe {
+  font-weight: 700;
+}
+.celda-precio small {
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+}
+
+.paginacion-completa {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+.tamano-pagina {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.tamano-pagina select {
+  min-height: 2rem;
+}
+.pagina-actual {
+  white-space: nowrap;
+}

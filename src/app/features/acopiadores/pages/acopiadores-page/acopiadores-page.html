@@ -1,0 +1,58 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">ADMINISTRACIÓN</div>
+    <h1>Acopiadores</h1>
+    <p>Usuarios con rol ACOPIADOR y las unidades que tienen asignadas como responsable.</p>
+  </div>
+  <div class="heading-actions">
+    <button type="button" class="btn primary" (click)="nuevoAcopiador()">Nuevo acopiador</button>
+  </div>
+</div>
+
+@if (cargando()) {
+  <ui-loading-state mensaje="Cargando acopiadores…" />
+} @else if (error()) {
+  <ui-error-state [error]="error()" (reintentar)="cargar()" />
+} @else if (acopiadores().length === 0) {
+  <ui-empty-state mensaje="No hay usuarios con rol ACOPIADOR todavía." />
+} @else {
+  <div class="grid grid-3">
+    @for (item of acopiadores(); track item.usuario.id) {
+      <ui-card [titulo]="item.usuario.nombre" [subtitulo]="item.usuario.email">
+        <span class="badge" [class.gray]="!item.usuario.activo">
+          {{ item.usuario.activo ? 'Activo' : 'Inactivo' }}
+        </span>
+
+        <div class="unidades">
+          @if (item.unidades.length === 0) {
+            <p class="sin-unidad">Sin unidad asignada.</p>
+          } @else {
+            @for (unidad of item.unidades; track unidad.id) {
+              <div class="unidad-item">
+                <strong>{{ unidad.placa }}</strong>
+                <small>{{ nombreZona(unidad.zonaId) }}</small>
+              </div>
+            }
+          }
+        </div>
+
+        <div class="tarjeta-acciones">
+          <button type="button" class="row-link" (click)="editar(item.usuario)">Editar</button>
+          <button type="button" class="row-link" (click)="alternarEstado(item.usuario)">
+            {{ item.usuario.activo ? 'Desactivar' : 'Reactivar' }}
+          </button>
+          <button type="button" class="row-link" (click)="asignarUnidad(item.usuario)">
+            {{ item.unidades.length === 0 ? 'Asignar unidad' : 'Añadir otra unidad' }}
+          </button>
+        </div>
+      </ui-card>
+    }
+  </div>
+  <ui-paginador
+    [pagina]="pagina()"
+    [totalPaginas]="totalPaginas()"
+    [totalElementos]="totalElementos()"
+    unidad="acopiadores"
+    (cambiar)="irAPagina($event)"
+  />
+}

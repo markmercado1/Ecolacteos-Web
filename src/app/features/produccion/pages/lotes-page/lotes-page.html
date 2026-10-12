@@ -1,0 +1,96 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">OPERACIÓN</div>
+    <h1>Producción</h1>
+    <p>Planifica producciones desde una receta, valida el stock, inicia la fabricación y registra el resultado real.</p>
+  </div>
+  <div class="heading-actions">
+    @if (!cargandoSaldoLeche() && saldoLecheDisponible() !== null) {
+      <div class="saldo-leche">
+        <span class="etiqueta">Leche disponible</span>
+        <span class="valor">{{ saldoLecheDisponible() }} L</span>
+      </div>
+    }
+    <button type="button" class="btn" (click)="registrarProduccion()">Registro sin receta</button>
+    <button type="button" class="btn primary" (click)="nuevaProduccion()">Nueva producción</button>
+  </div>
+</div>
+
+<ui-data-table
+  [columnas]="columnas"
+  [filas]="lotes()"
+  [cargando]="cargando()"
+  [error]="error()"
+  mensajeVacio="No hay lotes registrados con los filtros seleccionados."
+  titulo="Historial de producciones"
+  subtitulo="Esperado = estimación de la receta; obtenido = lo registrado al finalizar. Cada fila abre el detalle."
+  [piePagina]="cargando() ? undefined : 'Página ' + (pagina() + 1) + ' de ' + (totalPaginas() || 1) + ' · ' + totalElementos() + ' lotes en total'"
+  (reintentar)="cargar()"
+>
+  <div toolbar class="filtros">
+    <div class="field">
+      <label for="filtro-fecha-lote">Fecha</label>
+      <input
+        id="filtro-fecha-lote"
+        type="date"
+        [value]="filtroFecha()"
+        (change)="cambiarFiltroFecha($any($event.target).value)"
+      >
+    </div>
+    <select [value]="filtroProducto()" (change)="cambiarFiltroProducto($any($event.target).value)" aria-label="Filtrar por producto">
+      <option value="">Todos los productos</option>
+      @for (producto of productos(); track producto.id) {
+        <option [value]="producto.id">{{ producto.nombre }}</option>
+      }
+    </select>
+    <select [value]="filtroEstado()" (change)="cambiarFiltroEstado($any($event.target).value)" aria-label="Filtrar por estado">
+      <option value="">Todos los estados</option>
+      @for (e of estados; track e[0]) {
+        <option [value]="e[0]">{{ e[1] }}</option>
+      }
+    </select>
+  </div>
+
+  <div paginacion class="paginacion">
+    <button type="button" class="page-btn" [disabled]="pagina() === 0" (click)="irAPagina(-1)" aria-label="Página anterior">‹</button>
+    <button type="button" class="page-btn" [disabled]="pagina() + 1 >= totalPaginas()" (click)="irAPagina(1)" aria-label="Página siguiente">›</button>
+  </div>
+
+  <ng-template #celda let-fila let-columna="columna">
+    @switch (columna) {
+      @case ('fecha') { {{ fila.fecha }} }
+      @case ('productoNombre') {
+        <strong>{{ fila.productoNombre }}</strong>
+        @if (fila.recetaNombre) { <span class="sub">{{ fila.recetaNombre }}</span> }
+      }
+      @case ('estado') { <span class="badge" [class]="'badge estado-' + estadoDe(fila)">{{ etiquetaEstado(fila) }}</span> }
+      @case ('litrosUsados') { {{ fila.litrosUsados | number: '1.0-2' }} L }
+      @case ('esperado') {
+        @if (fila.cantidadEsperada !== null && fila.cantidadEsperada !== undefined) {
+          {{ fila.cantidadEsperada | number: '1.0-3' }}
+        } @else if (fila.unidadesEsperadas !== null) {
+          {{ fila.unidadesEsperadas }}
+        } @else { — }
+      }
+      @case ('obtenido') {
+        @if (estadoDe(fila) === 'FINALIZADA') {
+          {{ totalObtenido(fila) }}
+          @if (fila.diferencia !== null && fila.diferencia !== undefined && fila.diferencia !== 0) {
+            <span class="dif" [class.negativa]="fila.diferencia < 0">({{ fila.diferencia > 0 ? '+' : '' }}{{ fila.diferencia | number: '1.0-3' }})</span>
+          }
+        } @else { <span class="pendiente">Pendiente</span> }
+      }
+      @case ('rendimientoPct') { {{ fila.rendimientoPct === null ? 'Sin cálculo' : fila.rendimientoPct + '%' }} }
+      @case ('acciones') {
+        <button type="button" class="row-link" (click)="abrirDetalle(fila)">
+          @switch (estadoDe(fila)) {
+            @case ('PLANIFICADA') { Validar e iniciar }
+            @case ('EN_PRODUCCION') { Finalizar }
+            @default { Ver detalle }
+          }
+        </button>
+      }
+      @default { {{ fila[columna] ?? '—' }} }
+    }
+  </ng-template>
+</ui-data-table>

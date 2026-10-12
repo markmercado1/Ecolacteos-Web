@@ -1,0 +1,98 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">VISIÓN GENERAL</div>
+    <h1>Panel económico</h1>
+    <p>Riesgo de leche valorizado, última proyección semanal y simulación por zona, más ventas por canal (global, todo el histórico).</p>
+  </div>
+</div>
+
+<div class="card card-pad filtros">
+  <div class="field">
+    <label for="panel-zona">Zona</label>
+    <select id="panel-zona" [value]="zonaSeleccionada()" (change)="cambiarZona($any($event.target).value)">
+      <option value="">Selecciona una zona</option>
+      @for (zona of zonas(); track zona.id) {
+        <option [value]="zona.id">{{ zona.nombre }}</option>
+      }
+    </select>
+  </div>
+  @if (errorZonas()) {
+    <p role="alert" class="hint-error">
+      No se pudieron cargar las zonas.
+      <button type="button" class="row-link" (click)="cargarZonas()">Reintentar</button>
+    </p>
+  }
+</div>
+
+@if (!zonaSeleccionada()) {
+  <ui-empty-state mensaje="Selecciona una zona para ver su panel económico." />
+} @else if (cargando()) {
+  <ui-loading-state mensaje="Cargando panel…" />
+} @else if (sinProyeccion()) {
+  <ui-empty-state mensaje="Sin proyección disponible para esta zona. El backend calcula la proyección semanal por job programado; hasta que exista una para esta zona, todo el panel (incluidos el riesgo valorizado y la simulación) queda sin datos, porque el propio endpoint del panel depende de esa proyección." />
+} @else if (error()) {
+  <ui-error-state [error]="error()" (reintentar)="cargarPanel(zonaSeleccionada())" />
+} @else if (panel(); as p) {
+  <div class="grid grid-2">
+    <div class="card card-pad">
+      <div class="section-head">
+        <h2>Riesgo de leche valorizado</h2>
+        <span>Últimos 30 días · Zona: {{ zonaNombre() }}</span>
+      </div>
+      <p class="kpi-valor">S/ {{ p.litrosEnRiesgoValorizados | number: '1.2-2' }}</p>
+      <p class="hint">Litros con alerta de anomalía en los últimos 30 días, valorizados al precio por litro vigente. No es un indicador de riesgo sanitario.</p>
+    </div>
+
+    <div class="card card-pad">
+      <div class="section-head">
+        <h2>Última proyección semanal</h2>
+        <span>Semana desde {{ p.forecastSemana.semanaInicio }} · Zona: {{ zonaNombre() }}</span>
+      </div>
+      <p class="kpi-valor">{{ p.forecastSemana.litrosEstimados | number: '1.0-2' }} L estimados</p>
+      <dl class="detalle-forecast">
+        <div>
+          <dt>Litros reales de esa semana</dt>
+          <dd>{{ p.forecastSemana.litrosReales === null ? 'Aún no disponible (semana sin cerrar)' : (p.forecastSemana.litrosReales | number: '1.0-2') + ' L' }}</dd>
+        </div>
+        <div>
+          <dt>Recomendación de mezcla</dt>
+          <dd>{{ p.forecastSemana.recomendacionMezcla }}</dd>
+        </div>
+        <div>
+          <dt>Flujo de caja proyectado</dt>
+          <dd>S/ {{ p.forecastSemana.flujoCajaProyectado | number: '1.2-2' }}</dd>
+        </div>
+        <div>
+          <dt>Alerta de capacidad</dt>
+          <dd>{{ p.forecastSemana.alertaCapacidad ? 'Sí, excede la capacidad de procesamiento diaria' : 'No' }}</dd>
+        </div>
+      </dl>
+      <p class="hint">Es la única proyección ya calculada por el backend (job semanal); no se genera una serie diaria ni se interpolan semanas faltantes.</p>
+    </div>
+
+    <div class="card card-pad">
+      <div class="section-head">
+        <h2>Simulación: score +10 puntos</h2>
+        <span>Zona: {{ zonaNombre() }}</span>
+      </div>
+      @if (p.pctRechazoSiScoreSube10 === null) {
+        <p class="kpi-valor sin-calculo">No calculado</p>
+        <p class="hint">Histórico insuficiente para la regresión score/rechazo de esta zona. Ausencia de cálculo, no 0%.</p>
+      } @else {
+        <p class="kpi-valor">{{ p.pctRechazoSiScoreSube10 | number: '1.0-2' }}% de rechazo estimado</p>
+        <p class="hint">Simulación estadística (regresión lineal simple), no un umbral de calidad ni una recomendación sanitaria.</p>
+      }
+    </div>
+
+    <div class="card card-pad">
+      <ui-bar-chart
+        titulo="Ventas por canal"
+        subtitulo="Global — todo el histórico de la planta. No es específico de esta zona ni de un período; no sumar con paneles de otras zonas."
+        unidad="S/"
+        [datos]="datosVentasCanal()"
+        [decimales]="2"
+        mensajeVacio="Sin ventas registradas todavía."
+      />
+    </div>
+  </div>
+}

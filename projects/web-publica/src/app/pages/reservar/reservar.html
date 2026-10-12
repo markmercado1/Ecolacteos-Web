@@ -1,0 +1,226 @@
+@if (resultado(); as r) {
+  <section class="page-title">
+    <div class="container">
+      <h1>¡Recibimos tu solicitud de reserva!</h1>
+      <p>Guarda tu código de seguimiento: lo necesitarás, junto con tu teléfono, para consultar el estado de tu reserva.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container resultado">
+      <div class="card card-pad codigo-caja" role="status">
+        <span class="eyebrow">Tu código de seguimiento</span>
+        <p class="codigo" aria-label="Código de seguimiento">{{ r.codigo }}</p>
+        <button type="button" class="btn btn-sm btn-outline" (click)="copiarCodigo(r.codigo)">{{ copiado() ? 'Código copiado ✓' : 'Copiar código' }}</button>
+        <p class="estado">
+          Estado: <span class="badge" [class.badge-warn]="r.estado === 'PENDIENTE'">{{ etiquetaEstado(r.estado) }}</span>
+        </p>
+      </div>
+
+      <div class="card card-pad">
+        <h2>Resumen de tu reserva</h2>
+        <p><strong>Fecha de retiro:</strong> {{ fechaLarga(r.fechaRetiro) }}</p>
+        <div class="tabla-scroll">
+          <table class="tabla">
+            <thead><tr><th>Producto</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Subtotal</th></tr></thead>
+            <tbody>
+              @for (l of r.lineas; track l.presentacionId) {
+                <tr>
+                  <td>{{ l.producto }} <span class="muted small">· {{ l.presentacion }}</span></td>
+                  <td class="num">{{ l.cantidad }}</td>
+                  <td class="num">@if (l.precioUnitario !== null) { {{ precio(l.precioUnitario) }} } @else { <span class="por-confirmar">A confirmar</span> }</td>
+                  <td class="num">@if (l.subtotal !== null) { {{ precio(l.subtotal) }} } @else { — }</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="total">
+          @if (r.total !== null) { Total: <strong>{{ precio(r.total) }}</strong> } @else { Total: <strong class="por-confirmar">por confirmar</strong> }
+        </p>
+      </div>
+
+      <div class="card card-pad">
+        <h2>¿Qué sigue?</h2>
+        <ol class="siguientes">
+          @if (r.estado === 'PENDIENTE') {
+            <li>Tu reserva está <strong>pendiente de confirmación</strong>: el personal la revisará. Todavía no está confirmada.</li>
+          } @else {
+            <li>Estado actual de tu reserva: <strong>{{ etiquetaEstado(r.estado) }}</strong>.</li>
+          }
+          @if (r.precioAConfirmar) {
+            <li>Algunos productos tienen <strong>precio a confirmar</strong>. El personal se comunicará con el teléfono que registraste para acordar el precio antes de confirmar.</li>
+          }
+          @if (r.estado === 'PENDIENTE') {
+            <li>Si no es atendida antes del <strong>{{ fechaHora(r.expiraEn) }}</strong>, la solicitud vence y las unidades se liberan.</li>
+          }
+          <li>Consulta el estado cuando quieras con tu código y tu teléfono.</li>
+        </ol>
+        <div class="botones">
+          <a class="btn" routerLink="/consultar-reserva" [queryParams]="{ codigo: r.codigo }">Consultar mi reserva</a>
+          <button type="button" class="btn btn-outline" (click)="nuevaReserva()">Hacer otra reserva</button>
+          <a class="btn btn-outline" routerLink="/catalogo">Seguir viendo el catálogo</a>
+        </div>
+      </div>
+    </div>
+  </section>
+} @else {
+  <section class="page-title">
+    <div class="container">
+      <h1>Reservar productos</h1>
+      <p>Elige tus productos, la fecha de retiro y deja tus datos. No hay pagos en línea: tu reserva queda pendiente hasta que el personal la confirme.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <form class="container layout" [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+      <div class="pasos">
+        <!-- 1. productos -->
+        <section class="card card-pad" aria-labelledby="h-productos">
+          <h2 id="h-productos">1. Tus productos</h2>
+          <pub-estado-carga [estado]="catalogo.estado()" [error]="catalogo.error()" mensaje="Cargando tu reserva…" (reintentar)="catalogo.cargar(true)">
+            @if (lineas().length === 0) {
+              <div class="vacio">
+                <p>Todavía no agregaste productos a tu reserva.</p>
+                <a routerLink="/catalogo" class="btn btn-sm">Ver el catálogo</a>
+              </div>
+            } @else {
+              <ul class="lineas">
+                @for (l of lineas(); track l.presentacionId) {
+                  <li class="linea" [class.no-reservable]="l.noReservable">
+                    <div class="mini">
+                      @if (foto(l); as src) { <img [src]="src" alt="" loading="lazy"> } @else { <img src="/img/icono-vaca-192.png" alt="" class="vaca"> }
+                    </div>
+                    <div class="detalle">
+                      @if (l.producto && l.presentacion) {
+                        <strong>{{ l.producto.nombre }}</strong>
+                        <span class="muted small">{{ l.presentacion.nombre }}@if (contenidoAparte(l.presentacion)) { · {{ contenidoAparte(l.presentacion) }} }</span>
+                        <span class="precio-unit">
+                          @if (l.presentacion.precio !== null) { {{ precio(l.presentacion.precio) }} c/u } @else { <span class="por-confirmar">Precio a confirmar</span> }
+                        </span>
+                        @if (l.presentacion.disponibilidad === 'POCAS_UNIDADES') { <span class="badge badge-warn">{{ etiquetaDisponibilidad(l.presentacion) }}</span> }
+                        @if (l.excede && !l.noReservable) {
+                          <p class="alert alert-error" role="alert">
+                            Pediste {{ l.cantidad }} y solo {{ l.maximo === 1 ? 'queda 1' : 'quedan ' + l.maximo }}.
+                            <button type="button" class="link-btn" (click)="cambiarCantidad(l.presentacionId, '' + l.maximo)">Usar {{ l.maximo }}</button>
+                          </p>
+                        }
+                      } @else {
+                        <strong>Producto no disponible</strong>
+                      }
+                      @if (l.noReservable) {
+                        <p class="alert alert-error" role="alert">Este producto ya no está disponible para reservar. Quítalo para continuar.</p>
+                      }
+                    </div>
+                    <div class="cantidad">
+                      <label [for]="'q-' + l.presentacionId" class="visually-hidden">Cantidad</label>
+                      <div class="stepper">
+                        <button type="button" (click)="incrementar(l, -1)" [disabled]="l.cantidad <= 1" aria-label="Quitar una unidad">−</button>
+                        <input [id]="'q-' + l.presentacionId" type="number" min="1" step="1" inputmode="numeric" [value]="l.cantidad" [attr.max]="l.maximo" (change)="cambiarCantidad(l.presentacionId, $any($event.target).value)">
+                        <button type="button" (click)="incrementar(l, 1)" [disabled]="l.maximo !== null && l.cantidad >= l.maximo" aria-label="Agregar una unidad">+</button>
+                      </div>
+                      <button type="button" class="link-btn quitar" (click)="carrito.quitar(l.presentacionId)">Quitar</button>
+                    </div>
+                  </li>
+                }
+              </ul>
+              <p class="muted small">
+                @if (reglas(); as rg) { Máximo {{ rg.maxUnidades }} unidades por reserva. }
+                ¿Falta algo? <a routerLink="/catalogo">Agrega más productos</a>.
+              </p>
+            }
+          </pub-estado-carga>
+        </section>
+
+        <!-- 2. fecha -->
+        <section class="card card-pad" aria-labelledby="h-fecha">
+          <h2 id="h-fecha">2. Fecha de retiro</h2>
+          @switch (reglasEstado()) {
+            @case ('cargando') { <p class="muted" role="status">Buscando las fechas disponibles…</p> }
+            @case ('error') {
+              <div class="alert alert-error" role="alert">
+                <p>{{ reglasError() }}</p>
+                <button type="button" class="btn btn-sm" (click)="cargarReglas()">Reintentar</button>
+              </div>
+            }
+            @default {
+              @if (reglas(); as rg) {
+                @if (rg.fechasDisponibles.length === 0) {
+                  <p class="alert alert-warn">Por ahora no hay fechas de retiro disponibles. Inténtalo de nuevo más tarde.</p>
+                } @else {
+                  <fieldset class="fechas" [class.invalid]="invalido('fecha')">
+                    <legend class="visually-hidden">Elige la fecha de retiro</legend>
+                    @for (f of rg.fechasDisponibles; track f) {
+                      <label class="chip">
+                        <input type="radio" formControlName="fecha" [value]="f" [attr.aria-label]="etiquetaFecha(f)">
+                        <span>{{ etiquetaFecha(f) }}</span>
+                      </label>
+                    }
+                  </fieldset>
+                  @if (invalido('fecha')) { <p class="error-texto" role="alert">Elige una fecha de retiro.</p> }
+                  <p class="muted small">Solo se muestran las fechas en las que podemos atenderte.</p>
+                }
+              }
+            }
+          }
+        </section>
+
+        <!-- 3. datos -->
+        <section class="card card-pad" aria-labelledby="h-datos">
+          <h2 id="h-datos">3. Tus datos</h2>
+          <div class="dos">
+            <div class="field" [class.invalid]="invalido('nombre')">
+              <label for="nombre">Nombre completo <span class="req" aria-hidden="true">*</span></label>
+              <input id="nombre" type="text" formControlName="nombre" autocomplete="name" maxlength="80" [attr.aria-invalid]="invalido('nombre')" aria-describedby="e-nombre">
+              @if (invalido('nombre')) { <span id="e-nombre" class="error" role="alert">Indica tu nombre.</span> }
+            </div>
+            <div class="field" [class.invalid]="invalido('telefono')">
+              <label for="telefono">Teléfono celular <span class="req" aria-hidden="true">*</span></label>
+              <input id="telefono" type="tel" formControlName="telefono" autocomplete="tel" inputmode="tel" maxlength="30" placeholder="987 654 321" [attr.aria-invalid]="invalido('telefono')" aria-describedby="h-tel">
+              @if (invalido('telefono')) { <span class="error" role="alert">Escribe un celular de 9 dígitos que empiece con 9 (con o sin +51).</span> }
+              <span id="h-tel" class="hint">Lo usaremos para comunicarnos contigo y para consultar tu reserva.</span>
+            </div>
+          </div>
+          <div class="field" [class.invalid]="invalido('correo')">
+            <label for="correo">Correo electrónico (opcional)</label>
+            <input id="correo" type="email" formControlName="correo" autocomplete="email" maxlength="120" [attr.aria-invalid]="invalido('correo')">
+            @if (invalido('correo')) { <span class="error" role="alert">Escribe un correo válido o déjalo vacío.</span> }
+          </div>
+          <div class="field" [class.invalid]="invalido('nota')">
+            <label for="nota">Nota para el personal (opcional)</label>
+            <textarea id="nota" formControlName="nota" maxlength="300" rows="3"></textarea>
+            <span class="hint">Máximo 300 caracteres.</span>
+          </div>
+        </section>
+      </div>
+
+      <!-- resumen -->
+      <aside class="card card-pad resumen" aria-labelledby="h-resumen">
+        <h2 id="h-resumen">Resumen</h2>
+        <dl>
+          <div><dt>Productos</dt><dd>{{ lineas().length }}</dd></div>
+          @if (form.controls.fecha.value) { <div><dt>Retiro</dt><dd>{{ etiquetaFecha(form.controls.fecha.value) }}</dd></div> }
+        </dl>
+        @if (lineas().length) {
+          <p class="total">
+            @if (totalEstimado() !== null) { Total estimado: <strong>{{ precio(totalEstimado() ?? 0) }}</strong> }
+            @else { Total: <strong class="por-confirmar">por confirmar</strong> }
+          </p>
+          @if (hayPrecioPorConfirmar()) { <p class="muted small">Hay productos con precio a confirmar: el personal acordará el precio contigo antes de confirmar.</p> }
+          @else { <p class="muted small">Importe orientativo con los precios actuales; el total final lo informa tu reserva.</p> }
+        }
+
+        @if (errorEnvio(); as e) { <p class="alert alert-error" role="alert">{{ e.mensaje }}</p> }
+        @if (intentado() && form.invalid && !errorEnvio()) { <p class="alert alert-warn" role="alert">Revisa los campos marcados para continuar.</p> }
+        @if (intentado() && lineas().length === 0) { <p class="alert alert-warn" role="alert">Agrega al menos un producto a tu reserva.</p> }
+        @if (hayNoReservables()) { <p class="alert alert-warn" role="alert">Quita los productos que ya no están disponibles.</p> }
+        @if (hayExcesos()) { <p class="alert alert-warn" role="alert">Ajusta las cantidades que superan lo disponible.</p> }
+
+        <button type="submit" class="btn btn-block" [disabled]="enviando()">
+          {{ enviando() ? 'Enviando tu solicitud…' : 'Enviar solicitud de reserva' }}
+        </button>
+        <p class="muted small legal">Al enviar, tu solicitud queda registrada como <strong>pendiente</strong>. No se realiza ningún cobro.</p>
+      </aside>
+    </form>
+  </section>
+}

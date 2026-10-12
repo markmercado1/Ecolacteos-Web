@@ -1,0 +1,76 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">COMUNICACIÓN TERRITORIAL</div>
+    <h1>Comunicados</h1>
+    <p>Publica un mensaje a una o varias zonas. La confirmación la registra el acopiador desde el móvil al comunicarlo.</p>
+  </div>
+</div>
+
+<div class="grid grid-2 compose-grid">
+  <div class="card card-pad">
+    <div class="eyebrow">NUEVO COMUNICADO</div>
+    <form [formGroup]="form" (ngSubmit)="publicar()">
+      <div class="field">
+        <label for="mensaje">Mensaje</label>
+        <textarea id="mensaje" formControlName="mensaje" rows="5" placeholder="Escribe la información que el acopiador compartirá con los productores…"></textarea>
+      </div>
+      <div class="field">
+        <label>Zonas destinatarias</label>
+        <div class="checklist">
+          @for (zona of zonas(); track zona.id) {
+            <label class="check">
+              <input
+                type="checkbox"
+                [checked]="zonasSeleccionadas().has(zona.id)"
+                (change)="alternarZona(zona.id, $any($event.target).checked)"
+              >
+              {{ zona.nombre }}
+            </label>
+          }
+        </div>
+      </div>
+      @if (errorPublicar()) { <p class="server-error" role="alert">{{ errorPublicar() }}</p> }
+      <button type="submit" class="btn primary" [disabled]="publicando()">
+        {{ publicando() ? 'Publicando…' : 'Publicar comunicado' }}
+      </button>
+    </form>
+  </div>
+
+  <div class="card card-pad">
+    <div class="eyebrow">VISTA PREVIA</div>
+    <div class="preview">
+      <span>ECOLÁCTEOS · COMUNICADO</span>
+      <p>{{ form.value.mensaje?.trim() || 'Tu comunicado aparecerá aquí mientras lo escribes.' }}</p>
+      <small>Destino: {{ nombresZonasSeleccionadas() }}</small>
+    </div>
+  </div>
+</div>
+
+<div class="section-head">
+  <h2>Publicados</h2>
+</div>
+
+@if (cargando()) {
+  <ui-loading-state mensaje="Cargando comunicados…" />
+} @else if (error()) {
+  <ui-error-state [error]="error()" (reintentar)="cargar()" />
+} @else if (comunicados().length === 0) {
+  <ui-empty-state mensaje="No se ha publicado ningún comunicado todavía." />
+} @else {
+  @for (comunicado of comunicados(); track comunicado.id) {
+    <div class="card card-pad comunicado-item">
+      <div>
+        <strong>{{ comunicado.mensaje }}</strong>
+        <p>{{ comunicado.zonasNombres.join(', ') }} · {{ comunicado.fecha }}</p>
+      </div>
+      <button type="button" class="row-link" (click)="verConfirmaciones(comunicado)">Ver confirmaciones</button>
+    </div>
+  }
+  <ui-paginador
+    [pagina]="pagina()"
+    [totalPaginas]="totalPaginas()"
+    [totalElementos]="totalElementos()"
+    unidad="comunicados"
+    (cambiar)="irAPagina($event)"
+  />
+}

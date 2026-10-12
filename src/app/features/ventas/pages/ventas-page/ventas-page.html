@@ -1,0 +1,62 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">OPERACIÓN</div>
+    <h1>Ventas</h1>
+    <p>Registro de venta (una o varias líneas) y consulta de tu historial. Sin facturación ni edición/anulación en esta fase.</p>
+  </div>
+  <div class="heading-actions">
+    <button type="button" class="btn primary" (click)="nuevaVenta()">Registrar venta</button>
+  </div>
+</div>
+
+<ui-data-table
+  [columnas]="columnas"
+  [filas]="ventas()"
+  [cargando]="cargando()"
+  [error]="error()"
+  mensajeVacio="No hay ventas registradas con los filtros seleccionados."
+  titulo="Historial de ventas"
+  subtitulo="Filtra por fecha y canal; cada fila abre el detalle confirmado por el servidor."
+  [piePagina]="cargando() ? undefined : 'Página ' + (pagina() + 1) + ' de ' + (totalPaginas() || 1) + ' · ' + totalElementos() + ' ventas en total'"
+  (reintentar)="cargar()"
+>
+  <div toolbar class="filtros">
+    <div class="field">
+      <label for="filtro-fecha">Fecha</label>
+      <input
+        id="filtro-fecha"
+        type="date"
+        [value]="filtroFecha()"
+        (change)="cambiarFiltroFecha($any($event.target).value)"
+      >
+    </div>
+    <select
+      [value]="filtroTipoCliente()"
+      (change)="cambiarFiltroTipoCliente($any($event.target).value)"
+      aria-label="Filtrar por canal"
+    >
+      <option value="">Todos los canales</option>
+      <option value="MAYORISTA">Mayorista</option>
+      <option value="PROVEEDOR">Proveedor</option>
+      <option value="PUBLICO">Público</option>
+    </select>
+  </div>
+
+  <div paginacion class="paginacion">
+    <button type="button" class="page-btn" [disabled]="pagina() === 0" (click)="irAPagina(-1)" aria-label="Página anterior">‹</button>
+    <button type="button" class="page-btn" [disabled]="pagina() + 1 >= totalPaginas()" (click)="irAPagina(1)" aria-label="Página siguiente">›</button>
+  </div>
+
+  <ng-template #celda let-fila let-columna="columna">
+    @switch (columna) {
+      @case ('fecha') { {{ fila.fecha }} }
+      @case ('canal') { {{ etiquetaCanal(fila.tipoCliente) }} }
+      @case ('lineas') { {{ resumenLineas(fila) }} }
+      @case ('total') { <strong>S/ {{ fila.total.toFixed(2) }}</strong> }
+      @case ('acciones') {
+        <button type="button" class="row-link" (click)="abrirDetalle(fila.id)">Ver detalle</button>
+      }
+      @default { {{ fila[columna] ?? '—' }} }
+    }
+  </ng-template>
+</ui-data-table>

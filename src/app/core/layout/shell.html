@@ -1,0 +1,88 @@
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+<div class="app-shell" [class.menu-open]="menuAbierto()">
+  <aside class="sidebar" aria-label="Navegación principal">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none">
+          <path d="M16 3c-4 6-10 12-10 18a10 10 0 0 0 20 0C26 15 20 9 16 3Z" fill="currentColor"/>
+          <path d="M12 22c2 2 6 2 8 0" stroke="var(--brand-800)" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <strong>EcoLácteos</strong>
+        <small>Centro de gestión</small>
+      </div>
+    </div>
+
+    <nav class="nav" aria-label="Secciones">
+      @for (grupo of grupos(); track grupo.id) {
+        @if (grupo.items.length === 1) {
+          <!-- Un solo destino para este rol: enlace directo, sin desplegable. -->
+          @let item = grupo.items[0];
+          <a class="nav-item nav-directo" [routerLink]="item.ruta" routerLinkActive="active" (click)="cerrarMenu()">
+            <ui-icon [name]="item.icono" />
+            <span>{{ item.etiqueta }}</span>
+          </a>
+        } @else {
+          <div class="nav-group" [class.abierto]="estaAbierto(grupo.id)">
+            <button
+              type="button"
+              class="nav-group-toggle"
+              [class.contiene-activo]="grupoActivo() === grupo.id"
+              [attr.aria-expanded]="estaAbierto(grupo.id)"
+              [attr.aria-controls]="'nav-grupo-' + grupo.id"
+              (click)="alternarGrupo(grupo.id)"
+            >
+              <ui-icon [name]="grupo.icono" />
+              <span>{{ grupo.titulo }}</span>
+              <ui-icon class="chevron" name="chevron" />
+            </button>
+            @if (estaAbierto(grupo.id)) {
+              <div class="nav-group-items" [id]="'nav-grupo-' + grupo.id">
+                @for (item of grupo.items; track item.ruta) {
+                  <a class="nav-item" [routerLink]="item.ruta" routerLinkActive="active" (click)="cerrarMenu()">
+                    <span>{{ item.etiqueta }}</span>
+                  </a>
+                }
+              </div>
+            }
+          </div>
+        }
+      }
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="account">
+        <div class="avatar">{{ iniciales() }}</div>
+        <div>
+          <strong>{{ usuario()?.nombre ?? 'Sesión activa' }}</strong>
+          <small>{{ usuario()?.rolNombre }}</small>
+        </div>
+      </div>
+      <div class="account-actions">
+        <button type="button" class="btn small ghost" (click)="abrirCambiarPassword()">
+          <ui-icon name="candado" /> Cambiar contraseña
+        </button>
+        <button type="button" class="btn small ghost" (click)="cerrarSesion()">
+          <ui-icon name="salir" /> Cerrar sesión
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="mobile-overlay" (click)="cerrarMenu()"></div>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button type="button" class="top-circle mobile-menu" (click)="alternarMenu()" aria-label="Abrir menú">
+          <ui-icon name="menu" />
+        </button>
+        <div class="crumb">Centro de gestión <b>/</b> <strong>{{ tituloActual() }}</strong></div>
+      </div>
+    </header>
+    <main id="contenido" class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

@@ -1,0 +1,174 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">PRODUCCIÓN Y VENTAS</div>
+    <h1>Inventario</h1>
+    <p>Stock y kardex por cantidades, calculados desde los movimientos de recepción, producción, ventas, ingresos y ajustes.</p>
+  </div>
+</div>
+@if (veMateriasPrimas()) {
+  <div class="tabs" role="tablist" aria-label="Secciones de inventario">
+    <button type="button" class="tab" role="tab" [class.active]="seccion() === 'productos'" [attr.aria-selected]="seccion() === 'productos'" (click)="cambiarSeccion('productos')">Producto terminado</button>
+    <button type="button" class="tab" role="tab" [class.active]="seccion() === 'insumos'" [attr.aria-selected]="seccion() === 'insumos'" (click)="cambiarSeccion('insumos')">Insumos</button>
+    <button type="button" class="tab" role="tab" [class.active]="seccion() === 'leche'" [attr.aria-selected]="seccion() === 'leche'" (click)="cambiarSeccion('leche')">Leche</button>
+  </div>
+}
+@switch (seccion()) {
+@case ('insumos') {
+  <ui-data-table
+    [columnas]="columnasInsumos()"
+    [filas]="insumos()"
+    [cargando]="cargandoInsumos()"
+    [error]="errorInsumos()"
+    [identificarFila]="identificarInsumo"
+    mensajeVacio="No hay insumos registrados."
+    titulo="Stock de insumos"
+    subtitulo="Se descuentan al iniciar una producción. Registra aquí los ingresos; los ajustes por conteo físico son solo para ADMIN."
+    (reintentar)="cargarInsumos()"
+  >
+    <ng-template #celda let-fila let-columna="columna">
+      @switch (columna) {
+        @case ('nombre') {
+          <strong>{{ fila.nombre }}</strong>
+          @if (!fila.activo) { <small>Insumo inactivo</small> }
+        }
+        @case ('stock') { {{ (fila.stock ?? 0) | number: '1.0-2' }} <small>{{ fila.unidadMedida }}</small> }
+        @case ('acciones') {
+          <div class="acciones-fila">
+            <button type="button" class="btn small" (click)="verKardexInsumo(fila)">Kardex</button>
+            @if (fila.activo) {
+              <button type="button" class="btn primary small" (click)="movimientoInsumo(fila, 'INGRESO')">Registrar ingreso</button>
+            }
+            @if (esAdmin()) {
+              <button type="button" class="btn small" (click)="movimientoInsumo(fila, 'AJUSTE')">Ajustar</button>
+            }
+          </div>
+        }
+      }
+    </ng-template>
+  </ui-data-table>
+}
+@case ('leche') {
+  <section class="card card-pad" aria-labelledby="kardex-leche-titulo">
+    <div class="section-head">
+      <h2 id="kardex-leche-titulo">Kardex de leche</h2>
+      <span>Entradas por recepción conciliada en planta y salidas por producción. Un único saldo de planta.</span>
+    </div>
+    <app-kardex-vista tipo="LECHE" />
+  </section>
+}
+@default {
+<ui-data-table
+  [columnas]="columnas()"
+  [filas]="stock()"
+  [cargando]="cargando()"
+  [error]="error()"
+  [identificarFila]="identificarFila"
+  [piePagina]="resumen()"
+  mensajeVacio="No hay presentaciones disponibles en el inventario."
+  titulo="Stock por presentación"
+  subtitulo="Cada presentación tiene su propio stock. Las presentaciones inactivas con saldo siguen visibles."
+  (reintentar)="cargar()"
+>
+  <div toolbar class="filtro-familia">
+    <label for="inventario-familia">Familia</label>
+    <select
+      id="inventario-familia"
+      #familia
+      [value]="familiaId()"
+      [disabled]="cargandoFamilias() || !!errorFamilias()"
+      (change)="cambiarFamilia(familia.value)"
+    >
+      <option value="">Todas las familias</option>
+      @for (opcion of familias(); track opcion.id) {
+        <option [value]="opcion.id">
+          {{ opcion.nombre }}{{ opcion.activo ? '' : ' (inactiva)' }}
+        </option>
+      }
+    </select>
+    @if (cargandoFamilias()) {
+      <small role="status">Cargando familias…</small>
+    }
+    @if (errorFamilias(); as error) {
+      <p role="alert">No se pudieron cargar las familias: {{ error.mensaje }}</p>
+      <button type="button" class="btn" (click)="cargarFamilias()">Reintentar familias</button>
+    }
+  </div>
+  <ng-template #celda let-fila let-columna="columna">
+    @switch (columna) {
+      @case ('familiaNombre') {
+        {{ fila.familiaNombre }}
+      }
+      @case ('productoNombre') {
+        <strong>{{ fila.productoNombre }}</strong>
+        @if (!fila.productoActivo) {
+          <small>Producto inactivo</small>
+        }
+      }
+      @case ('presentacionNombre') {
+        {{ fila.presentacionNombre }}
+        @if (!fila.presentacionActivo) {
+          <small>Presentación inactiva</small>
+        }
+      }
+      @case ('stock') {
+        <strong title="Existencias físicas: todo lo que hay en el libro, vencido o no">{{ fila.stock }}</strong>
+        <small>Físico · Unidad de conteo: {{ fila.unidadConteo }}</small>
+        @if (fila.controlaVencimiento) {
+          <small class="vendible" [class.sin-vendible]="fila.stockVendible === 0">
+            Vendible: {{ fila.stockVendible }}
+            @if (fila.stockVendible < fila.stock) { · no vendible: {{ fila.stock - fila.stockVendible }} }
+          </small>
+          <small class="reservado" [class.con-reservas]="fila.stockComprometido > 0" title="Unidades separadas por reservas pendientes o confirmadas">
+            Reservado: {{ fila.stockComprometido }}
+          </small>
+          <small class="libre" [class.sin-libre]="fila.stockLibre === 0" title="Lo que una venta directa puede tomar hoy sin dejar sin cobertura a las reservas">
+            Libre para vender: {{ fila.stockLibre }}
+          </small>
+        }
+      }
+      @case ('acciones') {
+        <div class="acciones-fila">
+          <button type="button" class="btn small" (click)="verKardexPresentacion(fila)">Kardex</button>
+          @if (fila.controlaVencimiento) {
+            <button type="button" class="btn small" (click)="verLotes(fila)">Lotes y vencimientos</button>
+          }
+          @if (esAdmin()) {
+            <button type="button" class="btn small" (click)="verAjustes(fila)">Ver ajustes</button>
+            <button type="button" class="btn primary small" (click)="ajustarStock(fila)">
+              Ajustar stock
+            </button>
+          }
+        </div>
+      }
+    }
+  </ng-template>
+  <div paginacion class="paginacion" aria-label="Paginación del inventario">
+    <label
+      >Por página
+      <select #size [value]="tamano()" (change)="cambiarTamano(size.value)" [disabled]="cargando()">
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+      </select>
+    </label>
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="cambiarPagina(pagina() - 1)"
+      [disabled]="cargando() || !!error() || pagina() === 0"
+    >
+      Anterior
+    </button>
+    <span>Página {{ paginas() === 0 ? 0 : pagina() + 1 }} de {{ paginas() }}</span>
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="cambiarPagina(pagina() + 1)"
+      [disabled]="cargando() || !!error() || pagina() + 1 >= paginas()"
+    >
+      Siguiente
+    </button>
+  </div>
+</ui-data-table>
+}
+}

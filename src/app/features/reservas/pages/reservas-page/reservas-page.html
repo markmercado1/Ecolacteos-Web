@@ -1,0 +1,117 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">COMERCIAL</div>
+    <h1>Reservas</h1>
+    <p>Solicitudes de clientes para retirar productos en una fecha. Confirmar separa las unidades; el inventario y el kardex solo se mueven al registrar el retiro.</p>
+  </div>
+</div>
+
+<div class="resumen" role="group" aria-label="Resumen de reservas por estado">
+  @for (estado of estadosResumen; track estado) {
+    <button
+      type="button"
+      class="resumen-item"
+      [class.activo]="filtroEstado() === estado"
+      [class.atencion]="estado === 'PENDIENTE' && total(estado) !== '0' && total(estado) !== '—'"
+      [attr.aria-pressed]="filtroEstado() === estado"
+      (click)="alternarEstado(estado)"
+    >
+      <span class="resumen-numero">{{ total(estado) }}</span>
+      <span class="resumen-texto">
+        @switch (estado) {
+          @case ('PENDIENTE') { Pendientes de atención }
+          @case ('CONFIRMADA') { Confirmadas por retirar }
+          @case ('VENCIDA') { Vencidas }
+        }
+      </span>
+    </button>
+  }
+</div>
+
+<ui-data-table
+  [columnas]="columnas"
+  [filas]="reservas()"
+  [cargando]="cargando()"
+  [error]="error()"
+  [identificarFila]="identificarFila"
+  [mensajeVacio]="hayFiltros() ? 'No hay reservas con los filtros seleccionados.' : 'Todavía no hay reservas.'"
+  titulo="Listado de reservas"
+  subtitulo="Más recientes primero. Cada fila abre el detalle con las acciones disponibles según su estado."
+  [piePagina]="cargando() ? undefined : 'Página ' + (pagina() + 1) + ' de ' + (totalPaginas() || 1) + ' · ' + totalElementos() + ' reservas'"
+  (reintentar)="cargar()"
+>
+  <div toolbar class="filtros">
+    <div class="field">
+      <label for="filtro-estado">Estado</label>
+      <select
+        id="filtro-estado"
+        [value]="filtroEstado()"
+        (change)="cambiarEstado($any($event.target).value)"
+      >
+        <option value="">Todos los estados</option>
+        @for (estado of estadosFiltrables; track estado) {
+          <option [value]="estado">{{ etiquetaEstado(estado) }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="filtro-retiro">Fecha de retiro</label>
+      <input id="filtro-retiro" type="date" [value]="filtroFecha()" (change)="cambiarFecha($any($event.target).value)">
+    </div>
+    <div class="field">
+      <label for="filtro-telefono">Teléfono</label>
+      <input
+        id="filtro-telefono"
+        type="tel"
+        inputmode="tel"
+        placeholder="9XXXXXXXX"
+        [value]="filtroTelefono()"
+        (change)="cambiarTelefono($any($event.target).value)"
+      >
+    </div>
+    <div class="field">
+      <label for="filtro-codigo">Código de seguimiento</label>
+      <input
+        id="filtro-codigo"
+        type="text"
+        placeholder="Código"
+        autocomplete="off"
+        [value]="filtroCodigo()"
+        (change)="cambiarCodigo($any($event.target).value)"
+      >
+    </div>
+    @if (hayFiltros()) {
+      <button type="button" class="btn small" (click)="limpiarFiltros()">Limpiar filtros</button>
+    }
+  </div>
+
+  <div paginacion class="paginacion">
+    <button type="button" class="page-btn" [disabled]="pagina() === 0" (click)="irAPagina(-1)" aria-label="Página anterior">‹</button>
+    <button type="button" class="page-btn" [disabled]="pagina() + 1 >= totalPaginas()" (click)="irAPagina(1)" aria-label="Página siguiente">›</button>
+  </div>
+
+  <ng-template #celda let-fila let-columna="columna">
+    @switch (columna) {
+      @case ('codigo') { <strong class="codigo">{{ fila.codigo }}</strong> <small>{{ fila.creadoEn | date: 'dd/MM/yyyy HH:mm' }}</small> }
+      @case ('cliente') { {{ fila.nombreCliente }} <small>{{ fila.telefono }}</small> }
+      @case ('fechaRetiro') { {{ fila.fechaRetiro | date: 'dd/MM/yyyy' }} }
+      @case ('estado') {
+        <span class="badge" [class]="colorEstado(fila.estado)">{{ etiquetaEstado(fila.estado) }}</span>
+        @if (fila.sinCobertura) { <span class="badge red">Sin cobertura</span> }
+        @if (fila.estado === 'PENDIENTE') {
+          @if (fila.precioAConfirmar) { <span class="badge amber">Precio a confirmar</span> }
+          @else if (fila.requiereAceptacion && !fila.precioAceptado) { <span class="badge amber">Falta aceptación</span> }
+          <small>Vence {{ fila.expiraEn | date: 'dd/MM HH:mm' }}</small>
+        }
+      }
+      @case ('unidades') { {{ fila.unidades }} }
+      @case ('total') {
+        @if (fila.total === null) { <span class="a-confirmar">A confirmar</span> }
+        @else { <strong>S/ {{ fila.total | number: '1.2-2' }}</strong> }
+      }
+      @case ('acciones') {
+        <button type="button" class="row-link" (click)="abrirDetalle(fila.id)">Ver detalle</button>
+      }
+    }
+  </ng-template>
+</ui-data-table>

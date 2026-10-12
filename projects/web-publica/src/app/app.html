@@ -1,0 +1,86 @@
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+<div class="franja" role="note">
+  <div class="container">Reserva en línea y retira en la fecha que elijas. Esta web no cobra ni procesa pagos.</div>
+</div>
+
+<header class="cabecera">
+  <div class="container barra">
+    <a routerLink="/" class="marca" aria-label="EcoLácteos Huata, ir al inicio">
+      <img src="/img/icono-vaca-192.png" alt="" width="52" height="52">
+      <span class="texto">
+        <span class="nombre"><span class="eco">ECO</span><span class="lacteos">LÁCTEOS</span></span>
+        <span class="huata">HUATA</span>
+      </span>
+    </a>
+
+    <button type="button" class="hamburguesa" [attr.aria-expanded]="menuAbierto()" aria-controls="menu-principal" (click)="alternarMenu()">
+      <span class="visually-hidden">{{ menuAbierto() ? 'Cerrar menú' : 'Abrir menú' }}</span>
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        @if (menuAbierto()) { <path d="M6 6l12 12M18 6L6 18" /> } @else { <path d="M4 7h16M4 12h16M4 17h16" /> }
+      </svg>
+    </button>
+
+    <nav id="menu-principal" class="menu" [class.abierto]="menuAbierto()" aria-label="Principal">
+      <ul>
+        @for (e of enlaces; track e.ruta) {
+          <li><a [routerLink]="e.ruta" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: e.exacto }">{{ e.etiqueta }}</a></li>
+        }
+        <li><a routerLink="/consultar-reserva" routerLinkActive="activo">Consultar reserva</a></li>
+      </ul>
+      <a routerLink="/reservar" class="btn btn-sm mi-reserva">
+        Mi reserva
+        @if (carrito.cantidadLineas() > 0) { <span class="cuenta" aria-label="{{ carrito.cantidadLineas() }} productos en tu reserva">{{ carrito.cantidadLineas() }}</span> }
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main id="contenido" tabindex="-1">
+  <router-outlet />
+</main>
+
+<footer class="pie">
+  <div class="container columnas">
+    <div class="acerca">
+      <img src="/img/logo-ecolacteos.png" alt="EcoLácteos Huata" width="150" height="135" class="logo-blanco">
+      <p>{{ sitio.descripcionCorta }}</p>
+      @if (redes.length) {
+        <ul class="redes" aria-label="Redes sociales">
+          @for (r of redes; track r[0]) { <li><a [href]="r[1]" target="_blank" rel="noopener noreferrer">{{ r[0] }}</a></li> }
+        </ul>
+      }
+    </div>
+    <nav aria-label="Navegación del pie">
+      <h2>Explora</h2>
+      <ul>
+        <li><a routerLink="/catalogo">Catálogo</a></li>
+        <li><a routerLink="/reservar">Reservar productos</a></li>
+        <li><a routerLink="/consultar-reserva">Consultar mi reserva</a></li>
+        <li><a routerLink="/quienes-somos">Quiénes somos</a></li>
+        <li><a routerLink="/preguntas-frecuentes">Preguntas frecuentes</a></li>
+        <li><a routerLink="/contacto">Contacto</a></li>
+      </ul>
+    </nav>
+    <div>
+      <h2>Contacto</h2>
+      <ul class="datos">
+        @if (sitio.contacto.telefono) { <li><a [href]="'tel:' + sitio.contacto.telefono">{{ sitio.contacto.telefono }}</a></li> }
+        @if (sitio.contacto.correo) { <li><a [href]="'mailto:' + sitio.contacto.correo">{{ sitio.contacto.correo }}</a></li> }
+        @if (sitio.contacto.direccion) { <li>{{ sitio.contacto.direccion }}</li> }
+        @if (sitio.contacto.horario) { <li>{{ sitio.contacto.horario }}</li> }
+        <li><a routerLink="/contacto">Ver formas de contacto</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="container legal">© {{ anio }} {{ sitio.nombre }}. Todos los derechos reservados.</div>
+</footer>
+
+@if (whatsapp(); as enlace) {
+  <a class="whatsapp" [href]="enlace" target="_blank" rel="noopener noreferrer" aria-label="Escríbenos por WhatsApp (se abre en una pestaña nueva)">
+    <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.4A8.4 8.4 0 1 1 21 11.5Z" />
+      <path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1.200-1.500-2-1-.8.800a4 4 0 0 1-1.800-1.800l.8-.8-1-2L9 9.5Z" fill="currentColor" stroke="none" />
+    </svg>
+  </a>
+}

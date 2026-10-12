@@ -1,0 +1,21 @@
+# Despliegue de la web pública (projects/web-publica) en Netlify.
+# El panel interno NO se despliega aquí.
+
+[build]
+  command = "npm run build:publica"
+  publish = "dist/web-publica/browser"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# SPA: cualquier ruta que no sea un archivo devuelve index.html (así /catalogo, /reservar… funcionan al recargar).
+# Netlify sirve primero los archivos reales (/fonts, /img, *.js) y solo después aplica esta regla.
+# Si el backend queda en otro dominio, antes de esta regla se puede agregar un proxy:
+#   [[redirects]]
+#     from = "/api/*"
+#     to = "https://TU-BACKEND/api/:splat"
+#     status = 200
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

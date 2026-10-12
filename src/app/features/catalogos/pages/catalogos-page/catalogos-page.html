@@ -1,0 +1,186 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">ADMINISTRACIÓN</div>
+    <h1>Catálogos</h1>
+    <p>Zonas, motivos de observación, familias, productos, insumos, recetas de producción y configuración. Solo las operaciones que la API soporta.</p>
+  </div>
+</div>
+
+<div class="tabs" role="tablist">
+  <button type="button" class="tab" [class.active]="pestana() === 'zonas'" (click)="pestana.set('zonas')" role="tab">Zonas</button>
+  <button type="button" class="tab" [class.active]="pestana() === 'motivos'" (click)="pestana.set('motivos')" role="tab">Motivos de observación</button>
+  <button type="button" class="tab" [class.active]="pestana() === 'familias'" (click)="pestana.set('familias')" role="tab">Familias</button>
+  <button type="button" class="tab" [class.active]="pestana() === 'productos'" (click)="pestana.set('productos')" role="tab">Productos</button>
+  <button type="button" class="tab" [class.active]="pestana() === 'insumos'" (click)="pestana.set('insumos')" role="tab">Insumos</button>
+  <button type="button" class="tab" [class.active]="pestana() === 'recetas'" (click)="pestana.set('recetas')" role="tab">Recetas</button>
+  <button type="button" class="tab" [class.active]="pestana() === 'configuracion'" (click)="pestana.set('configuracion')" role="tab">Configuración</button>
+</div>
+
+@switch (pestana()) {
+  @case ('zonas') {
+    <ui-data-table
+      [columnas]="columnasZonas" [filas]="zonas()" [cargando]="cargandoZonas()" [error]="errorZonas()"
+      mensajeVacio="No hay zonas activas." titulo="Zonas" subtitulo="Zonas libres: no restringen el acceso de ningún usuario."
+      (reintentar)="cargarZonas()"
+    >
+      <div toolbar><button type="button" class="btn primary small" (click)="nuevaZona()">Nueva zona</button></div>
+      <ng-template #celda let-fila let-columna="columna">
+        @switch (columna) {
+          @case ('nombre') { <strong>{{ fila.nombre }}</strong> }
+          @case ('acciones') {
+            <div class="acciones">
+              <button type="button" class="row-link" (click)="editarZona(fila)">Editar</button>
+              <button type="button" class="row-link" (click)="desactivarZona(fila)">Desactivar</button>
+            </div>
+          }
+        }
+      </ng-template>
+    </ui-data-table>
+    <div class="module-note">{{ avisoLimitacion }}</div>
+  }
+  @case ('motivos') {
+    <ui-data-table
+      [columnas]="columnasMotivos" [filas]="motivos()" [cargando]="cargandoMotivos()" [error]="errorMotivos()"
+      mensajeVacio="No hay motivos activos." titulo="Motivos de observación" subtitulo="Usados al registrar correcciones de acopio."
+      (reintentar)="cargarMotivos()"
+    >
+      <div toolbar><button type="button" class="btn primary small" (click)="nuevoMotivo()">Nuevo motivo</button></div>
+      <ng-template #celda let-fila let-columna="columna">
+        @switch (columna) {
+          @case ('descripcion') { <strong>{{ fila.descripcion }}</strong> }
+          @case ('acciones') {
+            <div class="acciones">
+              <button type="button" class="row-link" (click)="editarMotivo(fila)">Editar</button>
+              <button type="button" class="row-link" (click)="desactivarMotivo(fila)">Desactivar</button>
+            </div>
+          }
+        }
+      </ng-template>
+    </ui-data-table>
+    <div class="module-note">{{ avisoLimitacion }}</div>
+  }
+  @case ('familias') {
+    <ui-data-table
+      [columnas]="columnasFamilias" [filas]="familias()" [cargando]="cargandoFamilias()" [error]="errorFamilias()"
+      mensajeVacio="No hay familias activas." titulo="Familias" subtitulo="Agrupan productos: Queso, Yogurt, Leche, Mantequilla, Dulce de leche…"
+      (reintentar)="cargarFamilias()"
+    >
+      <div toolbar><button type="button" class="btn primary small" (click)="nuevaFamilia()">Nueva familia</button></div>
+      <ng-template #celda let-fila let-columna="columna">
+        @switch (columna) {
+          @case ('nombre') { <strong>{{ fila.nombre }}</strong> }
+          @case ('acciones') {
+            <div class="acciones">
+              <button type="button" class="row-link" (click)="editarFamilia(fila)">Editar</button>
+              <button type="button" class="row-link" (click)="desactivarFamilia(fila)">Desactivar</button>
+            </div>
+          }
+        }
+      </ng-template>
+    </ui-data-table>
+    <div class="module-note">{{ avisoLimitacion }}</div>
+  }
+  @case ('productos') {
+    <ui-data-table
+      [columnas]="columnasProductos" [filas]="productos()" [cargando]="cargandoProductos()" [error]="errorProductos()"
+      mensajeVacio="No hay productos activos." titulo="Productos" subtitulo="Cada producto tiene sus propias presentaciones (cómo se cuenta, almacena y vende)."
+      (reintentar)="cargarProductos()"
+    >
+      <div toolbar><button type="button" class="btn primary small" (click)="nuevoProducto()">Nuevo producto</button></div>
+      <ng-template #celda let-fila let-columna="columna">
+        @switch (columna) {
+          @case ('nombre') {
+            <span class="celda-producto">
+              @if (urlFoto(fila.fotoUrl); as foto) { <img class="miniatura" [src]="foto" alt="" /> }
+              <strong>{{ fila.nombre }}</strong>
+            </span>
+          }
+          @case ('familiaNombre') { {{ fila.familiaNombre }} }
+          @case ('presentacionesCount') {
+            @if (fila.presentaciones.length === 0) { Sin presentaciones } @else { {{ fila.presentaciones.length }} }
+          }
+          @case ('acciones') {
+            <div class="acciones">
+              <button type="button" class="row-link" (click)="editarProducto(fila)">Editar producto</button>
+              <button type="button" class="row-link" (click)="abrirPresentaciones(fila)">Presentaciones</button>
+              <button type="button" class="row-link" (click)="abrirControlVencimiento(fila)">Control de vencimiento</button>
+              <button type="button" class="row-link" (click)="desactivarProducto(fila)">Desactivar</button>
+            </div>
+          }
+        }
+      </ng-template>
+    </ui-data-table>
+    <div class="module-note">{{ avisoLimitacion }}</div>
+  }
+  @case ('insumos') {
+    <ui-data-table
+      [columnas]="columnasInsumos" [filas]="insumos()" [cargando]="cargandoInsumos()" [error]="errorInsumos()"
+      mensajeVacio="No hay insumos activos." titulo="Insumos" subtitulo="Cuajo, sal, etc. El stock cambia solo por movimientos (ingresos, producción, ajustes): gestiónalo en Inventario → Insumos."
+      (reintentar)="cargarInsumos()"
+    >
+      <div toolbar><button type="button" class="btn primary small" (click)="nuevoInsumo()">Nuevo insumo</button></div>
+      <ng-template #celda let-fila let-columna="columna">
+        @switch (columna) {
+          @case ('nombre') { <strong>{{ fila.nombre }}</strong> }
+          @case ('unidadMedida') { {{ fila.unidadMedida }} }
+          @case ('stock') { {{ fila.stock ?? 0 }} {{ fila.unidadMedida }} }
+          @case ('acciones') {
+            <div class="acciones">
+              <button type="button" class="row-link" (click)="editarInsumo(fila)">Editar</button>
+              <button type="button" class="row-link" (click)="desactivarInsumo(fila)">Desactivar</button>
+            </div>
+          }
+        }
+      </ng-template>
+    </ui-data-table>
+    <div class="module-note">{{ avisoLimitacion }}</div>
+  }
+  @case ('recetas') {
+    <ui-data-table
+      [columnas]="columnasRecetas" [filas]="recetas()" [cargando]="cargandoRecetas()" [error]="errorRecetas()"
+      mensajeVacio="No hay recetas registradas." titulo="Recetas de producción"
+      subtitulo="Cantidades por la leche base de cada receta; al producir, el sistema las escala proporcionalmente."
+      (reintentar)="cargarRecetas()"
+    >
+      <div toolbar><button type="button" class="btn primary small" (click)="nuevaReceta()">Nueva receta</button></div>
+      <ng-template #celda let-fila let-columna="columna">
+        @switch (columna) {
+          @case ('nombre') { <strong>{{ fila.nombre }}</strong> }
+          @case ('productoNombre') { {{ fila.productoNombre }} · {{ fila.presentacionNombre }} }
+          @case ('base') { {{ fila.litrosBase }} L → {{ fila.rendimientoBase }} {{ fila.unidadConteo }} }
+          @case ('insumos') { {{ resumenInsumos(fila) }} }
+          @case ('activo') {
+            @if (fila.activo) { <span class="badge blue">Activa</span> } @else { <span class="badge gray">Inactiva</span> }
+          }
+          @case ('acciones') {
+            <div class="acciones">
+              <button type="button" class="row-link" (click)="editarReceta(fila)">Editar</button>
+              @if (fila.activo) {
+                <button type="button" class="row-link" (click)="desactivarReceta(fila)">Desactivar</button>
+              } @else {
+                <button type="button" class="row-link" (click)="reactivarReceta(fila)">Reactivar</button>
+              }
+            </div>
+          }
+        }
+      </ng-template>
+    </ui-data-table>
+    <div class="module-note">La leche es la base de cada receta (no se registra como insumo). Las producciones ya planificadas conservan su plan aunque la receta cambie.</div>
+  }
+  @case ('configuracion') {
+    <ui-data-table
+      [columnas]="columnasConfig" [filas]="configuracion()" [cargando]="cargandoConfig()" [error]="errorConfig()"
+      mensajeVacio="Sin parámetros de configuración." titulo="Configuración del sistema" subtitulo="Las claves son fijas; solo se edita el valor."
+      (reintentar)="cargarConfig()"
+    >
+      <ng-template #celda let-fila let-columna="columna">
+        @switch (columna) {
+          @case ('clave') { <strong>{{ fila.clave }}</strong> }
+          @case ('acciones') {
+            <button type="button" class="row-link" (click)="editarConfiguracion(fila)">Editar valor</button>
+          }
+        }
+      </ng-template>
+    </ui-data-table>
+  }
+}

@@ -1,0 +1,11 @@
+.filtros .field {
+  margin: 0;
+}
+.filtros .field label {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: var(--color-text-muted);
+}
+.filtros .field input {
+  min-height: 2.375rem;
+}

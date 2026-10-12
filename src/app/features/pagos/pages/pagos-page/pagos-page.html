@@ -1,0 +1,90 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">CONTROL FINANCIERO</div>
+    <h1>Pagos</h1>
+    <p>Cada liquidación queda vinculada a las entregas exactas que paga. Los ajustes posteriores no modifican el pago original.</p>
+  </div>
+  @if (esAdmin()) {
+    <div class="heading-actions">
+      <button type="button" class="btn primary" (click)="generarPago()">Generar pago</button>
+    </div>
+  }
+</div>
+
+@if (esAdmin()) {
+  <div class="tabs" role="tablist">
+    <button type="button" class="tab" [class.active]="pestana() === 'liquidaciones'" (click)="pestana.set('liquidaciones')" role="tab">Liquidaciones</button>
+    <button type="button" class="tab" [class.active]="pestana() === 'ajustes'" (click)="pestana.set('ajustes')" role="tab">Ajustes pendientes</button>
+  </div>
+}
+
+@if (pestana() === 'liquidaciones' || !esAdmin()) {
+  <ui-data-table
+    [columnas]="columnas"
+    [filas]="pagos()"
+    [cargando]="cargando()"
+    [error]="error()"
+    mensajeVacio="No se ha generado ningún pago todavía."
+    titulo="Historial de pagos"
+    subtitulo="Más recientes primero (por semana de inicio)."
+    [piePagina]="cargando() ? undefined : 'Página ' + (pagina() + 1) + ' de ' + (totalPaginas() || 1) + ' · ' + totalElementos() + ' pagos en total'"
+    (reintentar)="cargar()"
+  >
+    <div paginacion class="paginacion">
+      <button type="button" class="page-btn" [disabled]="pagina() === 0" (click)="irAPagina(-1)" aria-label="Página anterior">‹</button>
+      <button type="button" class="page-btn" [disabled]="pagina() + 1 >= totalPaginas()" (click)="irAPagina(1)" aria-label="Página siguiente">›</button>
+    </div>
+
+    <ng-template #celda let-fila let-columna="columna">
+      @switch (columna) {
+        @case ('proveedorNombre') { <strong>{{ fila.proveedorNombre }}</strong> }
+        @case ('semana') { {{ fila.semanaInicio }} → {{ fila.semanaFin }} }
+        @case ('litrosTotales') { {{ fila.litrosTotales }} L }
+        @case ('total') { <strong>S/ {{ fila.total }}</strong> }
+        @case ('comprobante') {
+          <span class="badge" [class.amber]="!fila.comprobanteGenerado">
+            {{ fila.comprobanteGenerado ? 'Generado' : 'Pendiente' }}
+          </span>
+        }
+        @case ('acciones') {
+          <button type="button" class="row-link" (click)="verDetalle(fila)">Ver detalle</button>
+        }
+      }
+    </ng-template>
+  </ui-data-table>
+} @else {
+  <div class="card card-pad">
+    <div class="section-head">
+      <h2>Ajustes pendientes de liquidación</h2>
+    </div>
+    <p class="hint">La consulta real se hace por proveedor seleccionado (GET /api/pagos/ajustes/pendientes?proveedorId=).</p>
+    <div class="filtros">
+      <select [value]="proveedorAjustes()" (change)="proveedorAjustes.set($any($event.target).value)" aria-label="Proveedor de los ajustes">
+        <option value="">Selecciona un proveedor</option>
+        @for (proveedor of proveedores(); track proveedor.id) {
+          <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
+        }
+      </select>
+      <button type="button" class="btn" [disabled]="!proveedorAjustes()" (click)="consultarAjustes()">Consultar</button>
+    </div>
+
+    @if (cargandoAjustes()) {
+      <ui-loading-state mensaje="Cargando ajustes…" />
+    } @else if (errorAjustes()) {
+      <ui-error-state [error]="errorAjustes()" (reintentar)="consultarAjustes()" />
+    } @else if (consultado() && ajustesPendientes().length === 0) {
+      <ui-empty-state mensaje="Este proveedor no tiene ajustes pendientes de liquidación." />
+    } @else if (ajustesPendientes().length > 0) {
+      @for (ajuste of ajustesPendientes(); track ajuste.id) {
+        <div class="ajuste-item">
+          <div>
+            <strong>{{ ajuste.litrosDiferencia > 0 ? '+' : '' }}{{ ajuste.litrosDiferencia }} L</strong>
+            <small>Registro {{ ajuste.registroAcopioId }} · {{ ajuste.creadoEn }}</small>
+          </div>
+          <div class="ajuste-monto">S/ {{ ajuste.monto }}</div>
+          <button type="button" class="btn small" (click)="liquidarAjuste(ajuste)">Liquidar</button>
+        </div>
+      }
+    }
+  </div>
+}

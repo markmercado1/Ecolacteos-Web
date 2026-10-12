@@ -1,0 +1,64 @@
+/* Base de tema: integrar en src/styles/theme.css durante Fase 1.
+   Conserva verdes/neutros del HTML original; texto secundario oscurecido.
+   No implica que contraste de todas las combinaciones esté validado. */
+:root {
+  --brand-900: #102b23;
+  --brand-800: #17382e;
+  --brand-700: #21483a;
+  --brand-500: #3f8d65;
+  --brand-accent: #d9ec9d;
+
+  --color-canvas: #f4f5ee;
+  --color-surface: #ffffff;
+  --color-surface-soft: #edf2e8;
+  --color-text: #1a3028;
+  --color-text-muted: #52635a;
+  --color-border: #d5dfd1;
+  --color-primary: var(--brand-800);
+  --color-primary-hover: var(--brand-700);
+  --color-on-primary: #ffffff;
+  --color-focus: #285fc8;
+  --color-success: #245f40;
+  --color-success-bg: #edf2e8;
+  --color-warning: #805019;
+  --color-warning-bg: #fff1dd;
+  --color-danger: #963e35;
+  --color-danger-bg: #fff0ed;
+  --color-info: #355b79;
+  --color-info-bg: #edf4fa;
+
+  --chart-1: var(--brand-800);
+  --chart-2: var(--brand-500);
+  --chart-3: #517796;
+  --chart-4: #ad7137;
+  --chart-grid: var(--color-border);
+  --chart-label: var(--color-text-muted);
+
+  --font-body: "Segoe UI", system-ui, sans-serif;
+  --font-heading: var(--font-body);
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-title: clamp(1.5rem, 2.5vw, 2.25rem);
+  --line-height-body: 1.5;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --radius-control: 0.5rem;
+  --radius-card: 0.875rem;
+  --radius-dialog: 1rem;
+  --shadow-card: 0 8px 24px rgb(29 55 40 / 6%);
+  --shadow-overlay: 0 18px 48px rgb(16 43 35 / 18%);
+  --sidebar-width: 16rem;
+  --content-max-width: 90rem;
+  --motion-fast: 140ms;
+  --motion-normal: 220ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion-fast: 0ms; --motion-normal: 0ms; }
+}
+

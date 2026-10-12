@@ -1,0 +1,56 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">OPERACIÓN</div>
+    <h1>Producción diaria</h1>
+    <p>Informe diario del área de producción: quesos, recorte e insumos usados. Un informe por día, editable solo el mismo día.</p>
+  </div>
+  <div class="heading-actions">
+    <button
+      type="button"
+      class="btn primary"
+      [disabled]="cargandoInformeDeHoy() || !!informeDeHoy()"
+      (click)="registrarInformeDeHoy()"
+    >
+      Registrar informe de hoy
+    </button>
+  </div>
+</div>
+
+@if (!cargandoInformeDeHoy() && informeDeHoy()) {
+  <p class="hint">
+    Ya existe un informe para hoy ({{ hoy() }}). Usa "Editar" en la fila de hoy, en el historial de abajo, para corregirlo.
+  </p>
+}
+
+<ui-data-table
+  titulo="Historial de informes"
+  subtitulo="Hoy se puede editar; los demás días son solo lectura."
+  [columnas]="columnasHistorial"
+  [filas]="historial()"
+  [cargando]="cargandoHistorial()"
+  [error]="errorHistorial()"
+  mensajeVacio="No hay informes registrados todavía."
+  [piePagina]="cargandoHistorial() ? undefined : 'Página ' + (paginaHistorial() + 1) + ' de ' + (totalPaginasHistorial() || 1) + ' · ' + totalElementosHistorial() + ' informes en total'"
+  (reintentar)="cargarHistorial()"
+>
+  <div paginacion class="paginacion">
+    <button type="button" class="page-btn" [disabled]="paginaHistorial() === 0" (click)="irAPaginaHistorial(-1)" aria-label="Página anterior">‹</button>
+    <button type="button" class="page-btn" [disabled]="paginaHistorial() + 1 >= totalPaginasHistorial()" (click)="irAPaginaHistorial(1)" aria-label="Página siguiente">›</button>
+  </div>
+  <ng-template #celda let-fila let-columna="columna">
+    @switch (columna) {
+      @case ('fecha') {
+        {{ fila.fecha }} @if (esHoy(fila.fecha)) { <span class="badge">Hoy</span> }
+      }
+      @case ('recorteEnKilos') { {{ fila.recorteEnKilos === null ? '—' : (fila.recorteEnKilos | number: '1.0-2') + ' kg' }} }
+      @case ('acciones') {
+        @if (esHoy(fila.fecha)) {
+          <button type="button" class="row-link" (click)="editarInforme(fila)">Editar</button>
+        } @else {
+          <button type="button" class="row-link" (click)="verDetalle(fila)">Ver detalle</button>
+        }
+      }
+      @default { {{ fila[columna] }} }
+    }
+  </ng-template>
+</ui-data-table>

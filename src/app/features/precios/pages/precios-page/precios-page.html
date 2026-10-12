@@ -1,0 +1,158 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">POLÍTICA COMERCIAL</div>
+    <h1>Precios</h1>
+    <p>Precios de leche como materia prima y tarifas de productos por presentación y modalidad.</p>
+  </div>
+</div>
+
+<div class="tabs" role="tablist">
+  <button type="button" class="tab" [class.active]="pestana() === 'leche'" (click)="pestana.set('leche')" role="tab">Leche · materia prima</button>
+  <button type="button" class="tab" [class.active]="pestana() === 'queso'" (click)="pestana.set('queso')" role="tab">Productos</button>
+</div>
+
+@switch (pestana()) {
+  @case ('leche') {
+    @if (precioVigente()) {
+      <div class="card card-pad precio-hero">
+        <div class="eyebrow">PRECIO VIGENTE</div>
+        <div class="valor">S/ {{ precioVigente()!.precio }} <small>/ litro</small></div>
+        <p>Vigente desde el {{ precioVigente()!.vigenteDesde }}</p>
+      </div>
+    }
+
+    <ui-data-table
+      [columnas]="columnas"
+      [filas]="historial()"
+      [cargando]="cargando()"
+      [error]="error()"
+      mensajeVacio="Todavía no se registró ningún precio."
+      titulo="Historial de vigencias"
+      subtitulo="La fecha vigenteDesde es única; el servidor rechaza una duplicada."
+      [piePagina]="cargando() ? undefined : 'Página ' + (paginaLeche() + 1) + ' de ' + (totalPaginasLeche() || 1) + ' · ' + totalElementosLeche() + ' vigencias en total'"
+      (reintentar)="cargar()"
+    >
+      <div paginacion class="paginacion">
+        <button type="button" class="page-btn" [disabled]="paginaLeche() === 0" (click)="irAPaginaLeche(-1)" aria-label="Página anterior">‹</button>
+        <button type="button" class="page-btn" [disabled]="paginaLeche() + 1 >= totalPaginasLeche()" (click)="irAPaginaLeche(1)" aria-label="Página siguiente">›</button>
+      </div>
+      <div toolbar><button type="button" class="btn primary small" (click)="registrarPrecio()">Registrar nuevo precio</button></div>
+      <ng-template #celda let-fila let-columna="columna">
+        @switch (columna) {
+          @case ('vigenteDesde') { <strong>{{ fila.vigenteDesde }}</strong> }
+          @case ('precio') { S/ {{ fila.precio }} }
+          @case ('estado') {
+            <span class="badge" [class.blue]="estadoDe(fila) === 'Programado'" [class.gray]="estadoDe(fila) === 'Anterior'">
+              {{ estadoDe(fila) }}
+            </span>
+          }
+        }
+      </ng-template>
+    </ui-data-table>
+  }
+  @case ('queso') {
+    <p class="hint intro-productos">
+      Precios comerciales por presentación y modalidad: queso, yogurt, leche vendible, mantequilla, dulce de leche y
+      cualquier otro producto del catálogo. Cada presentación tiene sus propias tarifas; el histórico no se sobreescribe.
+    </p>
+
+    <ui-data-table
+      [columnas]="columnasQueso"
+      [filas]="filas()"
+      [identificarFila]="identificarFilaPresentacion"
+      [cargando]="cargandoQueso()"
+      [error]="errorQueso()"
+      mensajeVacio="No hay productos que coincidan con la familia o la búsqueda seleccionadas."
+      titulo="Precios por presentación"
+      subtitulo="Organizado por familia; cada presentación tiene sus propios precios por modalidad."
+      [piePagina]="cargandoQueso() ? undefined : rangoMostrado()"
+      (reintentar)="cargarQueso()"
+    >
+      <div toolbar class="filtros">
+        <div class="field">
+          <label for="filtro-familia">Familia</label>
+          <select id="filtro-familia" [value]="filtroFamiliaId()" (change)="cambiarFamilia($any($event.target).value)">
+            <option value="">Todas las familias</option>
+            @for (familia of familias(); track familia.id) {
+              <option [value]="familia.id">{{ familia.nombre }}</option>
+            }
+          </select>
+          @if (errorFamilias()) { <span class="hint error-inline">No se pudieron cargar las familias.</span> }
+        </div>
+        <div class="field">
+          <label for="filtro-busqueda">Buscar</label>
+          <input
+            id="filtro-busqueda"
+            type="search"
+            placeholder="Producto o presentación…"
+            [value]="busquedaTexto()"
+            (input)="onBusquedaInput($any($event.target).value)"
+          >
+        </div>
+      </div>
+
+      <div paginacion class="paginacion-completa">
+        <label class="tamano-pagina">
+          <span class="hint">Filas por página</span>
+          <select [value]="tamanoPagina()" (change)="cambiarTamanoPagina(+$any($event.target).value)">
+            @for (tamano of tamanosPagina; track tamano) {
+              <option [value]="tamano">{{ tamano }}</option>
+            }
+          </select>
+        </label>
+        <div class="paginacion">
+          <button type="button" class="page-btn" [disabled]="pagina() === 0" (click)="irAPaginaQueso(-1)" aria-label="Página anterior">‹</button>
+          <span class="hint pagina-actual">Página {{ pagina() + 1 }} de {{ totalPaginas() || 1 }}</span>
+          <button type="button" class="page-btn" [disabled]="pagina() + 1 >= totalPaginas()" (click)="irAPaginaQueso(1)" aria-label="Página siguiente">›</button>
+        </div>
+      </div>
+
+      <ng-template #celda let-fila let-columna="columna">
+        @switch (columna) {
+          @case ('familiaNombre') { <span class="familia-tag">{{ fila.familiaNombre }}</span> }
+          @case ('productoNombre') { <strong>{{ fila.productoNombre }}</strong> }
+          @case ('presentacionNombre') {
+            @if (fila.presentacionNombre) {
+              {{ fila.presentacionNombre }}
+            } @else {
+              <span class="hint">Sin presentaciones · agrégalas en Catálogos</span>
+            }
+          }
+          @case ('MAYORISTA') { <ng-container *ngTemplateOutlet="celdaModalidad; context: { fila, modalidad: fila.mayorista }" /> }
+          @case ('PROVEEDOR') { <ng-container *ngTemplateOutlet="celdaModalidad; context: { fila, modalidad: fila.proveedor }" /> }
+          @case ('PUBLICO') { <ng-container *ngTemplateOutlet="celdaModalidad; context: { fila, modalidad: fila.publico }" /> }
+          @case ('acciones') {
+            @if (fila.presentacionId) {
+              <div class="acciones-fila">
+                <button type="button" class="btn small" (click)="verHistorial(fila)">Ver histórico</button>
+                <button type="button" class="btn primary small" (click)="registrarPrecioPresentacion(fila)">Registrar precio</button>
+              </div>
+            } @else {
+              <a class="btn small" routerLink="/catalogos">Gestionar presentaciones</a>
+            }
+          }
+        }
+      </ng-template>
+    </ui-data-table>
+
+    <ng-template #celdaModalidad let-estado="modalidad">
+      @switch (estado.estado) {
+        @case ('VIGENTE') {
+          <div class="celda-precio">
+            <span class="importe">S/ {{ estado.precio.toFixed(2) }}</span>
+            <small>Desde {{ formatearFecha(estado.vigenteDesde) }}</small>
+          </div>
+        }
+        @case ('PROGRAMADO') {
+          <div class="celda-precio">
+            <span class="importe"><span class="badge blue">Programado</span></span>
+            <small>S/ {{ estado.precio.toFixed(2) }} desde {{ formatearFecha(estado.vigenteDesde) }}</small>
+          </div>
+        }
+        @case ('SIN_PRECIO') {
+          <span class="hint">Sin precio vigente</span>
+        }
+      }
+    </ng-template>
+  }
+}

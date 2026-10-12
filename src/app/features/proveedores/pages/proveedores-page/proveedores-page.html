@@ -1,0 +1,84 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">OPERACIÓN</div>
+    <h1>Proveedores</h1>
+    <p>Padrón de productores. La API pagina y filtra por zona/estado; el buscador de esta página solo mira los resultados ya cargados.</p>
+  </div>
+  <div class="heading-actions">
+    <button type="button" class="btn primary" (click)="nuevoProveedor()">Nuevo proveedor</button>
+  </div>
+</div>
+
+<div class="card card-pad qr-card">
+  <label for="qr-input">Buscar por código QR</label>
+  <div class="qr-buscador">
+    <input
+      id="qr-input"
+      type="text"
+      [value]="codigoQrBuscado()"
+      (input)="codigoQrBuscado.set($any($event.target).value)"
+      (keydown.enter)="buscarPorQr()"
+      placeholder="Código exacto del carné del proveedor"
+    >
+    <button type="button" class="btn" (click)="buscarPorQr()">Buscar</button>
+  </div>
+</div>
+
+<ui-data-table
+  [columnas]="columnas"
+  [filas]="proveedores()"
+  [cargando]="cargando()"
+  [error]="error()"
+  mensajeVacio="No hay proveedores que coincidan con el filtro."
+  titulo="Directorio de proveedores"
+  subtitulo="Filtra por zona y estado; abre el detalle para ver su historial y código QR."
+  [piePagina]="cargando() ? undefined : 'Página ' + (pagina() + 1) + ' de ' + (totalPaginas() || 1) + ' · ' + totalElementos() + ' proveedores en total'"
+  (reintentar)="cargar()"
+>
+  <div toolbar class="filtros">
+    <div class="search">
+      <input
+        type="search"
+        [value]="busqueda()"
+        (input)="onBusquedaInput($any($event.target).value)"
+        placeholder="Buscar por nombre o DNI"
+        aria-label="Buscar proveedor por nombre o DNI"
+      >
+    </div>
+    <select [value]="filtroZona()" (change)="cambiarFiltroZona($any($event.target).value)" aria-label="Filtrar por zona">
+      <option value="">Todas las zonas</option>
+      @for (zona of zonas(); track zona.id) {
+        <option [value]="zona.id">{{ zona.nombre }}</option>
+      }
+    </select>
+    <select [value]="filtroEstado()" (change)="cambiarFiltroEstado($any($event.target).value)" aria-label="Filtrar por estado">
+      <option value="TODOS">Todos los estados</option>
+      <option value="ACTIVOS">Activos</option>
+      <option value="INACTIVOS">Inactivos</option>
+    </select>
+  </div>
+
+  <div paginacion class="paginacion">
+    <button type="button" class="page-btn" [disabled]="pagina() === 0" (click)="irAPagina(-1)" aria-label="Página anterior">‹</button>
+    <button type="button" class="page-btn" [disabled]="pagina() + 1 >= totalPaginas()" (click)="irAPagina(1)" aria-label="Página siguiente">›</button>
+  </div>
+
+  <ng-template #celda let-fila let-columna="columna">
+    @switch (columna) {
+      @case ('nombre') { <strong>{{ fila.nombre }}</strong> }
+      @case ('telefono') { {{ fila.telefono ?? 'No registrado' }} }
+      @case ('estado') { <span class="badge" [class.gray]="!fila.activo">{{ fila.activo ? 'Activo' : 'Inactivo' }}</span> }
+      @case ('acciones') {
+        <div class="acciones">
+          <button type="button" class="row-link" (click)="abrirDetalle(fila)">Ver perfil</button>
+          <button type="button" class="row-link" (click)="editar(fila)">Editar</button>
+          <button type="button" class="row-link" (click)="cambiarZona(fila)">Cambiar zona</button>
+          <button type="button" class="row-link" (click)="alternarEstado(fila)">
+            {{ fila.activo ? 'Desactivar' : 'Reactivar' }}
+          </button>
+        </div>
+      }
+      @default { {{ fila[columna] ?? '—' }} }
+    }
+  </ng-template>
+</ui-data-table>

@@ -1,0 +1,30 @@
+.badge {
+  margin-bottom: var(--space-4);
+}
+.unidades {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.unidad-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: var(--space-2) 0;
+  font-size: var(--font-size-sm);
+}
+.unidad-item small {
+  color: var(--color-text-muted);
+}
+.sin-unidad {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin: 0;
+}
+.tarjeta-acciones {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-3);
+}

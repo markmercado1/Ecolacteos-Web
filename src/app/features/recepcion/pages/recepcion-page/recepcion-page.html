@@ -1,0 +1,59 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">OPERACIÓN</div>
+    <h1>Recepción</h1>
+    <p>Conciliación de litros de campo contra litros pesados en planta, por unidad y fecha. La recepción se registra desde el móvil/planta; aquí solo se consulta.</p>
+  </div>
+</div>
+
+<ui-data-table
+  [columnas]="columnas"
+  [filas]="recepciones()"
+  [cargando]="cargando()"
+  [error]="error()"
+  mensajeVacio="No hay recepciones registradas con los filtros seleccionados."
+  titulo="Historial de recepciones"
+  subtitulo="Filtra por fecha y unidad; cada fila abre el detalle con la diferencia campo/planta."
+  [piePagina]="cargando() ? undefined : 'Página ' + (pagina() + 1) + ' de ' + (totalPaginas() || 1) + ' · ' + totalElementos() + ' recepciones en total'"
+  (reintentar)="cargar()"
+>
+  <div toolbar class="filtros">
+    <div class="field">
+      <label for="filtro-fecha-recepcion">Fecha</label>
+      <input
+        id="filtro-fecha-recepcion"
+        type="date"
+        [value]="filtroFecha()"
+        (change)="cambiarFiltroFecha($any($event.target).value)"
+      >
+    </div>
+    <select [value]="filtroUnidad()" (change)="cambiarFiltroUnidad($any($event.target).value)" aria-label="Filtrar por unidad">
+      <option value="">Todas las unidades</option>
+      @for (unidad of unidades(); track unidad.id) {
+        <option [value]="unidad.id">{{ unidad.placa }}</option>
+      }
+    </select>
+  </div>
+
+  <div paginacion class="paginacion">
+    <button type="button" class="page-btn" [disabled]="pagina() === 0" (click)="irAPagina(-1)" aria-label="Página anterior">‹</button>
+    <button type="button" class="page-btn" [disabled]="pagina() + 1 >= totalPaginas()" (click)="irAPagina(1)" aria-label="Página siguiente">›</button>
+  </div>
+
+  <ng-template #celda let-fila let-columna="columna">
+    @switch (columna) {
+      @case ('fecha') { {{ fila.fecha }} · {{ fila.turno }} }
+      @case ('unidad') { {{ placa(fila.unidadId) }} }
+      @case ('litrosCampo') { {{ fila.litrosCampo }} L }
+      @case ('litrosPlanta') { {{ fila.litrosPlanta }} L }
+      @case ('diferencia') { {{ fila.diferenciaLitros }} L ({{ fila.diferenciaPct }}%) }
+      @case ('estado') {
+        <span class="badge" [class.red]="fila.estado === 'ALERTA'">{{ fila.estado }}</span>
+      }
+      @case ('acciones') {
+        <button type="button" class="row-link" (click)="verDetalle(fila)">Ver detalle</button>
+      }
+      @default { {{ fila[columna] ?? '—' }} }
+    }
+  </ng-template>
+</ui-data-table>

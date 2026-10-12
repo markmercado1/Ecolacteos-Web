@@ -1,0 +1,32 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">OPERACIÓN</div>
+    <h1>Jornadas</h1>
+    <p>Jornadas que están regresando a planta y esperan ser recibidas. No es un histórico: al recibirse, la jornada deja de aparecer aquí.</p>
+  </div>
+</div>
+
+<ui-data-table
+  [columnas]="columnas"
+  [filas]="jornadas()"
+  [cargando]="cargando()"
+  [error]="error()"
+  (reintentar)="cargar()"
+  mensajeVacio="No hay jornadas regresando a planta en este momento."
+  titulo="Regresando a planta"
+  subtitulo="Solo jornadas en camino a planta; no es un histórico ni la lista de todas las jornadas activas."
+  [piePagina]="jornadas().length + ' jornadas'"
+>
+  <ng-template #celda let-fila let-columna="columna">
+    @switch (columna) {
+      @case ('acopiadorNombre') { <strong>{{ fila.acopiadorNombre }}</strong> }
+      @case ('horaInicio') { {{ fila.horaInicio }} }
+      @case ('cantidadProveedores') { {{ fila.cantidadProveedores }} }
+      @case ('litrosEsperados') { {{ fila.litrosEsperados }} L }
+      @case ('acciones') {
+        <button type="button" class="row-link" (click)="verDetalle(fila)">Ver detalle</button>
+      }
+      @default { {{ fila[columna] ?? '—' }} }
+    }
+  </ng-template>
+</ui-data-table>

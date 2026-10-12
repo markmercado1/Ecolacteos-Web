@@ -1,0 +1,252 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">OPERACIÓN</div>
+    <h1>Calidad y alertas</h1>
+    <p>Entregas pendientes de análisis, resultados por fecha de entrega, consulta por folio o registro, y alertas de anomalía con el score de confianza del proveedor.</p>
+  </div>
+</div>
+
+<div class="tabs" role="tablist">
+  <button type="button" class="tab" [class.active]="pestana() === 'pendientes'" (click)="pestana.set('pendientes')" role="tab">Pendientes de análisis</button>
+  <button type="button" class="tab" [class.active]="pestana() === 'bandeja'" (click)="pestana.set('bandeja')" role="tab">Bandeja de analizados</button>
+  <button type="button" class="tab" [class.active]="pestana() === 'consulta'" (click)="pestana.set('consulta')" role="tab">Consulta por folio/registro</button>
+  <button type="button" class="tab" [class.active]="pestana() === 'alertas'" (click)="pestana.set('alertas')" role="tab">Alertas y score</button>
+</div>
+
+@if (pestana() === 'pendientes') {
+  <p class="hint">Entregas de acopio que todavía no tienen ningún análisis de calidad registrado.</p>
+  <ui-data-table
+    [columnas]="columnasPendientes"
+    [filas]="pendientes()"
+    [cargando]="cargandoPendientes()"
+    [error]="errorPendientes()"
+    (reintentar)="cargarPendientes()"
+    mensajeVacio="No hay entregas pendientes de análisis para este filtro."
+    titulo="Entregas sin análisis"
+    [subtitulo]="fechaPendientes() + ' · litros originales, sin correcciones'"
+    [piePagina]="pendientes().length + ' entregas'"
+  >
+    <div toolbar class="filtros">
+      <div class="field">
+        <label for="fecha-pendientes">Fecha</label>
+        <input
+          id="fecha-pendientes"
+          type="date"
+          [value]="fechaPendientes()"
+          (change)="cambiarFechaPendientes($any($event.target).value)"
+        >
+      </div>
+      <select [value]="zonaPendientes()" (change)="cambiarZonaPendientes($any($event.target).value)" aria-label="Filtrar por zona">
+        <option value="">Todas las zonas</option>
+        @for (zona of zonas(); track zona.id) {
+          <option [value]="zona.id">{{ zona.nombre }}</option>
+        }
+      </select>
+    </div>
+    <ng-template #celda let-fila let-columna="columna">
+      @switch (columna) {
+        @case ('fechaHora') { {{ fila.fechaHora | date: 'dd/MM/yyyy HH:mm:ss' }} }
+        @case ('proveedorNombre') { <strong>{{ fila.proveedorNombre }}</strong> }
+        @case ('litros') { {{ fila.litros | number: '1.0-3' }} L }
+        @case ('motivoObservacion') { {{ fila.motivoObservacion || 'Sin observación' }} }
+        @case ('acciones') {
+          <button type="button" class="row-link" (click)="verAnalisisDeRegistro(fila.id)">Ver análisis</button>
+        }
+      }
+    </ng-template>
+  </ui-data-table>
+}
+
+@if (pestana() === 'bandeja') {
+  <p class="hint">Último análisis de cada entrega recibida en la fecha seleccionada.</p>
+  <ui-data-table
+    [columnas]="columnasBandeja"
+    [filas]="bandeja()"
+    [cargando]="cargandoBandeja()"
+    [error]="errorBandeja()"
+    (reintentar)="cargarBandeja()"
+    mensajeVacio="No hay análisis registrados para esta fecha de entrega."
+    titulo="Bandeja de analizados"
+    [subtitulo]="fechaBandeja() + ' · fecha de entrega, no de análisis'"
+    [piePagina]="bandeja().length + ' entregas analizadas'"
+  >
+    <div toolbar class="filtros">
+      <div class="field">
+        <label for="fecha-bandeja">Fecha de entrega</label>
+        <input
+          id="fecha-bandeja"
+          type="date"
+          [value]="fechaBandeja()"
+          (change)="cambiarFechaBandeja($any($event.target).value)"
+        >
+      </div>
+    </div>
+    <ng-template #celda let-fila let-columna="columna">
+      @switch (columna) {
+        @case ('fechaHora') { {{ fila.fechaHora | date: 'dd/MM/yyyy HH:mm:ss' }} }
+        @case ('proveedorNombre') { <strong>{{ fila.proveedorNombre }}</strong> }
+        @case ('litros') { {{ fila.litros | number: '1.0-3' }} L }
+        @case ('resultado') {
+          <span class="badge" [class.red]="fila.resultado === 'RECHAZADO'">{{ fila.resultado }}</span>
+        }
+      }
+    </ng-template>
+  </ui-data-table>
+}
+
+@if (pestana() === 'consulta') {
+  <div class="card card-pad">
+    <div class="section-head">
+      <h2>Consulta de análisis</h2>
+    </div>
+    <p class="hint">Un folio de muestra puede tener más de un análisis (contraste de doble muestra); un registro de acopio también puede tener más de uno.</p>
+    <div class="filtros">
+      <select [value]="tipoBusqueda()" (change)="tipoBusqueda.set($any($event.target).value)" aria-label="Buscar por">
+        <option value="folio">Por folio de muestra</option>
+        <option value="registro">Por registro de acopio</option>
+      </select>
+      <div class="field">
+        <label for="texto-consulta">{{ tipoBusqueda() === 'folio' ? 'Folio de muestra' : 'Id de registro de acopio' }}</label>
+        <input
+          id="texto-consulta"
+          type="text"
+          [value]="textoBusqueda()"
+          (input)="textoBusqueda.set($any($event.target).value)"
+          (keydown.enter)="buscarConsulta()"
+        >
+      </div>
+      <button type="button" class="btn primary" [disabled]="!textoBusqueda().trim()" (click)="buscarConsulta()">Buscar</button>
+    </div>
+
+    @if (cargandoConsulta()) {
+      <ui-loading-state mensaje="Buscando análisis…" />
+    } @else if (errorConsulta()) {
+      <ui-error-state [error]="errorConsulta()" (reintentar)="buscarConsulta()" />
+    } @else if (resultadosConsulta(); as resultados) {
+      @if (resultados.length === 0) {
+        <ui-empty-state mensaje="No se encontró ningún análisis con ese dato." />
+      } @else {
+        <ui-data-table
+          [columnas]="columnasConsulta"
+          [filas]="resultados"
+          mensajeVacio="Sin resultados."
+          [piePagina]="resultados.length + ' análisis encontrados'"
+        >
+          <ng-template #celda let-fila let-columna="columna">
+            @switch (columna) {
+              @case ('agua') { {{ fila.agua ?? '—' }} }
+              @case ('proteina') { {{ fila.proteina ?? '—' }} }
+              @case ('lactosa') { {{ fila.lactosa ?? '—' }} }
+              @case ('densidad') { {{ fila.densidad ?? '—' }} }
+              @case ('temperatura') { {{ fila.temperatura ?? '—' }} }
+              @case ('ph') { {{ fila.ph ?? '—' }} }
+              @case ('aguaAnadida') { {{ fila.aguaAnadida === null ? 'No informado' : (fila.aguaAnadida ? 'Sí' : 'No') }} }
+              @case ('resultado') {
+                <span class="badge" [class.red]="fila.resultado === 'RECHAZADO'">{{ fila.resultado }}</span>
+              }
+              @case ('creadoEn') { {{ fila.creadoEn | date: 'dd/MM/yyyy HH:mm:ss' }} }
+              @default { {{ fila[columna] ?? '—' }} }
+            }
+          </ng-template>
+        </ui-data-table>
+      }
+    }
+  </div>
+}
+
+@if (pestana() === 'alertas') {
+  <div class="grid grid-2">
+    <div class="card card-pad">
+      <div class="section-head">
+        <h2>Alertas de anomalía por zona</h2>
+        <span>Últimos 30 días</span>
+      </div>
+      <div class="filtros">
+        <select [value]="zonaAlertas()" (change)="cambiarZonaAlertas($any($event.target).value)" aria-label="Zona de las alertas">
+          <option value="">Selecciona una zona</option>
+          @for (zona of zonas(); track zona.id) {
+            <option [value]="zona.id">{{ zona.nombre }}</option>
+          }
+        </select>
+      </div>
+      @if (cargandoAlertas()) {
+        <ui-loading-state mensaje="Cargando alertas…" />
+      } @else if (errorAlertas()) {
+        <ui-error-state [error]="errorAlertas()" (reintentar)="cambiarZonaAlertas(zonaAlertas())" />
+      } @else if (alertas(); as lista) {
+        @if (lista.length === 0) {
+          <ui-empty-state mensaje="Sin alertas en esta zona en los últimos 30 días." />
+        } @else {
+          <ui-data-table
+            [columnas]="columnasAlertas"
+            [filas]="lista"
+            mensajeVacio="Sin alertas."
+            [piePagina]="lista.length + ' alertas'"
+          >
+            <ng-template #celda let-fila let-columna="columna">
+              @switch (columna) {
+                @case ('creadoEn') { {{ fila.creadoEn | date: 'dd/MM/yyyy HH:mm' }} }
+                @case ('proveedorNombre') { <strong>{{ fila.proveedorNombre }}</strong> }
+                @case ('tipo') { {{ fila.tipo === 'RIESGO_ADULTERACION' ? 'Riesgo de adulteración' : 'Volumen atípico' }} }
+                @case ('zScore') { {{ fila.zScore ?? '—' }} }
+                @case ('severidad') {
+                  <span class="badge" [class.red]="fila.severidad === 'ALTA'" [class.amber]="fila.severidad === 'MEDIA'">{{ fila.severidad }}</span>
+                }
+              }
+            </ng-template>
+          </ui-data-table>
+        }
+      } @else {
+        <ui-empty-state mensaje="Selecciona una zona para ver sus alertas." />
+      }
+    </div>
+
+    <div class="card card-pad">
+      <div class="section-head">
+        <h2>Score y predicción del proveedor</h2>
+      </div>
+      <div class="filtros">
+        <select [value]="proveedorScore()" (change)="cambiarProveedorScore($any($event.target).value)" aria-label="Proveedor">
+          <option value="">Selecciona un proveedor</option>
+          @for (proveedor of proveedores(); track proveedor.id) {
+            <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      @if (!proveedorScore()) {
+        <ui-empty-state mensaje="Selecciona un proveedor para ver su score y predicción." />
+      } @else {
+        <h3 class="subseccion">Score de confianza</h3>
+        @if (cargandoScore()) {
+          <ui-loading-state mensaje="Cargando score…" />
+        } @else if (errorScore()) {
+          <ui-error-state [error]="errorScore()" (reintentar)="cambiarProveedorScore(proveedorScore())" />
+        } @else if (sinScore()) {
+          <ui-empty-state mensaje="Aún no hay score calculado para este proveedor (histórico insuficiente)." />
+        } @else if (score(); as s) {
+          <dl class="metricas">
+            <div><dt>Score (periodo {{ s.periodo }})</dt><dd>{{ s.score }} / 100</dd></div>
+            <div><dt>Calidad</dt><dd>{{ s.componenteCalidad }}</dd></div>
+            <div><dt>Regularidad</dt><dd>{{ s.componenteRegularidad }}</dd></div>
+            <div><dt>Anomalías</dt><dd>{{ s.componenteAnomalias }}</dd></div>
+          </dl>
+        }
+
+        <h3 class="subseccion">Predicción de próxima entrega</h3>
+        @if (cargandoPrediccion()) {
+          <ui-loading-state mensaje="Cargando predicción…" />
+        } @else if (errorPrediccion()) {
+          <ui-error-state [error]="errorPrediccion()" (reintentar)="cambiarProveedorScore(proveedorScore())" />
+        } @else if (sinPrediccion()) {
+          <ui-empty-state mensaje="Aún no hay predicción calculada para este proveedor (histórico insuficiente)." />
+        } @else if (prediccion(); as p) {
+          <dl class="metricas">
+            <div><dt>Fecha prevista</dt><dd>{{ p.fechaPrevista }}</dd></div>
+            <div><dt>Rango estimado</dt><dd>{{ p.litrosEstimadosMin }} – {{ p.litrosEstimadosMax }} L</dd></div>
+          </dl>
+        }
+      }
+    </div>
+  </div>
+}

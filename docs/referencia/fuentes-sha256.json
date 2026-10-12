@@ -1,0 +1,818 @@
+{
+  "capturedAtUtc": "2026-09-16T02:09:43.1298374Z",
+  "scope": "Instantanea estatica; no prueba servidor desplegado",
+  "sources": [
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\AcopioApplication.java",
+      "sha256": "E32B6D084F747239C40600760621B769D0AA0183125300CA3DD02CAD35692E6D"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\TestPassword.java",
+      "sha256": "214D6F2ABE7BA6FFFA76BFDF0043A92E2D50F378A2AE25C8A815704460E3E0CE"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\config\\DataInitializer.java",
+      "sha256": "839407BC72C4ACF254EF4469606193D01EDA053966B4628E7E98A7051AE240A6"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\config\\JwtAuthFilter.java",
+      "sha256": "8431205194B558B02F424DEB50CF24BA993A657E0BBBDC96B3DD2C5D312CD827"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\config\\JwtService.java",
+      "sha256": "CD2901D4D0C521543912902D46596AC931C6C02A0E6A9E546DF266CB6D91AE1D"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\config\\OpenApiConfig.java",
+      "sha256": "A6A5E355F9E8407385E129E9EF5FEF4F07D2CEE6C094D1CC2FCF0F73F5DC8545"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\config\\SecurityConfig.java",
+      "sha256": "D2F3F873F40AA4F788A489D14E76E4F7948041DC2B08AB411F9217475567CDF8"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\config\\UsuarioDetailsService.java",
+      "sha256": "02352D0A4728F199FA741ED0594B60BE1A21A46302CEAD5113FB0380843A04D6"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\AdminCatalogosController.java",
+      "sha256": "4274802DCFB865B71961DA83DACB6E646C3658DD1662885319EDCE12B00C8A48"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\AdminUsuarioController.java",
+      "sha256": "B1326BC4D8E310E97CE7184D5A5389C4239DC57E18459F81AF8FB4A82F6A95FC"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\AnalisisCalidadController.java",
+      "sha256": "0715F0878C7E872FE3A0A12F3CAFBCA3B9F348CB92684EED92D39EDD10360794"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\ArchivoController.java",
+      "sha256": "AB6388B38A808A5D0F8EEA840A965228BC1A2B438630A0104DBE30179607D298"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\AuthController.java",
+      "sha256": "61053F943D4E45E6B66D7C0BBD798505348187FFE847F247D450A1EA363C371A"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\ComunicadoController.java",
+      "sha256": "288340F53C3F99558CE1B1FEA630FDA1E79E13AE899F8BEAACE5D758EE6F6332"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\InnovacionController.java",
+      "sha256": "20DBA61889A1DDFA94D7E3D817EF3E12AB5CBD975672E53558C397226A74183B"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\JornadaController.java",
+      "sha256": "FAFE72C587648A16CE09D7EC3B5D777AFB4A6FEB7F51275563A76D76BCC87B7C"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\LoteProduccionController.java",
+      "sha256": "73FAC8844A9A74EAC642FBE77336D661736F91827F377AF60EAE24F8CA356CD3"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\PagoController.java",
+      "sha256": "2CBB8F428ACE21EE1F5A45CA82A2CA2BEADA8F1E9E9F34E79D8E895EF688ABFD"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\ProveedorController.java",
+      "sha256": "1AA41B8E745B7B6E6A902E278739642BAB4DCCB006BFDC016697C34B6E3152A4"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\RecepcionPlantaController.java",
+      "sha256": "33EA514FB7060D05E2755876399B9EE6545582F1F3605DF1AA03C6F765A0525C"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\RegistroAcopioController.java",
+      "sha256": "1B94DC7E79A02529FE649010ED06A3361326902AE85F773413CEF374FF8A7FCD"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\RutaProveedorController.java",
+      "sha256": "9B2C36EC64C85BC2AC858442B1F65F4CA223D576D890742227F124064D2110C2"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\SyncController.java",
+      "sha256": "E3BA5E4EF15E6CA551149FE5D9DF18C9208C1EE50D6011982645C6B3C0E45364"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\UnidadController.java",
+      "sha256": "787E830A3C2E9876890CE1312C55E239E784EBA9950DCE02509C09838A247990"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\VentaController.java",
+      "sha256": "8628E55C7745D665F876968E8E4FEB86CEBF9DE4E5FB4591384198CA3FBA6C8C"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\controller\\ZonaController.java",
+      "sha256": "23DC331CC3BD380C14B7A277CBE72D3249A9510CC4572977E558EA978C3BFE78"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\AcopioDeJornadaResponse.java",
+      "sha256": "6FE24CB7923F9DDCD676FAC02DA2FE675B4244ECFFF5650B826EF79134C476A9"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\AjustePagoResponse.java",
+      "sha256": "2FCBCF41DCF7A2465B30D9C366D76A5115BDF752C6B36252E008CE683EAA5188"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\AlertaAnomaliaResponse.java",
+      "sha256": "86AC1C1FF22FE7F3B3FAEAE43A99412BCDA9B785B7422F3C5757ECD48CEB33C0"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\AnalisisBandejaResponse.java",
+      "sha256": "80E6DA7E24914D5BFD394799D5F0DD1A49A2B509B1EF4D5C87B53536367634D4"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\AnalisisCalidadRequest.java",
+      "sha256": "B74370169913B57B1EBD88377193E384AF44BE3D6BD1DD56F8D8E35713D70132"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\AnalisisCalidadResponse.java",
+      "sha256": "672F33EE96CE2D3CC0C3E8BC1EB913A37DD8BC2492AA466DFDBF97CEE4B6886A"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\ArchivoResponse.java",
+      "sha256": "171229BF0C250BBC864268E26889615CC954A8A74A2DCBE6938EBD6FB42C2F5C"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\CambiarPasswordRequest.java",
+      "sha256": "1624B25EBABA68A762DB57D87EC644FD62598A04E5C55BBD3B4F444240515DD3"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\CambiosResponse.java",
+      "sha256": "5D21472B109B64DC1277DFF69E7BFC4D5B1913F4413FBCAF31367B7A902EBF8D"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\ComunicadoConfirmacionResponse.java",
+      "sha256": "1C8E5FF13F04915D808B5DCE93D4A8EEA17B45965EEA0129175B66859E851A52"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\ComunicadoResponse.java",
+      "sha256": "1D4BD12F9BCC8D0780B060032F0547D5B4A6F46976F7E63626511BDFDCD49A8A"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\ConfiguracionSistemaResponse.java",
+      "sha256": "5BFF7B6A68079FC67BB18D5517E6E1E1CBD6063DFC285EA5CBCD3E40EC3746A0"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\ConfiguracionSistemaUpdateRequest.java",
+      "sha256": "9B87AFCF3DBA77D06605CCF7F6885A45FDCE7CF1C4C31D5323315F77CE0132D9"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\ConfirmarComunicadoRequest.java",
+      "sha256": "E0EBF106CFED2C04227D2941004237F1B619E8BF2B49F0B3CDA17D4BE4780528"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\CorreccionRegistroRequest.java",
+      "sha256": "A9E2256E169F99278E29D2299631621AC6AA5ABE6DAC18029797F28CA22E1CFE"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\CorreccionRegistroResponse.java",
+      "sha256": "6C50BA39FAA22636F7B24928D94A461D53BEFEB635B0FC39CF2BBB273BAE8B75"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\CrearComunicadoRequest.java",
+      "sha256": "DD767C8D53CBC02C1AFE0CA280B605ED63F8A0A8619B98B4D6E40A90C2E81FCE"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\CrearLoteRequest.java",
+      "sha256": "CF22C7D7DF29A7AC8B1206C6C31440D0B318EACA0BA5BF790B386397DE33DBF4"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\DefinirRutaZonaRequest.java",
+      "sha256": "50A7975D313175F79AEDEDF7BD7D3F7144E081C02C4635BDD6C9E0D780B3AC83"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\ErrorResponse.java",
+      "sha256": "D01DA0F02803F84C1040AA2488917E9FBF113CA4CA0486B2D2DFDF95C012DC24"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\GenerarPagoRequest.java",
+      "sha256": "59B20552EB0CEA750F008D3B450D26DF60596DCB7098C8625FD1D44C6AAE4E9A"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\HistorialZonaResponse.java",
+      "sha256": "AA551D9087648F79037A4AEE69390BBB775433620FB0E4F44F7D3885401FFC3F"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\JornadaBandejaResponse.java",
+      "sha256": "9E4B188C9FFD342840E3980D087B51BE902036802E5D3986A0DFF5A3D24422AD"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\JornadaDetalleResponse.java",
+      "sha256": "DDD1C3C721D5F35FF2C791A1BDFE11F926D364E544F51A6F8AE1C0DFE8CB00EE"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\JornadaDTO.java",
+      "sha256": "624BBF603CA6A9FEC92A87C06F5269ABE017A101D76A9F26BAF2F977BD783FB1"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\JornadaEstadoRequest.java",
+      "sha256": "F6075C0C72AF62F3CD8D872084AF33139B0197D382E9F9746EB98300F02272B6"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\JornadaResponse.java",
+      "sha256": "EC3ED13C2192C30CDD2462F3FEA93F39171BF4067897E4E970A1C7D1BD68A60E"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\LoginRequest.java",
+      "sha256": "AC71FF8A7A4BA57E2151EAE451B25492D0AE804EB1CD73F44B6F0F98F1B5BAFD"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\LoginResponse.java",
+      "sha256": "31FBFC275AC8319AD08197E6743413CDF4A4825E758C7E93E7835AE52B6A24EA"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\LoteProduccionResponse.java",
+      "sha256": "07C3F63781BFE558DF5518167804F620158A26E46007424E8A2E90B55A83998A"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\MotivoObservacionRequest.java",
+      "sha256": "57BB0250D8074DB6A5B5205003B3253EFF83C08282063DFBD6F8A9410FDCBDE5"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\MotivoObservacionResponse.java",
+      "sha256": "8BB523C02D3E116C5BE7FB3D459BE94D2B875526F154BBE5D9F316D69902AE1B"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\PaginaResponse.java",
+      "sha256": "4DE22E5943DCE61905B59A05EE4B1597223503F2496823605A56903CA6001893"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\PagoResponse.java",
+      "sha256": "EAEA252F585B34381BC08A2AEDD1831D67D0179F7A59F4F2E9DF30ADB66C88A7"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\PanelEconomicoResponse.java",
+      "sha256": "695B91E3041451BD32B729A1C017F6CC18296F85C643623FD3A0CFA3B9D047F6"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\PrecioLitroRequest.java",
+      "sha256": "E08B4D34DB2544B307BC8C2C808B638762E87ACE492A5B8A7BF4469E78650A8D"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\PrecioLitroResponse.java",
+      "sha256": "AB29BB64B7B957029DD5544DFD76AF98FDA3C06C20841DA5B3EB2D148CD1B21B"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\PrediccionProveedorResponse.java",
+      "sha256": "C1AC0D99A97BB0C7623BD4E0C4628E3073078AF37EC5DD0C2E6A1F3C7FAF13DF"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\PrediccionZonaResponse.java",
+      "sha256": "1EB69F4D92F7CAD691834A1970D996AA18555D14C2A4C42D21D1247E8DD04D01"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\ProveedorAdminResponse.java",
+      "sha256": "4E5A85568B53A57EB27AA4ECD97D78C96745EC1BF71F2AD694453E3784732032"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\ProveedorPublicoResponse.java",
+      "sha256": "1CBEA669C3A0C455DDF3B4740A1686ACE54605BCE1FF63DA3A1604E3A8F674D5"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\ProveedorRequest.java",
+      "sha256": "1F15D16D060E32049972DA6882136768CD191D146B4201CE9D864D2ECB748732"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\ProveedorUpdateRequest.java",
+      "sha256": "EA7DBDB5682000FB7EA7BF1C797EAA403C131F867661E6F515D8EC72218C9C69"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\PuntoGpsJornadaDTO.java",
+      "sha256": "94665B518BE63ADED80422B5D2D763C9591823636B72E12F39A2D6E293F11494"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\RecepcionJornadaRequest.java",
+      "sha256": "D517C657CEC7935DB899C8F63E4720482746A1DFC7FDEAAB091E8498D49CC2B7"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\RecepcionPlantaRequest.java",
+      "sha256": "C9801749006E65B9860547DC57873EFA6352CDA337FB7E895F4828E7F9C590CE"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\RecepcionPlantaResponse.java",
+      "sha256": "5E95E4DC353B8B246141A33BDC78DCC43CA21836E714E6BBB04E0D9ACA3A5D65"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\RefreshTokenRequest.java",
+      "sha256": "F88484794A48090519C94037BEB9D2A9873BE5B632842320E0115199FEB834DA"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\RegistroAcopioDTO.java",
+      "sha256": "15AAC19B4A8DF61169BD89E5E337E99AFDF19827562E795052E5013C71A5C9C1"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\RegistroAcopioResponse.java",
+      "sha256": "A132960BBEC94BFD08398365A4F9AD93DFA1AA0C3F48545DCB43482A0A79B1BE"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\RegistroAcopioResumenResponse.java",
+      "sha256": "9262185BC46F4F14DF71132633DF0760BDC69824E5A8C4E9654235498130B6EF"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\RolResponse.java",
+      "sha256": "872070096187CE97EA0EE46408247D4773762464470266B2F6B35A2EF497EAAE"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\RutaItemRequest.java",
+      "sha256": "B022E319D7AF6CB9931B67B4DCEDAE529D43175378D6F45C01FD6E2992493E1C"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\RutaProveedorOrdenResponse.java",
+      "sha256": "944A5DC6DD3B9E1D10FAD7C03B412DAA1879E12BED28FFA55679A34F2A5DD6A9"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\ScoreConfianzaResponse.java",
+      "sha256": "34BBA6903D9B1B4DBFA7DB443F8B01259E8338471927B43478E9BFC38965D666"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\SyncResultResponse.java",
+      "sha256": "CFB1F9BC0E76931A20BB24AE985F0B2D9B1E186F17222CAFC631722E609ADDE3"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\TipoQuesoRequest.java",
+      "sha256": "8A2BA4ABDDBE50FAB9C5235ED0D924699983E1E202B05E557DA242EBCF29759F"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\TipoQuesoResponse.java",
+      "sha256": "1DD35CB720589FC3CC26EDC4047759ABD04D614B8DF117848481D748B53C34B1"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\UnidadRequest.java",
+      "sha256": "7E443D31DEBC21826BA9C6F9F01CED8AA938D73D3F73B86941432B9B861593EF"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\UnidadResponse.java",
+      "sha256": "E63B278376F8D0B845290E07A408023DC3A19324AA8D7E0F874818C3F42521C4"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\UsuarioMeResponse.java",
+      "sha256": "5D5F05CAC5F6550D297FFA6602CE423B5433C8385296F0E85598FD3EFD1B0FF1"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\UsuarioRequest.java",
+      "sha256": "4D044F41D938FDEE0710042B5A6FC67C26D2EC05B850C9F56AFC86B712118573"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\UsuarioResponse.java",
+      "sha256": "2DC319A871C384348C98B1F339E3D1DD3060166C006843FA4D010C270AE22D26"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\UsuarioUpdateRequest.java",
+      "sha256": "070DD39BB58059D79FFC719E3EE0100707C7ED0FBA823D5564D18D889C78A491"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\VentaRequest.java",
+      "sha256": "7B601932C9CFB016DE30E67DA07F638A4A04A450E7264697668F6A6FC3CC06B4"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\VentaResponse.java",
+      "sha256": "AA2BFB4DA87ED87BE5AF3FFA6A254377811F4E425399D63CFDA46FB947C2BA66"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\ZonaRequest.java",
+      "sha256": "83D6647DC1056BC73BD54418F80305C1A87F459FDAA64A2655F2AEE5FB163BA3"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\dto\\ZonaResponse.java",
+      "sha256": "708B28423FBE9B70936DFB0006E7E50DDB5CE54BCEFAF29A626E7D2344FA5B44"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\AjustePago.java",
+      "sha256": "29EA9B5B396CD6DFAF33C02FFFC9403C0F09F4DF42499BC9E1138FA2AE5FF01E"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\AlertaAnomalia.java",
+      "sha256": "5C87B5DA93C9019AA274AEEAAEE60C0A92D64EC149C9148012A27BCD75E0F48D"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\AnalisisCalidad.java",
+      "sha256": "0310BEB2D0B552444E88E5CD5FC70B191BC867BFC44F5C249882BC50A18F853F"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\CicloCapital.java",
+      "sha256": "5A6A13FFA0DA490F15ABF97B446884305A0858EAFE82A7F3AF6CAF59C85D6A10"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\Comunicado.java",
+      "sha256": "73BCD07037346BC5195C84624C1770F9F4FF0C072A530AD4C19D43A66B27A7FD"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\ComunicadoConfirmacion.java",
+      "sha256": "C7B9F6EAEC651586B026D82EBFF57F1AB479B74A8EE19EF604D2C185AE90251A"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\ConfiguracionSistema.java",
+      "sha256": "1F94AEAD8CCFF70EC967E17C03E3A7FEF5B81E164669067C03F9791649814F84"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\CorreccionRegistro.java",
+      "sha256": "D4664BB5AC846608372EBBD61233DCE11F473DA4D0C4EC749CA8FB4A21FB20F4"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\EstadoAjustePago.java",
+      "sha256": "540350B5371972A118A1C198D1BB2DB91D496EE9A5481FA4741D4C9EF55945BE"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\EstadoConciliacion.java",
+      "sha256": "01EE062207BC3EBD75CEBCE32DE844DA8D11ADA03EFBFB8AFC11599D147B7EE8"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\EstadoJornada.java",
+      "sha256": "7C1C99AD32CEAE8758F4852057CE8416398AF5F08C4796F1C8BF200AB4DB25BC"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\HistorialZona.java",
+      "sha256": "A92A51E7980095C0C99C5C0C5EEE6F61C5A855A496BB7263AC74C5C708316B61"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\Jornada.java",
+      "sha256": "38C55E79CE86BBB498F1BA30ADFB0D733EC39292DA7788EEA16B8B39BC36A66F"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\LoteProduccion.java",
+      "sha256": "50DBE8C8B05F4DD5ACCEE335F734DE9939425E17B10D0BBDD394F5A87760E3C7"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\MotivoObservacion.java",
+      "sha256": "7E251336BF564EB4ADDA11140D67C5ABB6276B24799E6490DE5C3DF89722DFEC"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\Pago.java",
+      "sha256": "6AD8D9136558F11B0C4C95D48E4F3C4B69773AEA68E990F7C2E1F29123D876C8"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\PrecioLitro.java",
+      "sha256": "ED3458633EBD7B4D7ADFBB1F98B9F1FB13CEDA896ED1EFB805CF7DA605F17FBE"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\PrediccionProveedor.java",
+      "sha256": "C2511193DCCE94C0F37ACF3AC40343A0259B347B09A3F2AC36BACAD140BB914A"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\PrediccionZona.java",
+      "sha256": "B9CA2F446125EB24150417D1A9FDA8CAE1DA0F923A9DA2614C9CB90FF21C66DA"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\Proveedor.java",
+      "sha256": "7D5D5AE2A1F62A4AE87A15423BD8227E1AC65B02DA289F046F7D92D03A940DE2"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\PuntoGpsJornada.java",
+      "sha256": "D1DA3C496DC9D7390A1A1983B5980AB3B492A73B49BBAA929CDFE7C47C72A2FF"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\RecepcionPlanta.java",
+      "sha256": "9FA6A45F0B55EA71468E0861C318EE20F7D3FE8B939102CD51ECB7E86C6818FA"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\RefreshToken.java",
+      "sha256": "D5CA487BAEC50ED2A27600E4015A563E0A2467A3B7BB99FFDE8DA3E968BB2EC9"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\RegistroAcopio.java",
+      "sha256": "D08569B6C93401528370C80FD55A69EE4563A6660C3BBED736AFB1FE3D6BD288"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\ResultadoCalidad.java",
+      "sha256": "85F6CBC65EE07AD1AD2008EB176F38C9C5E0E973E9B72373C9E19E7EFFDE9522"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\Rol.java",
+      "sha256": "98852CAEBEA97C2B5DDC405C591871AAC3A8AE3CF0FB2ED3F2E0663ADC24763C"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\RutaProveedorOrden.java",
+      "sha256": "0CD0F63D3C86182D91728AE96FC1DF34F1299D68EB60D50116D94F535CA5092A"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\ScoreConfianzaProveedor.java",
+      "sha256": "C5EC94F71D1731BB224EBDE6713DF5085F29A96214CE64291764CBE8E19F3A1C"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\Severidad.java",
+      "sha256": "04B58017672AF4889EC19DE36FECA4E96952E62EE78004E8E1BF91A6450D3F5B"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\TipoAlerta.java",
+      "sha256": "007E888B2C55F7A35FDD48214F2D69F113EBEF06EE670C759746D9CFC311776E"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\TipoClienteVenta.java",
+      "sha256": "8BDA9F3018FD345ED56AE1843BFFB71BC818CC481987636943A31FACF06BB2EE"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\TipoQueso.java",
+      "sha256": "E33439C87C6817CDC5E366629038AF51EEF6B6D1ADA90826BEF3751D2AC916F0"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\Unidad.java",
+      "sha256": "D0CA2FA2B146030CBB20E105D27EE251986D20F040AB778A8B5BAFC9BAE29627"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\Usuario.java",
+      "sha256": "5CD9E0F943168B24EB5DB0D7D1221CCCB62705FA506B4A8A2DF59B7FAC57B37D"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\Venta.java",
+      "sha256": "5332A7D1916496FBF598BEC803919D6D1E6E67211D3E7C70D39F9AA19E558D5D"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\entity\\Zona.java",
+      "sha256": "46601C32F207D2163360E51179D53B3AB9529E59B8AD393A9D0D2F43719279F2"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\exception\\ConflictoNegocioException.java",
+      "sha256": "85DC47A18F36C0B569092EE642B3172227A0C1565E8D6D84E22086A5FD47FDA9"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\exception\\DemasiadosIntentosException.java",
+      "sha256": "656A17D15474A57BF498AEC9DCEB4F2C2A94045308361FD5D874AD6498B1DFA3"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\exception\\GlobalExceptionHandler.java",
+      "sha256": "0B6394FFB3A4C0F55B30E0C6DCA03072C1A7805EDE2DB2D3180D83B1F56CE3C0"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\exception\\RecursoInactivoException.java",
+      "sha256": "BCA8318856CB127B2A1423CAAFBED084FE7E34CCD8D38714BA869FB61A621903"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\exception\\RecursoNoEncontradoException.java",
+      "sha256": "53074B4BAA3EFCAD0026150C1A3D4CC48893ED8F51B20224073D8D995982164F"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\exception\\ValidacionNegocioException.java",
+      "sha256": "1CDFE66B8D6E2B1B4CF73FC3A7A6E8AB73B398CAB3022448CEFA79E0BDA7DF29"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\AjustePagoRepository.java",
+      "sha256": "0DC8ABCBE287207C56C53CA66127BD146CC05E6826837135AEB3E0DE4F537BD9"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\AlertaAnomaliaRepository.java",
+      "sha256": "6401981434B937344FD4B34C8CB048D378D9CB47A89E0A5D087BBF8E0F5EFE46"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\AnalisisCalidadRepository.java",
+      "sha256": "2F2D5AD8C8EE35DD315CDD7B217DBDD2EFB5EDF4EEB0EBF52B3F2E7A06C1FE00"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\ComunicadoConfirmacionRepository.java",
+      "sha256": "B8FC067C506AE807DDB2C5484DAA28426294FB0EEC788B7B8057047B3FC21C0F"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\ComunicadoRepository.java",
+      "sha256": "1D8E05671494830820F900CA01DD40538DAF9CD326C04445B00D84133F46863A"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\ConfiguracionSistemaRepository.java",
+      "sha256": "1C8FAE8EE0EB46B568613D85C0487515F8A1AA020D7810C20DB66F229F273731"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\CorreccionRegistroRepository.java",
+      "sha256": "ECDE409C19491C2D0EF92BE6EBBAD63867AC8AEF9FB772D84931A015F5E8F4C6"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\HistorialZonaRepository.java",
+      "sha256": "BEB347E1EDD4F82553C193D00CA5B328A78E0299B89C516B6F6A2433A87B1A97"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\JornadaRepository.java",
+      "sha256": "C62B9860D0BA6D862BFAEC5DD1D89C453EF17DC0DCD7BB67C5E48DD95D074BE0"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\LoteProduccionRepository.java",
+      "sha256": "7AE4E73BEA10789965305F7F90D47F3E6440B3AC4FA44ECB217BC0AE2B7F8FDC"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\MotivoObservacionRepository.java",
+      "sha256": "F58D83AC822B88103DE40FDE452C4194F6F6E3CB5A93950369BF662E58DB14D8"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\PagoRepository.java",
+      "sha256": "C03547EDFCC8AD2D3B05DD7B18220B2C18C51114CDD857AF9CE70EDF06703713"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\PrecioLitroRepository.java",
+      "sha256": "7DB31E6A5DB7B67B00A7DFA5AC7AB867485858A4F162260CEECF951AEEBF3CC9"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\PrediccionProveedorRepository.java",
+      "sha256": "A4FC1E3E6B408A203F2FC3C89ACA6DD7D16A35F7E971C7942AB2DEF2C9219D17"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\PrediccionZonaRepository.java",
+      "sha256": "D8855BD8677C119C3A47EB470B270446148E8936432D03BD30CEF6136E2260A6"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\ProveedorRepository.java",
+      "sha256": "5020A077A792E8D539F4B29426E66F09B7D991BFCCA6DE1644EC419E6C8C55DC"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\PuntoGpsJornadaRepository.java",
+      "sha256": "8694506A831361D746905CFC9D7C57B62FA20CE4F8B3A1D0F38B4020A7A3EDA7"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\RecepcionPlantaRepository.java",
+      "sha256": "A291B50D7DA1034C190009AE445A4D5271E33DE72A49840329BC8C292426E1F5"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\RefreshTokenRepository.java",
+      "sha256": "2738EA6710E1F6D2CF3B2C7000DD8A9EC6A17799336EFA358EF491562B2B6DBE"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\RegistroAcopioRepository.java",
+      "sha256": "55276CA9138610CC42E1EBAD56962E4CC3CCF8E7F303557E35EF36B7B387F89B"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\RolRepository.java",
+      "sha256": "5784B0711ECDAA91603CFC5834E8A7F18D77D2438384DB0D76804DF6630010FC"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\RutaProveedorOrdenRepository.java",
+      "sha256": "50894633E81FAE919B9516159508E7CE71D735EB5343B9ABEA26BE56690FB955"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\ScoreConfianzaProveedorRepository.java",
+      "sha256": "32D58198B85CB95BC437B13D13B898EDCFEE1027860FEC4142F5E37F7E2B2836"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\TipoQuesoRepository.java",
+      "sha256": "F88B41864DB5A603CB4DC8E9735BB50360E04E2EDA3060131272ADD208FEFF5B"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\UnidadRepository.java",
+      "sha256": "654A588BA23B7415C842314443B996CA2E405F4FB843598376665221AB24C841"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\UsuarioRepository.java",
+      "sha256": "D134118D364F4844C786229176C710FE7EFB2908FDD48A43049EFDE9393B2527"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\VentaRepository.java",
+      "sha256": "A80AEA631B4325F45048DB522FB05807878A7DC3A22ECF68ACF9D2C24A150B95"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\repository\\ZonaRepository.java",
+      "sha256": "FF3DDA84B3E71D18F6CFED2F1619ABB735901C363EDDEA0F229BBF390747E2F2"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\scheduler\\InnovacionScheduler.java",
+      "sha256": "BB44ED4542F510DB572D1EB6E7A1F478ABECB228F998B9AD7217FD2B966C1299"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\AjustePagoService.java",
+      "sha256": "3B67E574DA9D9FF0E795C9CDDFE3360F8A1EAC96893DF2F740246BC14BABA2DE"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\AnalisisCalidadService.java",
+      "sha256": "6B3B009D18B1AE50D57D4E5C261FF3FB5ED10F190DD92909D499F02A4F963E6B"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\AnomaliaService.java",
+      "sha256": "A53F886DC60CD94973E0800249758DEFC78AAE0DDE33AE1703A0A2E2B3336ED6"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\ArchivoService.java",
+      "sha256": "2FC3EF23911D7674A136DD04718C3BF96A6003D9BBD0F54302A4BA58D51A8CF0"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\AuthService.java",
+      "sha256": "F13E8A504277A1CD7C9083414DB4E00800DEA13DC85E95F88759D5A104EFC77E"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\ComunicadoService.java",
+      "sha256": "AC1F2BB9AA120ED5886D7A01250B550402BAB723FAAD088110AA294800908DD2"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\ConciliacionService.java",
+      "sha256": "9AD3AF5FC495ABECDF196992ECC638BA78DD8BBFDB4981D5E5A568DF5658A061"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\ConfiguracionSistemaService.java",
+      "sha256": "74B910C886D691F5270C7652FBB0E0162B81E58C8F5AB76F265E87D062CBCAE6"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\CorreccionRegistroService.java",
+      "sha256": "3C106332EA95A644A5617BAFB5E478E4FFD496CB77CC1B049F803C8F49EBD5A9"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\ForecastingService.java",
+      "sha256": "E6233A95FE2C2205ECDDE0DFA18AAEC59998D9E8356F1EDB1EC681314F60B2DE"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\JornadaService.java",
+      "sha256": "93EE6ACE314FBBD4558644C44C3946CD7E5ECC4320C0D2BCF41D5ABC924785C4"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\LoginAttemptService.java",
+      "sha256": "1B663BBFC622EACF8708BE5160DB0DAEB43C141CCDD02DE34A1A334B6A7CD967"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\LoteProduccionService.java",
+      "sha256": "63F8F8397A05739D8CB9C393AFB2E6E72845E0253CE3598C520575F19EA272F0"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\MotivoObservacionService.java",
+      "sha256": "2627E54F6D4B0613CEAC559F5D747C09EAE3E4E43EA2C42C4C5E2D1C1D28A1F5"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\PagoService.java",
+      "sha256": "D7794E269E9CB2A272103C43D7CFBC59833BECCDBD33BD9479F1A481351114EF"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\PanelEconomicoService.java",
+      "sha256": "5DBC396EBF20B312345F11E7328D469F333514FF19E6B284CD444CEB3A3D1433"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\PrecioLitroService.java",
+      "sha256": "3887255EA97B5B39B4BB11FEF4CC21B46FED2677169B14B27AE6DD5EEE05C876"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\ProveedorService.java",
+      "sha256": "18910A0AE8FB18E364098F00987319A97C6A173CDF8A2776BCD3E6757D0A4E5F"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\PuntoGpsJornadaService.java",
+      "sha256": "BE83B30E583FEE180B92EC04EB1BF17E658D5FE7843F3E507E0F7824D34931FD"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\RefreshTokenService.java",
+      "sha256": "354DFA225FA7AF44A332400F129B896EC23F9BA2777525178E7E0D94182A068B"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\RegistroAcopioService.java",
+      "sha256": "B51012F4E540CD1497012E5484E6D537E65B4F4721DF7AD9F736EAFA2D14394A"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\RolService.java",
+      "sha256": "730C07D59F9D24412A8589613042FAF3BBE0A0F10CCBDA9B88885CDE91A37FB5"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\RutaZonaService.java",
+      "sha256": "6AE5560884006BAA5873F3613C16DE2719E6E9CB41016014FB0EB07CD9B2739B"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\ScoreConfianzaService.java",
+      "sha256": "3FEF74F8B861309EB004FA9068F4F8DBAFF86D4F1C1A88907BE5809752262A36"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\SyncService.java",
+      "sha256": "85C38A38B59ABB6512EE25A144A9E3B5B864019A381D4E457410231D5BDF0328"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\TipoQuesoService.java",
+      "sha256": "FABA057C9A0915EC64FAF29EAF72B78AE1FD2D671F812AA7148EEAF280A0DDB6"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\UnidadService.java",
+      "sha256": "938C11615F95E45D0A95C3BFBF70393E5F84168D8CFBAC02B33E900DE2D9809F"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\UsuarioService.java",
+      "sha256": "FC03A2AA63B9F64A203BEC33757C28AA052EADB17E553A43E2C73583A5D60158"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\VentaService.java",
+      "sha256": "2812C2F5EB772BDEFFAD9838F144101907DA844DEEBDDD2112213F19F9B0AFF4"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\ZonaService.java",
+      "sha256": "EC3B01BC5D32A99E79FC675FB87F1C1FF56F8B4BD2D8B526D3E92D238E6AFB2B"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\util\\EstadisticaSimple.java",
+      "sha256": "64723342E576DF22BA2A2808469B1E14D61A846C1343295D66D488E46B086229"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\java\\com\\planta\\acopio\\service\\util\\RegresionLineal.java",
+      "sha256": "B1174F3F8517F5A9057764508F872D36E754158053695EC9AA25F24A64C86B5A"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\resources\\db\\migration\\V1__baseline.sql",
+      "sha256": "92DB64B15869410F8900A291379C071C4A0BA0DE87FA174364A1B57029753CD8"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\resources\\db\\migration\\V2__refresh_token.sql",
+      "sha256": "D002A96DF0975520E256860C48DC2B2A1016ED117E7FEBC3800A47638BE3490C"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\resources\\db\\migration\\V3__jornada.sql",
+      "sha256": "90E96CA1E0C7155BC8FE6736EC1878400DE45CD73A86095174A59BD00E128BF0"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\resources\\db\\migration\\V4__recepcion_jornada.sql",
+      "sha256": "24C6D73183481B33B3A9D478BBC5BA8A3932045F0191F9C6B798572030CEE81C"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\ecolacteos-backend\\src\\main\\resources\\db\\migration\\V5__punto_gps_jornada.sql",
+      "sha256": "3418038BCBE53EDF7E7DF75593AAD31BC0B264E06CAA0BEB5FEF70F5F7330F3C"
+    },
+    {
+      "path": "C:\\EcoLacteosProyect\\acopio-backend-fase2\\acopio-mobile\\Ecolacteos-Frontend\\Diseño_Figma\\EcoLacteos_Web_Admin.html",
+      "sha256": "F2C45842910FA749D868C84B3191F6357E787B8D08E80339D628A5D24BDC2DBB"
+    }
+  ]
+}

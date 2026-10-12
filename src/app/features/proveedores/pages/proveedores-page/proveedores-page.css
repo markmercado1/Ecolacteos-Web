@@ -1,0 +1,25 @@
+.qr-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+.qr-card label {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: var(--color-text-muted);
+}
+.qr-buscador {
+  display: flex;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 16rem;
+}
+.qr-buscador input {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+}

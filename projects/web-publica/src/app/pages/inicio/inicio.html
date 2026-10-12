@@ -1,0 +1,78 @@
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="hero-texto">
+      <span class="eyebrow">{{ sitio.portada.etiqueta }}</span>
+      <h1>{{ sitio.portada.titulo }}</h1>
+      <p class="lead">{{ sitio.portada.subtitulo }}</p>
+      <div class="botones">
+        <a routerLink="/catalogo" class="btn">Ver catálogo</a>
+        <a routerLink="/reservar" class="btn btn-outline">Reservar ahora</a>
+      </div>
+      <a routerLink="/consultar-reserva" class="consulta">¿Ya reservaste? Consulta tu reserva →</a>
+    </div>
+
+    <div class="hero-visual">
+      <pub-estado-carga [estado]="catalogo.estado()" [error]="catalogo.error()" mensaje="Cargando productos…" (reintentar)="catalogo.cargar(true)">
+        @if (destacados().length) {
+          <pub-carrusel-productos [productos]="destacados()" />
+        } @else {
+          <img class="logo-grande" src="/img/logo-ecolacteos.png" alt="EcoLácteos Huata" width="420" height="379">
+        }
+      </pub-estado-carga>
+    </div>
+  </div>
+</section>
+
+<section class="ventajas" aria-label="Por qué reservar con nosotros">
+  <ul class="container ventajas-lista">
+    @for (v of ventajas; track v.titulo) {
+      <li>
+        <strong>{{ v.titulo }}</strong>
+        <span>{{ v.texto }}</span>
+      </li>
+    }
+  </ul>
+</section>
+
+<section class="section section-sage">
+  <div class="container">
+    <div class="section-head center">
+      <span class="eyebrow">Cómo reservar</span>
+      <h2>Reservar es muy sencillo</h2>
+    </div>
+    <ol class="pasos">
+      @for (p of pasos; track p.n) {
+        <li class="card card-pad">
+          <span class="numero" aria-hidden="true">{{ p.n }}</span>
+          <h3>{{ p.titulo }}</h3>
+          <p>{{ p.texto }}</p>
+        </li>
+      }
+    </ol>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container nosotros">
+    <img src="/img/logo-ecolacteos.png" alt="" width="260" height="235" class="nosotros-logo">
+    <div>
+      <span class="eyebrow">Quiénes somos</span>
+      <h2>{{ sitio.nombre }}</h2>
+      <p class="lead">{{ sitio.quienesSomos.introduccion[0] }}</p>
+      <a routerLink="/quienes-somos" class="btn btn-outline">Conocer más</a>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="container cta-grid">
+    <div>
+      <h2>¿Listo para reservar?</h2>
+      <p>Revisa el catálogo, elige la fecha de retiro y recibe tu código de seguimiento.</p>
+    </div>
+    <div class="botones">
+      <a routerLink="/catalogo" class="btn btn-light">Ver catálogo</a>
+      <a routerLink="/contacto" class="btn btn-outline btn-claro">Contacto</a>
+    </div>
+  </div>
+</section>

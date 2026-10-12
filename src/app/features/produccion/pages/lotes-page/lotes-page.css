@@ -1,0 +1,31 @@
+.saldo-leche {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+
+.saldo-leche .etiqueta {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+}
+
+.saldo-leche .valor {
+  font-weight: 700;
+  font-size: var(--font-size-lg);
+}
+
+.sub {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.badge.estado-PLANIFICADA { color: var(--color-info); background: var(--color-info-bg); }
+.badge.estado-EN_PRODUCCION { color: var(--color-warning); background: var(--color-warning-bg); }
+.badge.estado-FINALIZADA { color: var(--color-success); background: var(--color-success-bg); }
+.badge.estado-CANCELADA { color: var(--color-text-muted); background: var(--color-surface-soft); }
+
+.pendiente { color: var(--color-text-muted); font-style: italic; }
+.dif { font-size: 0.75rem; margin-left: 0.25rem; }
+.dif.negativa { color: var(--color-danger); }

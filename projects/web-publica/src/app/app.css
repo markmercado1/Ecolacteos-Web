@@ -1,0 +1,60 @@
+:host { display: block; }
+
+.franja { background: var(--color-navy); color: #fff; font-size: 0.85rem; text-align: center; padding: 0.45rem 0; }
+
+/* ---- encabezado (limpio y blanco, como el de Conga; el menú se despliega en móvil) ---- */
+.cabecera { background: var(--color-white); border-bottom: 1px solid var(--color-line); position: sticky; top: 0; z-index: 50; }
+.barra { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 4.5rem; }
+.marca { display: flex; align-items: center; gap: 0.7rem; text-decoration: none; }
+.marca img { width: 3.25rem; height: 3.25rem; }
+.texto { display: grid; line-height: 1; }
+.nombre { font-weight: 900; font-size: 1.45rem; letter-spacing: -0.01em; font-family: var(--font-body); }
+.eco { color: var(--color-navy); }
+.lacteos { color: var(--color-leaf); }
+.huata { font-size: 0.72rem; letter-spacing: 0.42em; color: var(--color-navy); margin-top: 0.3rem; padding-left: 0.1rem; }
+
+.menu { display: flex; align-items: center; gap: 1.25rem; }
+.menu ul { display: flex; align-items: center; gap: 0.25rem; list-style: none; margin: 0; padding: 0; }
+.menu ul a {
+  display: block; padding: 0.55rem 0.8rem; color: var(--color-ink); text-decoration: none; font-weight: 600; font-size: 0.92rem;
+  border-bottom: 2px solid transparent;
+}
+.menu ul a:hover { color: var(--color-brand); }
+.menu ul a.activo { color: var(--color-brand); border-bottom-color: var(--color-butter); }
+.mi-reserva { white-space: nowrap; }
+.cuenta { display: inline-grid; place-items: center; min-width: 1.3rem; height: 1.3rem; padding: 0 0.3rem; border-radius: 999px; background: var(--color-butter); color: var(--color-navy); font-size: 0.78rem; }
+
+.hamburguesa { display: none; background: none; border: 1.5px solid var(--color-line); border-radius: var(--radius); padding: 0.45rem; color: var(--color-navy); }
+
+@media (max-width: 960px) {
+  .hamburguesa { display: inline-grid; }
+  .menu {
+    display: none; position: absolute; left: 0; right: 0; top: 100%; flex-direction: column; align-items: stretch; gap: 0.75rem;
+    background: var(--color-white); border-bottom: 1px solid var(--color-line); padding: 0.75rem var(--gutter) 1.25rem; box-shadow: var(--shadow);
+  }
+  .menu.abierto { display: flex; }
+  .menu ul { flex-direction: column; align-items: stretch; }
+  .menu ul a { padding: 0.8rem 0.25rem; border-bottom: 1px solid var(--color-line); }
+  .menu ul a.activo { border-bottom-color: var(--color-butter); }
+}
+
+/* ---- pie (azul del logo, con el logo en blanco; columnas como el pie de Bonle) ---- */
+.pie { background: var(--color-navy); color: #c9d6cf; margin-top: 0; }
+.columnas { display: grid; grid-template-columns: 1.4fr 1fr 1.2fr; gap: 2.5rem; padding-top: 3rem; padding-bottom: 2.5rem; }
+.pie h2 { font-family: var(--font-body); color: #fff; font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.9rem; }
+.pie ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+.pie a { color: #e6eee9; }
+.pie a:hover { color: #fff; }
+.acerca p { max-width: 22rem; margin-top: 1rem; }
+.logo-blanco { filter: brightness(0) invert(1); height: auto; }
+.redes { display: flex !important; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
+.redes a { text-transform: capitalize; }
+.legal { border-top: 1px solid rgb(255 255 255 / 15%); padding-top: 1.25rem; padding-bottom: 1.5rem; font-size: 0.85rem; }
+@media (max-width: 760px) { .columnas { grid-template-columns: 1fr; gap: 2rem; } }
+
+/* ---- botón flotante de WhatsApp (solo existe si hay un número configurado) ---- */
+.whatsapp {
+  position: fixed; right: 1rem; bottom: 1rem; z-index: 60; display: grid; place-items: center; width: 3.5rem; height: 3.5rem; border-radius: 50%;
+  background: var(--color-brand); color: #fff; box-shadow: 0 4px 14px rgb(0 0 0 / 25%);
+}
+.whatsapp:hover { background: var(--color-brand-dark); color: #fff; }

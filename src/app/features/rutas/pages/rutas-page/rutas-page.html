@@ -1,0 +1,78 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">OPERACIÓN</div>
+    <h1>Rutas por zona</h1>
+    <p>El orden y la hora estimada se guardan reemplazando toda la ruta de la zona. No se puede guardar una ruta vacía.</p>
+  </div>
+  <div class="heading-actions">
+    <select
+      [value]="zonaSeleccionada()"
+      (change)="seleccionarZona($any($event.target).value)"
+      aria-label="Seleccionar zona"
+    >
+      <option value="">Selecciona una zona</option>
+      @for (zona of zonas(); track zona.id) {
+        <option [value]="zona.id">{{ zona.nombre }}</option>
+      }
+    </select>
+    <button
+      type="button"
+      class="btn primary"
+      [disabled]="!zonaSeleccionada() || paradas().length === 0 || !hayCambiosSinGuardar() || guardando()"
+      (click)="guardarRuta()"
+    >
+      {{ guardando() ? 'Guardando…' : 'Guardar ruta completa' }}
+    </button>
+  </div>
+</div>
+
+@if (!zonaSeleccionada()) {
+  <ui-empty-state mensaje="Selecciona una zona para ver y editar su ruta." />
+} @else if (cargando()) {
+  <ui-loading-state mensaje="Cargando ruta…" />
+} @else if (error()) {
+  <ui-error-state [error]="error()" (reintentar)="seleccionarZona(zonaSeleccionada())" />
+} @else {
+  <div class="card card-pad">
+    <div class="section-head">
+      <h2>Orden de visita</h2>
+      @if (hayCambiosSinGuardar()) { <span class="badge amber">Cambios sin guardar</span> }
+    </div>
+
+    @if (paradas().length === 0) {
+      <ui-empty-state mensaje="Esta ruta no tiene paradas todavía. Agrega al menos una para poder guardarla." />
+    } @else {
+      @for (parada of paradas(); track parada.proveedorId; let i = $index) {
+        <div class="parada">
+          <div class="parada-num">{{ (i + 1).toString().padStart(2, '0') }}</div>
+          <div class="parada-info">
+            <strong>{{ parada.proveedorNombre }}</strong>
+            <small>{{ parada.horaEstimada ? 'Hora estimada ' + parada.horaEstimada : 'Sin hora estimada' }}</small>
+          </div>
+          <div class="parada-control">
+            <button type="button" [disabled]="i === 0" (click)="moverParada(i, -1)" [attr.aria-label]="'Subir ' + parada.proveedorNombre">↑</button>
+            <button type="button" [disabled]="i === paradas().length - 1" (click)="moverParada(i, 1)" [attr.aria-label]="'Bajar ' + parada.proveedorNombre">↓</button>
+            <button type="button" (click)="quitarParada(i)" [attr.aria-label]="'Quitar ' + parada.proveedorNombre">✕</button>
+          </div>
+        </div>
+      }
+    }
+
+    <div class="agregar-parada">
+      <select [value]="proveedorParaAgregar()" (change)="proveedorParaAgregar.set($any($event.target).value)" aria-label="Proveedor a añadir">
+        <option value="">Selecciona un proveedor de la zona</option>
+        @for (proveedor of proveedoresDisponibles(); track proveedor.id) {
+          <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
+        }
+      </select>
+      <input type="time" [value]="horaParaAgregar()" (change)="horaParaAgregar.set($any($event.target).value)" aria-label="Hora estimada (opcional)">
+      <button type="button" class="btn" [disabled]="!proveedorParaAgregar()" (click)="agregarParada()">Añadir parada</button>
+    </div>
+    @if (proveedoresDisponibles().length === 0) {
+      <p class="hint">No hay más proveedores de esta zona disponibles para agregar (o todos ya están en la ruta).</p>
+    }
+  </div>
+  <div class="module-note">
+    <b>Nota:</b> cada proveedor debe pertenecer actualmente a esta zona. El mapa de recorrido del diseño de referencia es ilustrativo; esta pantalla muestra la secuencia real de paradas guardada en el servidor.
+  </div>
+}

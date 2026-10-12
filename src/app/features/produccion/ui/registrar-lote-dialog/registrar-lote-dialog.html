@@ -1,0 +1,462 @@
+<div class="dialog-head">
+  <h2 id="registrar-lote-titulo">
+    {{
+      paso() === 'leche'
+        ? 'Leche a utilizar'
+        : paso() === 'insumos'
+          ? 'Insumos utilizados'
+          : paso() === 'obtenido'
+            ? 'Producto obtenido'
+            : paso() === 'resumen'
+              ? 'Revisar antes de finalizar'
+              : 'Producción registrada'
+    }}
+  </h2>
+  <button type="button" class="close" (click)="cerrar()" aria-label="Cerrar">×</button>
+</div>
+
+@if (paso() !== 'resultado') {
+  <ol class="pasos" aria-label="Pasos del registro de producción">
+    @for (p of pasosAsistente; track p.id; let i = $index) {
+      <li
+        [class.activo]="i === indicePaso()"
+        [class.hecho]="i < indicePaso()"
+        [attr.aria-current]="i === indicePaso() ? 'step' : null"
+      >
+        <span class="num">{{ i + 1 }}</span>
+        <span class="txt">{{ p.etiqueta }}</span>
+      </li>
+    }
+  </ol>
+}
+
+@if (paso() === 'leche' || paso() === 'insumos' || paso() === 'obtenido') {
+  <form
+    [formGroup]="form"
+    (ngSubmit)="siguiente()"
+    class="dialog-body"
+    aria-labelledby="registrar-lote-titulo"
+  >
+    @if (paso() === 'leche') {
+    <div class="field leche-disponible">
+      <span class="etiqueta">Leche disponible</span>
+      @if (cargandoSaldo()) {
+        <span class="hint">Cargando…</span>
+      } @else if (errorSaldo()) {
+        <span class="error" role="alert"
+          >{{ errorSaldo() }}
+          <button type="button" class="row-link" (click)="cargarSaldo()">Reintentar</button></span
+        >
+      } @else {
+        <span class="valor">{{ saldoDisponible() | number: '1.0-2' }} L</span>
+        <button type="button" class="row-link" (click)="cargarSaldo()">Actualizar saldo</button>
+      }
+    </div>
+
+    <div class="field" [class.has-error]="invalido('fecha')">
+      <label for="rl-fecha">Fecha del lote</label>
+      <input id="rl-fecha" type="date" formControlName="fecha" required />
+      @if (invalido('fecha')) {
+        <span class="error">{{
+          form.controls.fecha.errors?.['fechaFutura']
+            ? 'La fecha no puede ser futura.'
+            : 'Ingresa una fecha válida.'
+        }}</span>
+      }
+    </div>
+
+    <div class="field" [class.has-error]="invalido('productoId')">
+      <label for="rl-producto">Producto</label>
+      @if (cargandoProductos()) {
+        <p class="hint">Cargando productos…</p>
+      } @else if (errorProductos()) {
+        <p class="error" role="alert">{{ errorProductos() }}</p>
+        <button type="button" class="btn small" (click)="cargarProductos()">Reintentar</button>
+      } @else if (productos().length === 0) {
+        <p class="error" role="alert">No hay productos activos disponibles.</p>
+      } @else {
+        <select id="rl-producto" formControlName="productoId" required>
+          <option value="" disabled>Selecciona un producto</option>
+          @for (producto of productos(); track producto.id) {
+            <option [value]="producto.id">{{ producto.nombre }}</option>
+          }
+        </select>
+      }
+      @if (invalido('productoId')) {
+        <span class="error">Selecciona un producto.</span>
+      }
+    </div>
+
+    <div class="field" [class.has-error]="invalido('litrosUsados')">
+      <label for="rl-litros">Leche a utilizar</label>
+      <input
+        id="rl-litros"
+        type="number"
+        min="0.01"
+        step="0.01"
+        formControlName="litrosUsados"
+        required
+      />
+      @if (invalido('litrosUsados')) {
+        <span class="error">
+          {{
+            form.controls.litrosUsados.errors?.['maxDigitosEnteros']
+              ? 'Máximo ' + maxDigitos + ' dígitos enteros.'
+              : 'Ingresa una cantidad mayor que 0, con un máximo de dos decimales.'
+          }}
+        </span>
+      }
+    </div>
+    }
+
+    @if (paso() === 'insumos') {
+      <p class="hint">
+        Registra los insumos que usaste en esta producción (cuajo, sal, cultivos…). Es opcional: si no
+        usaste ninguno, o el insumo no está en el catálogo, continúa sin agregar. Las cantidades se
+        descuentan del stock del insumo; si no alcanza, el registro se rechaza.
+      </p>
+      @if (cargandoInsumos()) {
+        <p class="hint">Cargando insumos…</p>
+      } @else if (errorInsumos()) {
+        <p class="error" role="alert">
+          {{ errorInsumos() }}
+          <button type="button" class="row-link" (click)="cargarInsumos()">Reintentar</button>
+        </p>
+        <p class="hint">Puedes continuar sin registrar insumos.</p>
+      } @else {
+        @if (filasInsumos().length > 0) {
+          <table class="tabla-insumos">
+            <thead>
+              <tr><th>Insumo</th><th>Cantidad</th><th>Unidad</th><th>Stock</th><th></th></tr>
+            </thead>
+            <tbody>
+              @for (f of filasInsumos(); track f.insumoId) {
+                <tr>
+                  <td>{{ datosInsumo(f.insumoId)?.nombre ?? f.insumoId }}</td>
+                  <td>
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      [value]="f.cantidad"
+                      [attr.aria-label]="'Cantidad de ' + (datosInsumo(f.insumoId)?.nombre ?? '')"
+                      (input)="actualizarCantidadInsumo(f.insumoId, $any($event.target).value)"
+                    />
+                  </td>
+                  <td>{{ datosInsumo(f.insumoId)?.unidadMedida }}</td>
+                  <td>{{ (datosInsumo(f.insumoId)?.stock ?? 0) | number: '1.0-2' }}</td>
+                  <td>
+                    <button type="button" class="btn small danger" (click)="quitarInsumo(f.insumoId)">
+                      Quitar
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+        @if (insumosDisponibles().length === 0) {
+          <p class="hint">No hay insumos activos en el catálogo. Puedes continuar sin registrar insumos.</p>
+        } @else if (insumosRestantes().length > 0) {
+          <div class="agregar-insumo">
+            <select
+              [value]="insumoParaAgregar()"
+              (change)="insumoParaAgregar.set($any($event.target).value)"
+              aria-label="Elegir insumo a agregar"
+            >
+              <option value="">Elegir insumo…</option>
+              @for (i of insumosRestantes(); track i.id) {
+                <option [value]="i.id">{{ i.nombre }} ({{ i.unidadMedida }})</option>
+              }
+            </select>
+            <button
+              type="button"
+              class="btn small"
+              [disabled]="!insumoParaAgregar()"
+              (click)="agregarInsumo()"
+            >
+              Agregar insumo
+            </button>
+          </div>
+        }
+      }
+      @if (errorPasoInsumos()) {
+        <p class="error" role="alert">{{ errorPasoInsumos() }}</p>
+      }
+    }
+
+    @if (paso() === 'obtenido') {
+    <div class="field checkbox-field">
+      <label>
+        <input type="checkbox" formControlName="sinRendimiento" />
+        Esta producción no obtuvo ninguna presentación aprovechable (lote sin rendimiento)
+      </label>
+    </div>
+
+    @if (!form.controls.sinRendimiento.value) {
+      <div class="field" [class.has-error]="errorSinFilas()">
+        <div class="seccion-head">
+          <span class="etiqueta">Presentaciones obtenidas</span>
+          @if (unidadesEsperadas(); as esperadas) {
+            <span class="hint">Unidades esperadas (referencia): {{ esperadas }}</span>
+          }
+        </div>
+
+        @if (!productoSeleccionado()) {
+          <p class="hint">Selecciona un producto para elegir sus presentaciones.</p>
+        } @else if (presentacionesDisponibles().length === 0) {
+          <p class="error" role="alert">
+            "{{ productoSeleccionado()!.nombre }}" no tiene presentaciones activas configuradas.
+          </p>
+          @if (esAdmin()) {
+            <a class="btn small" routerLink="/catalogos" (click)="cerrar()">Ir a Catálogos</a>
+          }
+        } @else {
+          @for (fila of detalles.controls; track fila; let i = $index) {
+            <div class="fila-detalle" [formGroup]="fila">
+              <select
+                [formControlName]="'presentacionId'"
+                [attr.aria-label]="'Presentación de la fila ' + (i + 1)"
+                required
+              >
+                <option value="" disabled>Selecciona una presentación</option>
+                @for (
+                  presentacion of presentacionesSeleccionablesPorFila()[i];
+                  track presentacion.id
+                ) {
+                  <option [value]="presentacion.id">
+                    {{ presentacion.nombre }}
+                    @if (presentacion.contenidoCantidad !== null) {
+                      · {{ presentacion.contenidoCantidad }} {{ presentacion.contenidoUnidad }}
+                    } @else {
+                      · contenido sin definir
+                    }
+                  </option>
+                }
+              </select>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                [formControlName]="'cantidadObtenida'"
+                [attr.aria-label]="'Cantidad obtenida en la fila ' + (i + 1)"
+                placeholder="Cantidad"
+                required
+              />
+              <button
+                type="button"
+                class="btn small danger"
+                (click)="quitarFila(i)"
+                [attr.aria-label]="'Quitar fila ' + (i + 1)"
+              >
+                Quitar
+              </button>
+            </div>
+            @if (fila.invalid && fila.touched) {
+              <p class="error" role="alert">
+                Selecciona una presentación y una cantidad entera válida mayor que cero.
+              </p>
+            }
+          }
+          <button
+            type="button"
+            class="btn small"
+            (click)="agregarFila()"
+            [disabled]="!puedeAgregarFila()"
+          >
+            Agregar presentación
+          </button>
+          @if (errorSinFilas()) {
+            <span class="error"
+              >Agrega al menos una presentación obtenida, o marca "sin rendimiento".</span
+            >
+          }
+        }
+      </div>
+    }
+
+    }
+
+    @if (errorRevision()) {
+      <p class="error" role="alert">{{ errorRevision() }}</p>
+    }
+    <div class="dialog-foot">
+      <button type="button" class="btn" (click)="cerrar()">Cancelar</button>
+      @if (paso() !== 'leche') {
+        <button type="button" class="btn" (click)="atras()">Atrás</button>
+      }
+      <button
+        type="submit"
+        class="btn primary"
+        [disabled]="cargandoProductos() || productos().length === 0"
+      >
+        {{ paso() === 'obtenido' ? 'Revisar resumen' : 'Siguiente' }}
+      </button>
+    </div>
+  </form>
+}
+
+@if (paso() === 'resumen') {
+  <div class="dialog-body" aria-labelledby="registrar-lote-titulo">
+    <dl>
+      <div>
+        <dt>Fecha del lote</dt>
+        <dd>{{ form.getRawValue().fecha }}</dd>
+      </div>
+      <div>
+        <dt>Producto</dt>
+        <dd>{{ productoSeleccionado()?.nombre ?? '—' }}</dd>
+      </div>
+      <div>
+        <dt>Consumo total de leche</dt>
+        <dd>{{ form.getRawValue().litrosUsados }} L</dd>
+      </div>
+    </dl>
+
+    <div class="section-head"><h3>Insumos utilizados</h3></div>
+    @if (filasInsumos().length === 0) {
+      <p class="hint">Sin insumos registrados para este lote.</p>
+    } @else {
+      <ul class="lista-resumen">
+        @for (f of filasInsumos(); track f.insumoId) {
+          <li>
+            {{ datosInsumo(f.insumoId)?.nombre ?? f.insumoId }}: {{ f.cantidad | number: '1.0-2' }}
+            {{ datosInsumo(f.insumoId)?.unidadMedida }}
+          </li>
+        }
+      </ul>
+    }
+
+    @if (form.controls.sinRendimiento.value) {
+      <p class="hint sin-rendimiento">
+        Esta producción no obtuvo ninguna presentación aprovechable.
+      </p>
+    } @else {
+      <div class="section-head"><h3>Cantidad obtenida por presentación</h3></div>
+      <ul class="lista-resumen">
+        @for (fila of filasResumen(); track fila.presentacionId) {
+          <li>
+            {{ fila.cantidad }} × {{ fila.nombre }}
+            @if (fila.contenido != null) {
+              ({{ fila.contenido }} {{ fila.unidad }} por unidad)
+            } @else {
+              — contenido sin definir
+            }
+          </li>
+        }
+      </ul>
+      @if (unidadesEsperadas(); as esperadas) {
+        <p class="hint">Unidades esperadas (referencia): {{ esperadas }}</p>
+      }
+    }
+
+    <section class="revision-produccion" aria-label="Revisión de cantidades">
+      <h3>Contenido obtenido</h3>
+      @for (total of revision().totales; track total.unidad) {
+        <p>{{ total.cantidad | number: '1.0-4' }} {{ total.unidad }} de contenido declarado</p>
+      }
+      @if (revision().sinContenido) {
+        <p>Hay presentaciones sin contenido definido; no se puede calcular su peso o volumen.</p>
+      }
+      @if (productoSeleccionado()?.rangoRendimiento; as rango) {
+        <p>
+          Rango de referencia: {{ rango.minimo }}–{{ rango.maximo }} {{ rango.unidad }} por cada 100
+          L de leche.
+        </p>
+        <p>
+          Este lote: {{ revision().rendimiento | number: '1.0-4' }} {{ rango.unidad }} por cada 100
+          L.
+        </p>
+        @if (revision().fueraDeRango) {
+          <p class="error" role="alert">
+            Resultado fuera del rango configurado. Revisa los litros, las cantidades y las
+            presentaciones.
+          </p>
+          <label for="rl-motivo">Motivo para continuar</label>
+          <textarea
+            id="rl-motivo"
+            [formControl]="motivoRendimiento"
+            maxlength="500"
+            rows="3"
+            placeholder="Explica por qué este resultado es correcto"
+          ></textarea>
+        }
+      } @else {
+        <p>
+          Sin rango de rendimiento configurado. Estas cantidades no certifican la viabilidad de la
+          producción.
+        </p>
+      }
+    </section>
+    <p class="hint">
+      Al finalizar se descontarán la leche y los insumos indicados de su stock y se agregarán las
+      presentaciones al inventario.
+      El servidor comprobará nuevamente el saldo disponible.
+    </p>
+
+    @if (incierto()) {
+      <p class="server-error" role="alert" aria-live="polite">{{ errorEnvio() }}</p>
+    } @else if (errorEnvio()) {
+      <p class="server-error" role="alert">{{ errorEnvio() }}</p>
+    }
+
+    <div class="dialog-foot">
+      @if (!incierto() && !enviando()) {
+        <button type="button" class="btn" (click)="atras()">Atrás</button>
+      }
+      <button type="button" class="btn" (click)="cerrar()" [disabled]="enviando()">Cancelar</button>
+      <button type="button" class="btn primary" [disabled]="enviando()" (click)="confirmar()">
+        {{ enviando() ? 'Registrando…' : incierto() ? 'Reintentar' : 'Finalizar producción' }}
+      </button>
+    </div>
+  </div>
+}
+
+@if (paso() === 'resultado' && resultado(); as lote) {
+  <div class="dialog-body" aria-labelledby="registrar-lote-titulo">
+    <p class="exito" role="status">Lote de producción registrado correctamente.</p>
+    <dl>
+      <div>
+        <dt>Fecha</dt>
+        <dd>{{ lote.fecha }}</dd>
+      </div>
+      <div>
+        <dt>Producto</dt>
+        <dd>{{ lote.productoNombre }}</dd>
+      </div>
+      <div>
+        <dt>Leche utilizada</dt>
+        <dd>{{ lote.litrosUsados }} L</dd>
+      </div>
+    </dl>
+    @if (lote.insumos?.length) {
+      <div class="section-head"><h3>Insumos utilizados</h3></div>
+      <ul class="lista-resumen">
+        @for (i of lote.insumos; track i.insumoId) {
+          <li>{{ i.insumoNombre }}: {{ i.cantidad | number: '1.0-2' }} {{ i.unidadMedida }}</li>
+        }
+      </ul>
+    }
+    @if (lote.detalles.length === 0) {
+      <p class="hint sin-rendimiento">No se registró ninguna presentación obtenida.</p>
+    } @else {
+      <div class="section-head"><h3>Presentaciones obtenidas</h3></div>
+      <ul class="lista-resumen">
+        @for (d of lote.detalles; track d.presentacionId) {
+          <li>{{ d.cantidadObtenida }} × {{ d.presentacionNombre }}</li>
+        }
+      </ul>
+      @if (lote.unidadesEsperadas !== null) {
+        <p class="hint">Unidades esperadas (referencia): {{ lote.unidadesEsperadas }}</p>
+      }
+      <p class="hint">
+        Rendimiento real:
+        {{ lote.rendimientoPct === null ? 'Sin cálculo configurado' : lote.rendimientoPct + '%' }}
+      </p>
+    }
+    <div class="dialog-foot">
+      <button type="button" class="btn" (click)="cerrar()">Cerrar</button>
+      <button type="button" class="btn primary" (click)="verDetalle()">Ver detalle</button>
+    </div>
+  </div>
+}

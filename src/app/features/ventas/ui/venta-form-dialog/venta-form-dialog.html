@@ -1,0 +1,207 @@
+<div class="dialog-head">
+  <h2 id="venta-form-titulo">
+    {{
+      paso() === 'formulario' ? 'Registrar venta' : paso() === 'resumen' ? 'Revisar antes de confirmar' : 'Venta registrada'
+    }}
+  </h2>
+  <button type="button" class="close" (click)="cerrar()" aria-label="Cerrar">×</button>
+</div>
+
+@if (paso() === 'formulario') {
+  <form [formGroup]="form" (ngSubmit)="continuarARevision()" class="dialog-body" aria-labelledby="venta-form-titulo">
+    <div class="field" [class.has-error]="form.controls.fecha.invalid && form.controls.fecha.touched">
+      <label for="v-fecha">Fecha de la venta</label>
+      <input id="v-fecha" type="date" formControlName="fecha" required>
+    </div>
+
+    <div class="field" [class.has-error]="form.controls.tipoCliente.invalid && form.controls.tipoCliente.touched">
+      <label for="v-canal">Canal (tipo de cliente)</label>
+      <select id="v-canal" formControlName="tipoCliente" required>
+        <option value="" disabled>Selecciona un canal</option>
+        <option value="MAYORISTA">Mayorista</option>
+        <option value="PROVEEDOR">Proveedor</option>
+        <option value="PUBLICO">Público</option>
+      </select>
+      @if (form.controls.tipoCliente.invalid && form.controls.tipoCliente.touched) {
+        <span class="error">Selecciona el canal de la venta.</span>
+      }
+    </div>
+
+    @if (cargandoProductos()) {
+      <p class="hint">Cargando productos…</p>
+    } @else if (errorProductos()) {
+      <p class="error" role="alert">{{ errorProductos() }}</p>
+      <button type="button" class="btn small" (click)="cargarProductos()">Reintentar</button>
+    } @else if (productos().length === 0) {
+      <p class="error" role="alert">No hay productos activos disponibles para vender.</p>
+    } @else {
+      <div class="seccion-head">
+        <span class="etiqueta">Líneas de la venta (carrito)</span>
+      </div>
+
+      @for (fila of filas(); track fila.id; let i = $index) {
+        <div class="fila-carrito">
+          <div class="fila-carrito-campos">
+            <select
+              [value]="fila.productoId"
+              (change)="cambiarProducto(fila.id, $any($event.target).value)"
+              [attr.aria-label]="'Producto de la línea ' + (i + 1)"
+              required
+            >
+              <option value="" disabled>Selecciona un producto</option>
+              @for (producto of productos(); track producto.id) {
+                <option [value]="producto.id">{{ producto.nombre }}</option>
+              }
+            </select>
+
+            <select
+              [value]="fila.presentacionId"
+              (change)="cambiarPresentacion(fila.id, $any($event.target).value)"
+              [disabled]="!fila.productoId"
+              [attr.aria-label]="'Presentación de la línea ' + (i + 1)"
+              required
+            >
+              <option value="" disabled>Selecciona una presentación</option>
+              @for (presentacion of presentacionesDeFila(fila); track presentacion.id) {
+                <option [value]="presentacion.id">{{ presentacion.nombre }}</option>
+              }
+            </select>
+
+            <input
+              type="number" min="1" step="1"
+              [value]="fila.cantidad ?? ''"
+              (input)="cambiarCantidad(fila.id, $any($event.target).value)"
+              [attr.aria-label]="'Cantidad de la línea ' + (i + 1)"
+              placeholder="Cantidad"
+              required
+            >
+
+            <button type="button" class="btn small danger" (click)="quitarLinea(fila.id)" [attr.aria-label]="'Quitar línea ' + (i + 1)">Quitar</button>
+          </div>
+
+          @if (fila.presentacionId) {
+            <p class="hint linea-info">
+              @if (fila.cargandoPrecio) {
+                Consultando precio…
+              } @else if (fila.errorPrecio) {
+                {{ fila.errorPrecio }}
+              } @else if (fila.precioVigente !== null) {
+                Precio: S/ {{ fila.precioVigente | number: '1.2-2' }}
+                @if (subtotal(fila); as sub) { · Subtotal: S/ {{ sub | number: '1.2-2' }} }
+              }
+              @if (!fila.cargandoStock && fila.stockDisponible !== null) {
+                · Stock disponible: {{ fila.stockDisponible }}
+                @if (fila.stockNoVendible > 0) {
+                  <span class="no-vendible">({{ fila.stockNoVendible }} más en inventario no se pueden vender: vencidas o sin trazabilidad)</span>
+                }
+              }
+            </p>
+            @if (cantidadExcedeStock(fila)) {
+              <p class="error" role="alert">No hay stock suficiente (disponibles: {{ fila.stockDisponible }}).</p>
+            }
+          }
+        </div>
+      }
+
+      <button type="button" class="btn small" (click)="agregarLinea()">Agregar línea</button>
+      @if (errorSinFilas()) { <span class="error">Agrega al menos una línea a la venta.</span> }
+    }
+
+    @if (totalEstimado(); as total) {
+      <p class="estimado">Total estimado: S/ {{ total | number: '1.2-2' }}</p>
+    }
+
+    <div class="dialog-foot">
+      <button type="button" class="btn" (click)="cerrar()">Cancelar</button>
+      <button type="submit" class="btn primary" [disabled]="!puedeContinuar()">
+        Revisar resumen
+      </button>
+    </div>
+  </form>
+}
+
+@if (paso() === 'resumen') {
+  <div class="dialog-body" aria-labelledby="venta-form-titulo">
+    <dl>
+      <div><dt>Fecha</dt><dd>{{ form.getRawValue().fecha }}</dd></div>
+      <div><dt>Canal</dt><dd>{{ etiquetaCanal() }}</dd></div>
+    </dl>
+
+    <div class="section-head"><h3>Líneas</h3></div>
+    <ul class="lista-resumen">
+      @for (fila of filas(); track fila.id) {
+        <li>
+          {{ fila.cantidad }} × {{ nombrePresentacion(fila) }} ({{ nombreProducto(fila) }})
+          — S/ {{ fila.precioVigente | number: '1.2-2' }} c/u
+          = S/ {{ subtotal(fila) | number: '1.2-2' }}
+        </li>
+      }
+    </ul>
+
+    <p class="estimado">
+      Total estimado (calculado aquí, sujeto a confirmación del servidor):
+      S/ {{ totalEstimado() | number: '1.2-2' }}
+    </p>
+
+    @if (incierto()) {
+      <p class="server-error" role="alert" aria-live="polite">{{ errorEnvio() }}</p>
+    } @else if (errorEnvio()) {
+      <p class="server-error" role="alert">{{ errorEnvio() }}</p>
+    }
+
+    <div class="dialog-foot">
+      @if (!incierto() && !enviando()) {
+        <button type="button" class="btn" (click)="volverAFormulario()">Editar</button>
+      }
+      <button type="button" class="btn" (click)="cerrar()" [disabled]="enviando()">Cancelar</button>
+      <button type="button" class="btn primary" [disabled]="enviando()" (click)="confirmar()">
+        {{ enviando() ? 'Registrando…' : incierto() ? 'Reintentar' : 'Confirmar venta' }}
+      </button>
+    </div>
+  </div>
+}
+
+@if (paso() === 'resultado' && resultado(); as venta) {
+  <div class="dialog-body" aria-labelledby="venta-form-titulo">
+    <p class="exito no-print" role="status">Venta registrada correctamente.</p>
+
+    <div class="boleta">
+      <h3>Comprobante de venta</h3>
+      <p class="boleta-aviso">Documento informativo, sin validez tributaria.</p>
+      <dl>
+        <div><dt>Identificador</dt><dd class="codigo">{{ venta.id }}</dd></div>
+        <div><dt>Fecha</dt><dd>{{ venta.fecha }}</dd></div>
+        <div><dt>Canal</dt><dd>{{ etiquetaCanal() }}</dd></div>
+      </dl>
+      <table class="tabla-boleta">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Presentación</th>
+            <th class="align-end">Cantidad</th>
+            <th class="align-end">P. unitario</th>
+            <th class="align-end">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (linea of venta.detalles; track linea.presentacionId) {
+            <tr>
+              <td>{{ linea.productoNombre }}</td>
+              <td>{{ linea.presentacionNombre }}</td>
+              <td class="align-end">{{ linea.cantidad }}</td>
+              <td class="align-end">S/ {{ linea.precioUnitario | number: '1.2-2' }}</td>
+              <td class="align-end">S/ {{ linea.subtotal | number: '1.2-2' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <p class="boleta-total">Total: S/ {{ venta.total | number: '1.2-2' }}</p>
+    </div>
+
+    <div class="dialog-foot no-print">
+      <button type="button" class="btn" (click)="cerrar()">Cerrar</button>
+      <button type="button" class="btn" (click)="imprimir()">Imprimir / Guardar PDF</button>
+      <button type="button" class="btn primary" (click)="verDetalle()">Ver detalle</button>
+    </div>
+  </div>
+}

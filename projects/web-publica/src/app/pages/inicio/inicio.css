@@ -1,0 +1,43 @@
+:host { display: block; }
+
+/* portada: texto + composición de fotos reales del catálogo */
+.hero { background: var(--color-cream); padding: clamp(2rem, 6vw, 4.5rem) 0; overflow: hidden; }
+/* Portada más ancha: el texto a la izquierda y el carrusel ocupa el resto con tarjetas completas. */
+.hero .container { max-width: 1440px; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.7fr); gap: clamp(1.5rem, 4vw, 3.5rem); align-items: center; }
+.hero-texto h1 { margin-bottom: 1rem; font-size: clamp(2rem, 3.6vw, 3.2rem); }
+.botones { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1.5rem 0 1rem; }
+.consulta { font-weight: 600; font-size: 0.95rem; }
+
+.hero-visual { position: relative; min-width: 0; }
+.logo-grande { width: min(100%, 24rem); height: auto; margin-inline: auto; }
+@media (max-width: 1100px) { .hero-grid { grid-template-columns: 1fr; } }
+
+/* franja de ventajas */
+.ventajas { background: var(--color-white); border-block: 1px solid var(--color-line); }
+.ventajas-lista { list-style: none; margin: 0 auto; padding-block: 1.5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
+.ventajas-lista li { display: grid; gap: 0.2rem; padding-left: 0.9rem; border-left: 3px solid var(--color-butter); }
+.ventajas-lista strong { color: var(--color-navy); }
+.ventajas-lista span { font-size: 0.9rem; color: var(--color-muted); }
+@media (max-width: 860px) { .ventajas-lista { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .ventajas-lista { grid-template-columns: 1fr; } }
+
+.pasos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+.pasos li { position: relative; }
+.numero {
+  display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border-radius: 50%; background: var(--color-brand); color: #fff; font-weight: 800; margin-bottom: 0.8rem;
+}
+.pasos p { margin: 0; color: var(--color-muted); }
+@media (max-width: 760px) { .pasos { grid-template-columns: 1fr; } }
+
+.nosotros { display: grid; grid-template-columns: auto 1fr; gap: clamp(1.5rem, 5vw, 4rem); align-items: center; }
+.nosotros-logo { width: min(100%, 16rem); height: auto; }
+@media (max-width: 700px) { .nosotros { grid-template-columns: 1fr; } .nosotros-logo { width: 10rem; } }
+
+.cta { background: var(--color-brand); color: #fff; padding: clamp(2rem, 5vw, 3.25rem) 0; }
+.cta h2 { color: #fff; margin-bottom: 0.3rem; }
+.cta p { margin: 0; color: #e4efe8; }
+.cta-grid { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; }
+.cta .botones { margin: 0; }
+.btn-claro { border-color: #fff; color: #fff; }
+.btn-claro:hover:not(:disabled) { background: #fff; color: var(--color-brand-dark); }

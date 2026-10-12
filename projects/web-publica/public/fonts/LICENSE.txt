@@ -1,0 +1,3 @@
+Inter Tight — Copyright 2022 The Inter Project Authors (https://github.com/rsms/inter-tight)
+Licensed under the SIL Open Font License, Version 1.1 (https://openfontlicense.org).
+Archivo: inter-tight-latin.woff2 (variable, subconjunto latino) de @fontsource-variable/inter-tight.
