@@ -10,13 +10,19 @@
   # El workspace tiene dos proyectos (panel y web pública): el plugin de Angular de Netlify debe usar la web pública.
   ANGULAR_PROJECT = "web-publica"
 
+# API: Netlify reenvía /api/* al backend (por ahora un túnel de ngrok, solo para mostrar avances). La web sigue llamando a /api/...
+# (mismo origen) y no necesita cambios. La cabecera evita la página de advertencia de ngrok.
+# Si el túnel cambia de dirección, se edita únicamente la línea "to". Esta regla va ANTES de la de la SPA.
+[[redirects]]
+  from = "/api/*"
+  to = "https://collision-caboose-slacks.ngrok-free.dev/api/:splat"
+  status = 200
+  force = true
+  [redirects.headers]
+    ngrok-skip-browser-warning = "true"
+
 # SPA: cualquier ruta que no sea un archivo devuelve index.html (así /catalogo, /reservar… funcionan al recargar).
 # Netlify sirve primero los archivos reales (/fonts, /img, *.js) y solo después aplica esta regla.
-# Si el backend queda en otro dominio, antes de esta regla se puede agregar un proxy:
-#   [[redirects]]
-#     from = "/api/*"
-#     to = "https://TU-BACKEND/api/:splat"
-#     status = 200
 [[redirects]]
   from = "/*"
   to = "/index.html"
