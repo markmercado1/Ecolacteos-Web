@@ -33,6 +33,31 @@ describe('PagosApi', () => {
     req.flush({});
   });
 
+  it('ajustarPrecio() hace POST del precio nuevo y el motivo sobre ese pago', () => {
+    api.ajustarPrecio('pg-1', { precioLitroNuevo: 1.2, motivo: 'Reconocimiento por calidad' }).subscribe();
+    const req = http.expectOne(`${base}/pagos/pg-1/ajuste-precio`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ precioLitroNuevo: 1.2, motivo: 'Reconocimiento por calidad' });
+    req.flush({});
+  });
+
+  it('ajustesDePrecio() lee el historial de cambios de precio del pago', () => {
+    api.ajustesDePrecio('pg-1').subscribe();
+    const req = http.expectOne(`${base}/pagos/pg-1/ajustes-precio`);
+    expect(req.request.method).toBe('GET');
+    req.flush([]);
+  });
+
+  it('boleta() pide el PDF como blob por GET', () => {
+    let recibido: Blob | undefined;
+    api.boleta('pg-1').subscribe((b) => (recibido = b));
+    const req = http.expectOne(`${base}/pagos/pg-1/boleta`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.responseType).toBe('blob');
+    req.flush(new Blob(['%PDF'], { type: 'application/pdf' }));
+    expect(recibido?.type).toBe('application/pdf');
+  });
+
   it('ajustesPendientes() exige proveedorId como query param', () => {
     api.ajustesPendientes('p-1').subscribe();
     const req = http.expectOne((r) => r.url === `${base}/pagos/ajustes/pendientes`);

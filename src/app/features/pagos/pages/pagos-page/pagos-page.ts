@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { Dialog } from '@angular/cdk/dialog';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Subscription } from 'rxjs';
@@ -13,7 +14,7 @@ import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { paginaCorregida, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
 import { ProveedorPublicoResponse } from '../../../proveedores/data-access/proveedor.models';
 import { ProveedoresApi } from '../../../proveedores/data-access/proveedores.api';
-import { AjustePagoResponse, PagoResponse } from '../../data-access/pago.models';
+import { AjustePagoResponse, PagoResponse, pagoAjustado } from '../../data-access/pago.models';
 import { PagosApi } from '../../data-access/pagos.api';
 import { GenerarPagoDialog } from '../../ui/generar-pago-dialog/generar-pago-dialog';
 import { PagoDetalleDialog } from '../../ui/pago-detalle-dialog/pago-detalle-dialog';
@@ -22,7 +23,7 @@ type Pestana = 'liquidaciones' | 'ajustes';
 
 @Component({
   selector: 'app-pagos-page',
-  imports: [DataTableComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
+  imports: [DecimalPipe, DataTableComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './pagos-page.html',
   styleUrl: './pagos-page.css'
@@ -89,6 +90,10 @@ export class PagosPage {
         this.cargando.set(false);
       }
     });
+  }
+
+  protected ajustado(pago: PagoResponse): boolean {
+    return pagoAjustado(pago);
   }
 
   protected irAPagina(delta: number): void {

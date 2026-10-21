@@ -1019,7 +1019,34 @@ public record PagoResponse(
     BigDecimal precioLitro,
     BigDecimal total,
     Boolean comprobanteGenerado,
-    List<UUID> registroAcopioIds   // mejora #4: trazabilidad exacta
+    List<UUID> registroAcopioIds,   // mejora #4: trazabilidad exacta
+    BigDecimal precioLitroEfectivo, // V24: precio del ajuste de precio más reciente de ESTE pago (o precioLitro si no hay)
+    BigDecimal totalAPagar          // V24: litrosTotales × precioLitroEfectivo (precioLitro/total siguen siendo los originales)
+) {}
+```
+
+### AjustePrecioPagoRequest.java
+
+```java
+public record AjustePrecioPagoRequest(
+    @NotNull @DecimalMin("0.001") @Digits(integer = 3, fraction = 3) BigDecimal precioLitroNuevo,
+    @NotBlank @Size(max = 500) String motivo
+) {}
+```
+
+### AjustePrecioPagoResponse.java
+
+```java
+public record AjustePrecioPagoResponse(
+    UUID id,
+    UUID pagoId,
+    BigDecimal precioLitroAnterior,
+    BigDecimal precioLitroNuevo,
+    BigDecimal totalAnterior,
+    BigDecimal totalNuevo,
+    String motivo,
+    String usuarioNombre,
+    LocalDateTime creadoEn
 ) {}
 ```
 

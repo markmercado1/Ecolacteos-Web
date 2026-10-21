@@ -4,7 +4,9 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { PaginaResponse } from '../../../shared/models/pagina-response';
 import { FiltroPagina, paramsDePagina } from '../../../shared/util/paginacion';
-import { AjustePagoResponse, GenerarPagoRequest, PagoResponse } from './pago.models';
+import {
+  AjustePagoResponse, AjustePrecioPagoRequest, AjustePrecioPagoResponse, GenerarPagoRequest, PagoResponse
+} from './pago.models';
 
 /**
  * Fuente: docs/ENDPOINTS.md, PagoController.java. Generar, marcar
@@ -45,6 +47,24 @@ export class PagosApi {
 
   ajustesDePago(id: string): Observable<AjustePagoResponse[]> {
     return this.http.get<AjustePagoResponse[]>(`${this.baseUrl}/pagos/${id}/ajustes`);
+  }
+
+  /** ADMIN. Cambia el precio por litro SOLO de este pago; el pago original no se modifica (queda en el historial). */
+  ajustarPrecio(id: string, datos: AjustePrecioPagoRequest): Observable<AjustePrecioPagoResponse> {
+    return this.http.post<AjustePrecioPagoResponse>(`${this.baseUrl}/pagos/${id}/ajuste-precio`, datos);
+  }
+
+  /** ADMIN y RECEPCION. Historial de cambios de precio del pago, más reciente primero. */
+  ajustesDePrecio(id: string): Observable<AjustePrecioPagoResponse[]> {
+    return this.http.get<AjustePrecioPagoResponse[]>(`${this.baseUrl}/pagos/${id}/ajustes-precio`);
+  }
+
+  /**
+   * ADMIN y RECEPCION. Boleta de pago en PDF. Se pide como blob (con el token de la sesión) porque un enlace directo
+   * no puede enviar la cabecera Authorization.
+   */
+  boleta(id: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/pagos/${id}/boleta`, { responseType: 'blob' });
   }
 
   ajustesPendientes(proveedorId: string): Observable<AjustePagoResponse[]> {

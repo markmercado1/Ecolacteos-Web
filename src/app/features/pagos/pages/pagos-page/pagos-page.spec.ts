@@ -16,7 +16,8 @@ const paginaVacia: PaginaResponse<PagoResponse> = { contenido: [], paginaActual:
 function pago(id: string): PagoResponse {
   return {
     id, proveedorId: 'p-1', proveedorNombre: 'Juan', semanaInicio: '2026-09-07', semanaFin: '2026-09-13',
-    litrosTotales: 100, precioLitro: 1.5, total: 150, comprobanteGenerado: false, registroAcopioIds: []
+    litrosTotales: 100, precioLitro: 1.5, total: 150, comprobanteGenerado: false, registroAcopioIds: [],
+    precioLitroEfectivo: 1.5, totalAPagar: 150
   };
 }
 

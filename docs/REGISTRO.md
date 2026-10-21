@@ -852,3 +852,13 @@ Backend **260/260** reales (incluida paginación real verificada contra Postgres
 ### Siguiente acción concreta
 
 Si el usuario autoriza levantar o reiniciar un backend de desarrollo (sin tocar `localhost:8080`/`acopio_lechero`): confirmar visualmente `/precios` (filtro de familia, búsqueda, tabla con familia/producto/presentación, paginación con selector de tamaño, celda de precio en dos líneas) en desktop/tablet/móvil, con teclado y foco visible. Si no, **detenerse aquí** -- no avanzar a Fase 3 (Producción/Inventario por presentación) ni al carrito de ventas sin indicación explícita del usuario.
+
+## 2026-10-21 — Ajuste de precio por pago y boleta en PDF
+
+- Ramas (sin push ni merge): `feature/ajuste-pago-boleta` en el frontend (desde `main`) y en el backend `ecolacteos-backend` (desde `main`, V24).
+- Qué se agregó: en el detalle de un pago, ADMIN puede **ajustar el precio por litro de ese pago** (p. ej. 100 L: S/ 1.00 → S/ 1.20 = S/ 120.00) con motivo obligatorio y vista previa del total. El pago original no se reescribe: queda un historial (`ajuste_precio_pago`) con precio anterior/nuevo, motivo, usuario y fecha. El precio general de la leche y los demás pagos no cambian. Un ajuste nuevo reemplaza al anterior en el cálculo.
+- Boleta: `Ver boleta (PDF)` en el detalle (ADMIN y RECEPCION). Es un comprobante interno de liquidación, **no** un comprobante electrónico de SUNAT; el documento lo aclara.
+- La tabla de pagos muestra el importe a pagar y marca «Ajustado». Se quitó el texto técnico del endpoint del modal.
+- Decisión confirmada: los `AjustePago` por corrección de litros siguen valorizados al precio del pago original.
+- Verificación: frontend `npm test` 87 archivos / 598 pruebas y `npm run build` correctos. Backend 679 pruebas, 0 fallos; 24 suites de integración (Testcontainers) **no se pudieron ejecutar: Docker no disponible**, así que la migración V24 no se probó contra PostgreSQL real.
+- Pendiente: probar V24 con Docker/PostgreSQL, revisión visual del modal y de la boleta, y prueba manual con el backend real.

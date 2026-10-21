@@ -40,7 +40,10 @@
         @case ('proveedorNombre') { <strong>{{ fila.proveedorNombre }}</strong> }
         @case ('semana') { {{ fila.semanaInicio }} → {{ fila.semanaFin }} }
         @case ('litrosTotales') { {{ fila.litrosTotales }} L }
-        @case ('total') { <strong>S/ {{ fila.total }}</strong> }
+        @case ('total') {
+          <strong>S/ {{ fila.totalAPagar | number: '1.2-2' }}</strong>
+          @if (ajustado(fila)) { <span class="badge amber" title="El precio por litro de este pago fue ajustado">Ajustado</span> }
+        }
         @case ('comprobante') {
           <span class="badge" [class.amber]="!fila.comprobanteGenerado">
             {{ fila.comprobanteGenerado ? 'Generado' : 'Pendiente' }}

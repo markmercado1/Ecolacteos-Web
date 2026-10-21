@@ -110,7 +110,7 @@ describe('ProveedorDetalleDialog (perfil integral)', () => {
     http.expectNone((r) => r.url === `${base}/pagos/ajustes/pendientes`);
 
     c['activarPagos']();
-    const pago = { id: 'pg1', proveedorId: 'p1', proveedorNombre: 'Máximo Quispe', semanaInicio: '2026-09-01', semanaFin: '2026-09-07', litrosTotales: 100, precioLitro: 2, total: 200, comprobanteGenerado: false, registroAcopioIds: ['r1'] };
+    const pago = { id: 'pg1', proveedorId: 'p1', proveedorNombre: 'Máximo Quispe', semanaInicio: '2026-09-01', semanaFin: '2026-09-07', litrosTotales: 100, precioLitro: 2, total: 200, comprobanteGenerado: false, registroAcopioIds: ['r1'], precioLitroEfectivo: 2, totalAPagar: 200 };
     const reqPagos = http.expectOne((r) => r.url === `${base}/pagos/proveedor/p1/paginado`);
     expect(reqPagos.request.params.get('page')).toBe('0');
     expect(reqPagos.request.params.get('size')).toBe('10');

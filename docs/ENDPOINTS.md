@@ -607,6 +607,24 @@ Fuente: `C:\EcoLacteosProyect\acopio-backend-fase2\ecolacteos-backend\src\main\j
 - Entrada: `@PathVariable UUID id`.
 - Fuente: línea 110, método `ajustesDePago`.
 
+### POST /api/pagos/{id}/ajuste-precio
+
+- Permiso: `hasRole('ADMIN')`.
+- Entrada: `@PathVariable UUID id` + `AjustePrecioPagoRequest { precioLitroNuevo (0.001–999.999, ≤3 decimales), motivo (obligatorio, ≤500) }`.
+- Respuesta: 201 `AjustePrecioPagoResponse`. 400 si el precio es cero/negativo/igual al actual o el motivo está vacío; 404 si el pago no existe.
+- Cambia el precio por litro SOLO de ese pago (V24, tabla `ajuste_precio_pago`, append-only): el pago original no se modifica y el precio general de la leche no cambia. Un ajuste nuevo reemplaza al anterior en el cálculo; el historial se conserva. `PagoResponse` expone `precioLitroEfectivo` y `totalAPagar`.
+
+### GET /api/pagos/{id}/ajustes-precio
+
+- Permiso: `hasAnyRole('ADMIN','RECEPCION')`.
+- Respuesta: `List<AjustePrecioPagoResponse>` (más reciente primero).
+
+### GET /api/pagos/{id}/boleta
+
+- Permiso: `hasAnyRole('ADMIN','RECEPCION')`.
+- Respuesta: `application/pdf` en línea (`Content-Disposition: inline`, `Cache-Control: no-store`). Boleta de pago a proveedor: comprobante **interno**, no es boleta ni factura electrónica (sin serie/RUC/SUNAT). Lleva proveedor, semana, litros, precio y total originales, cada ajuste de precio con motivo y usuario, y el total a pagar.
+- Un enlace directo no puede enviar el token: el panel la pide como `blob` con la sesión y la abre en otra pestaña.
+
 ### GET /api/pagos/ajustes/pendientes
 
 - Permiso: `hasRole('ADMIN')`.
