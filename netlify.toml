@@ -1,17 +1,18 @@
-# Despliegue de la web pública (projects/web-publica) en Netlify.
-# El panel interno NO se despliega aquí.
+# Despliegue del PANEL INTERNO (proyecto Angular "ecolacteos-web") en Netlify.
+# Esta rama (deploy/panel) existe solo para publicar el panel; la web pública se despliega desde main
+# (ahí el netlify.toml apunta a projects/web-publica). Para actualizar el panel publicado: mezclar main en esta rama.
 
 [build]
-  command = "npm run build:publica"
-  publish = "dist/web-publica/browser"
+  command = "npm run build"
+  publish = "dist/ecolacteos-web/browser"
 
 [build.environment]
   NODE_VERSION = "22"
-  # El workspace tiene dos proyectos (panel y web pública): el plugin de Angular de Netlify debe usar la web pública.
-  ANGULAR_PROJECT = "web-publica"
+  # El workspace tiene dos proyectos (panel y web pública): el plugin de Angular de Netlify debe usar el panel.
+  ANGULAR_PROJECT = "ecolacteos-web"
 
-# API: Netlify reenvía /api/* al backend (por ahora un túnel de ngrok, solo para mostrar avances). La web sigue llamando a /api/...
-# (mismo origen) y no necesita cambios. La cabecera evita la página de advertencia de ngrok.
+# API: Netlify reenvía /api/* al backend (por ahora un túnel de ngrok, solo para mostrar avances). El panel llama a /api/...
+# (mismo origen, environment.apiBaseUrl = '/api'). La cabecera evita la página de advertencia de ngrok.
 # Si el túnel cambia de dirección, se edita únicamente la línea "to". Esta regla va ANTES de la de la SPA.
 [[redirects]]
   from = "/api/*"
@@ -21,8 +22,8 @@
   [redirects.headers]
     ngrok-skip-browser-warning = "true"
 
-# SPA: cualquier ruta que no sea un archivo devuelve index.html (así /catalogo, /reservar… funcionan al recargar).
-# Netlify sirve primero los archivos reales (/fonts, /img, *.js) y solo después aplica esta regla.
+# SPA: cualquier ruta que no sea un archivo devuelve index.html (así /pagos, /ventas… funcionan al recargar).
+# Netlify sirve primero los archivos reales (*.js, *.css) y solo después aplica esta regla.
 [[redirects]]
   from = "/*"
   to = "/index.html"

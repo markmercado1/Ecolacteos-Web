@@ -1,7 +1,8 @@
-// Build de producción. La URL real del backend de desarrollo/producción
-// no ha sido proporcionada todavía (ver docs/ESTADO.md, "Faltantes externos").
-// Reemplazar apiBaseUrl antes de desplegar; no se ha inventado un servidor real.
+// Build de producción del panel. La API se llama en el MISMO ORIGEN (/api): en Netlify, netlify.toml reenvía /api/* al
+// backend (hoy un túnel de ngrok), así no hay CORS ni se escribe la URL del backend en el código. Si el backend queda en
+// otro dominio, poner aquí su URL completa (p. ej. 'https://api.midominio.pe/api') y agregar el origen del panel a
+// CORS_ALLOWED_ORIGINS del backend.
 export const environment = {
   production: true,
-  apiBaseUrl: 'http://localhost:8080/api'
+  apiBaseUrl: '/api'
 };
