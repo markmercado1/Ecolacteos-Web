@@ -1,0 +1,45 @@
+<header><div><span class="eyebrow">PRODUCCIÓN POR RECETAS</span><h2>Nueva producción</h2></div><button class="btn" type="button" (click)="cerrar()" [disabled]="enviando()" aria-label="Cerrar">×</button></header>
+<div class="contenido">
+  <p class="intro">Agrega las recetas que vas a preparar e indica cuánta leche destinarás a cada una.</p>
+  @if (cargando()) { <p role="status">Cargando recetas…</p> }
+  @else if (errorRecetas()) { <p role="alert">{{ errorRecetas() }}</p><button class="btn" (click)="cargarRecetas()">Reintentar</button> }
+  @else if (!recetas().length) { <p>No hay recetas activas. Regístralas en Catálogos → Recetas.</p> }
+  @else {
+    <div class="fecha"><label for="fecha-multiple">Fecha de producción</label><input id="fecha-multiple" type="date" [(ngModel)]="fecha" [disabled]="bloqueado()" required /></div>
+    <div class="recetas">
+    @for (fila of filas(); track fila.uuid; let i = $index) {
+      <section class="receta">
+        <div class="fila-head"><strong>Receta {{ i + 1 }}</strong><button class="row-link" type="button" (click)="quitar(fila.uuid)" [disabled]="bloqueado() || filas().length === 1" [attr.aria-label]="'Quitar receta ' + (i + 1)">Quitar</button></div>
+        <div class="campos">
+          <div><label [for]="'receta-' + fila.uuid">Receta</label><select [id]="'receta-' + fila.uuid" [ngModel]="fila.recetaId" (ngModelChange)="cambiar(fila.uuid, 'recetaId', $event)" [disabled]="bloqueado()"><option value="">Selecciona una receta</option>@for (r of recetas(); track r.id) { <option [value]="r.id">{{ r.nombre }} · {{ r.productoNombre }}</option> }</select></div>
+          <div><label [for]="'litros-' + fila.uuid">Leche a utilizar (L)</label><input [id]="'litros-' + fila.uuid" type="number" min="0.01" max="9999999.99" step="0.01" placeholder="100" [ngModel]="fila.litros" (ngModelChange)="cambiar(fila.uuid, 'litros', $event)" [disabled]="bloqueado()" /></div>
+        </div>
+        @if (fila.calculo; as c) { <p class="esperado">Producción esperada: <strong>{{ c.cantidadEsperada | number:'1.0-3' }} {{ c.unidadConteo }}</strong> · {{ c.presentacionNombre }}</p> }
+        @if (fila.estado) { <p class="estado" role="status">{{ fila.estado }}</p> }
+      </section>
+    }
+    </div>
+    @if (!bloqueado()) { <button class="btn agregar" (click)="agregar()">+ Agregar receta</button> }
+    <section class="resumen" aria-live="polite"><h3>Leche e insumos para todas las recetas</h3>
+      @if (calculando()) { <p role="status">Calculando necesidades…</p> }
+      @else if (errorCalculo()) { <p role="alert">{{ errorCalculo() }}</p><button class="btn" (click)="recalcular()">Reintentar cálculo</button> }
+      @else if (resumen(); as total) {
+        <div class="total"><span>Leche total</span><strong>{{ total.litrosSolicitados | number:'1.0-2' }} L</strong></div>
+        @if (!bloqueado()) { <div class="tabla-scroll"><app-tabla-disponibilidad [disponibilidad]="total" /></div> }
+        @else { <p>Necesidades calculadas antes del envío. Consulta el estado de cada receta arriba; el inventario se actualizará al cerrar.</p> }
+        <p class="nota">La producción esperada es una estimación. La cantidad obtenida se registra al finalizar cada lote.</p>
+      } @else { <p>Completa todas las recetas y sus litros (mayores que cero, hasta dos decimales) para ver el resumen.</p> }
+    </section>
+    @if (errorEnvio()) { <p class="error" role="alert">{{ errorEnvio() }}</p> }
+    <p class="nota">Cada receta se guarda como un lote independiente. Iniciar descuenta leche e insumos. Si una receta falla, las anteriores se conservan y el proceso se detiene.</p>
+    <footer>
+      <button class="btn" (click)="cerrar()" [disabled]="enviando()">{{ terminado() ? 'Listo · cerrar' : 'Cerrar' }}</button>
+      @if (!bloqueado()) {
+        <button class="btn" (click)="enviar(false)" [disabled]="!fecha || !resumen()">Guardar como planificadas</button>
+        <button class="btn primary" (click)="enviar(true)" [disabled]="!fecha || !resumen()?.todoDisponible">Iniciar producción</button>
+      } @else if (!terminado()) {
+        <button class="btn primary" (click)="enviar(modo() === 'iniciar')" [disabled]="enviando()">{{ enviando() ? 'Procesando…' : 'Reintentar pendientes' }}</button>
+      }
+    </footer>
+  }
+</div>

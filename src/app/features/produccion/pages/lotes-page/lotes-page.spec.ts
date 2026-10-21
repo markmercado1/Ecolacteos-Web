@@ -9,7 +9,7 @@ import { UsuarioMeResponse } from '../../../../core/auth/auth.models';
 import { LotesPage } from './lotes-page';
 import { LoteDetalleDialog } from '../../ui/lote-detalle-dialog/lote-detalle-dialog';
 import { RegistrarLoteDialog } from '../../ui/registrar-lote-dialog/registrar-lote-dialog';
-import { NuevaProduccionDialog } from '../../ui/nueva-produccion-dialog/nueva-produccion-dialog';
+import { ProduccionMultipleDialog } from '../../ui/produccion-multiple-dialog/produccion-multiple-dialog';
 import { PaginaResponse } from '../../../../shared/models/pagina-response';
 import { LoteProduccion } from '../../data-access/lote-produccion.models';
 
@@ -211,7 +211,7 @@ describe('LotesPage', () => {
     req.flush(pagina0);
   });
 
-  it('"Nueva producción" abre NuevaProduccionDialog; al planificar recarga y abre el detalle del lote', () => {
+  it('"Nueva producción" abre varias recetas y al cerrar actualiza el historial y la leche', () => {
     const f = paginaInicialAdmin();
     const dialog = TestBed.inject(Dialog);
     let cerrado!: (valor: unknown) => void;
@@ -221,13 +221,12 @@ describe('LotesPage', () => {
       .mockReturnValue({ closed: { subscribe: () => undefined } } as never);
 
     f.componentInstance['nuevaProduccion']();
-    expect(abrirSpy.mock.calls[0][0]).toBe(NuevaProduccionDialog);
-    cerrado({ lote: { ...lote1, id: 'l9', estado: 'PLANIFICADA' }, iniciada: false });
+    expect(abrirSpy.mock.calls[0][0]).toBe(ProduccionMultipleDialog);
+    cerrado({ lotes: [{ ...lote1, id: 'l9', estado: 'PLANIFICADA' }] });
 
     http.expectOne((r) => r.url === `${base}/lotes-produccion`).flush(pagina0);
     flushSaldoLeche(http);
-    expect(abrirSpy.mock.calls[1][0]).toBe(LoteDetalleDialog);
-    expect((abrirSpy.mock.calls[1][1] as { data: { id: string } }).data).toEqual({ id: 'l9' });
+    expect(abrirSpy).toHaveBeenCalledTimes(1);
   });
 
   it('si el detalle cambió el estado del lote (iniciar/finalizar/cancelar), recarga la lista y la leche', () => {

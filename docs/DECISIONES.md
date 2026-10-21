@@ -171,3 +171,8 @@ Para cada cambio: fecha, decisión, motivo, módulos afectados, contrato y compa
 
 ## 2026-09-16 — Asignación y consulta de acopios
 Por instrucción explícita, asignar al acopiador una unidad ya existente reemplaza la creación de unidad en ese flujo y en el botón principal de Unidades. Se usa PUT del contrato actual, sin duplicar placas. La consulta de acopios se incorpora como módulo ADMIN independiente, con filtro por día y GPS/foto del registro, sin inventar endpoints de recorrido.
+
+
+## 2026-10-21 — Varias recetas en una selección de producción (solo web)
+Por petición explícita, Nueva producción acepta varias filas, cada una con receta y litros, conservando un lote independiente por fila. No se cambia backend ni se mezclan recetas dentro de un lote. GET /recetas/{id}/calculo calcula cada receta; el cliente suma únicamente necesidades en centésimas y no suma existencias compartidas (mínimo observado por insumo). La comprobación conjunta es informativa, sin reserva. No se suman productos esperados de distintas presentaciones.
+Se envía planificar/iniciar secuencialmente con UUID estable por fila; solicitudes y modo quedan congelados desde el primer intento. Un fallo detiene el resto; las filas completadas se conservan y se omiten al reintentar. Una respuesta perdida de iniciar no se presenta como fallo definitivo ni consumo confirmado. No existe atomicidad de grupo: para todo-o-nada haría falta nuevo backend, expresamente fuera de alcance. Cerrar vuelve a cargar historial e inventario de leche. Sin persistencia del borrador entre recargas; se avisa antes de cerrar con operaciones pendientes.

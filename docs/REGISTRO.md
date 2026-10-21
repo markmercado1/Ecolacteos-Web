@@ -862,3 +862,12 @@ Si el usuario autoriza levantar o reiniciar un backend de desarrollo (sin tocar 
 - Decisión confirmada: los `AjustePago` por corrección de litros siguen valorizados al precio del pago original.
 - Verificación: frontend `npm test` 87 archivos / 598 pruebas y `npm run build` correctos. Backend 679 pruebas, 0 fallos; 24 suites de integración (Testcontainers) **no se pudieron ejecutar: Docker no disponible**, así que la migración V24 no se probó contra PostgreSQL real.
 - Pendiente: probar V24 con Docker/PostgreSQL, revisión visual del modal y de la boleta, y prueba manual con el backend real.
+
+
+## 2026-10-21 — Producción con varias recetas
+- Rama nueva codex/produccion-varias-recetas, creada antes de editar; árbol inicial limpio. No se modificó backend.
+- Nuevo ui/produccion-multiple-dialog (.ts/.html/.css/.spec.ts) y adaptación de pages/lotes-page (.ts/.spec.ts) bajo src/app/features/produccion. Flujo anterior de receta única conservado en fuentes; el botón principal ahora abre el selector múltiple, con una fila inicial. ESTADO y DECISIONES actualizados.
+- Contratos verificados: RecetasApi.calcular, LotesProduccionApi.planificar/iniciar y LoteProduccionService: plan idempotente por uuidCliente y datos, inicio idempotente en EN_PRODUCCION, validación y consumo transaccional por lote. Sin cambios de contratos.
+- 7 pruebas nuevas: insumos compartidos y stock no duplicado; falta conjunta con permiso de solo planificar; dos lotes/UUID distintos; fallo parcial al iniciar; respuesta perdida al planificar y solicitud inmutable; invalidación de resumen/quitar fila; doble envío y cierre bloqueados durante petición. Prueba de página actualizada para recargar historial/saldo al cerrar.
+- npm run build aprobado; npm test -- --watch=false: 605 pruebas, 88 archivos, todos aprobados. git diff --check sin errores. Logs build-multiple.log y test-multiple.log.
+- Limitaciones: sin revisión visual ni integración HTTP real, no se consumió inventario real. No atomicidad de grupo ni persistencia del borrador. Próximo: revisión en navegador con 100 L yogur + 100 L queso y validación controlada en desarrollo. Sin commit/push.

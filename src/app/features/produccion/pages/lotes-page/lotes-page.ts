@@ -18,7 +18,7 @@ import {
 } from '../../data-access/lote-produccion.models';
 import { LotesProduccionApi } from '../../data-access/lotes-produccion.api';
 import { LoteDetalleDialog } from '../../ui/lote-detalle-dialog/lote-detalle-dialog';
-import { NuevaProduccionDialog, NuevaProduccionResultado } from '../../ui/nueva-produccion-dialog/nueva-produccion-dialog';
+import { ProduccionMultipleDialog, ProduccionMultipleResultado } from '../../ui/produccion-multiple-dialog/produccion-multiple-dialog';
 import { RegistrarLoteDialog, RegistrarLoteDialogResultado } from '../../ui/registrar-lote-dialog/registrar-lote-dialog';
 
 const TAMANO_PAGINA = 20;
@@ -160,20 +160,13 @@ export class LotesPage {
 
   /** Flujo principal (V18): producción desde receta, planificada y luego iniciada/finalizada. */
   protected nuevaProduccion(): void {
-    const ref = this.dialog.open<NuevaProduccionResultado | undefined>(NuevaProduccionDialog, {
-      ariaLabel: 'Nueva producción'
+    const ref = this.dialog.open<ProduccionMultipleResultado>(ProduccionMultipleDialog, {
+      ariaLabel: 'Nueva producción', disableClose: true
     });
-    ref.closed.subscribe((resultado) => {
-      if (!resultado) return;
-      this.toast.exito(
-        resultado.iniciada
-          ? `Producción de "${resultado.lote.productoNombre}" iniciada: se descontaron leche e insumos.`
-          : `Producción de "${resultado.lote.productoNombre}" guardada como planificada.`
-      );
+    ref.closed.subscribe(() => {
       this.pagina.set(0);
       this.cargar();
       this.cargarSaldoLeche();
-      this.abrirDetalle(resultado.lote);
     });
   }
 

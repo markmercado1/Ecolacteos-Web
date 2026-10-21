@@ -301,3 +301,12 @@ Continuación explícita de Fase 4, último bloque (Bloques 1-5 ya validados con
 **Pendientes reales**: (a) backend de desarrollo real con una zona que tenga proyección calculada y otra que no, para confirmar en pantalla real tanto el panel completo como el mensaje "Sin proyección disponible"; (b) revisión visual/responsive humana de las 5 vistas con gráfico (`/panel`, `/acopios`, recepción, lote, perfil de proveedor) en desktop/tablet/móvil, con nombres de proveedor largos y valores grandes; (c) decidir si se aplica la corrección de backend sugerida para el 404-en-cascada de `panel-economico` (no implementada, es cambio de backend).
 
 **Estado final: Fase 4 permanece PARCIAL, no se marca COMPLETADA.** Los 6 bloques de docs/FASES.md tienen código y pruebas automatizadas completas, pero dos criterios de aceptación explícitos de docs/FASES.md siguen sin cumplirse: integración contra backend real y revisión visual con datos variados en pantalla pequeña. Siguiente acción concreta: conseguir acceso a un backend de desarrollo con las dos zonas descritas en (a) y realizar la revisión visual de (b).
+
+
+## 2026-10-21 — Varias recetas: IMPLEMENTADO; validación visual/real pendiente
+Rama codex/produccion-varias-recetas creada antes de editar, árbol inicial limpio. Solo frontend: selección repetible y resumen agregado; un lote por receta con planificar/iniciar existentes, sin atomicidad de grupo.
+
+- Nueva producción abre filas repetibles de receta/litros, fecha común, esperado por receta y resumen de leche/insumos compartidos. Suma en centésimas de necesidades ya calculadas por API; stock compartido no se suma, toma el mínimo observado. No reimplementa escalado de recetas.
+- Guardar planifica sin consumir; iniciar planifica e inicia cada lote secuencialmente. Un UUID y solicitud fija por fila; al fallar se detiene, muestra estado parcial y reintenta solo lo pendiente. No hay transacción global ni reversión automática; backend vuelve a validar y descontar por lote.
+- Verificado: npm run build aprobado; npm test -- --watch=false, 605/605 en 88 archivos (7 nuevas de varias recetas; prueba de apertura del diálogo adaptada). git diff --check correcto.
+- Sin cambios backend/móvil ni mutaciones en servidor real. No realizada revisión visual de navegador; pendiente probar en entorno de desarrollo con dos recetas y stock compartido. Rama sin commit/push.
