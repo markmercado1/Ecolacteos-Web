@@ -1,0 +1,185 @@
+
+> ecolacteos-web@0.0.0 test
+> ng test ecolacteos-web
+
+> Building...
+√ Building...
+Initial chunk files                                                                       | Names                                                                                  |  Raw size
+spec-app-features-acopios-acopios.js                                                      | spec-app-features-acopios-acopios                                                      | 135.53 kB | 
+chunk-DF4ZEON3.js                                                                         | -                                                                                      | 109.74 kB | 
+spec-app-features-catalogos-pages-catalogos-page-catalogos-page.js                        | spec-app-features-catalogos-pages-catalogos-page-catalogos-page                        |  76.99 kB | 
+chunk-BMJXSQVI.js                                                                         | -                                                                                      |  76.47 kB | 
+spec-app-features-calidad-pages-calidad-page-calidad-page.js                              | spec-app-features-calidad-pages-calidad-page-calidad-page                              |  72.97 kB | 
+spec-app-features-precios-pages-precios-page-precios-page.js                              | spec-app-features-precios-pages-precios-page-precios-page                              |  72.54 kB | 
+spec-app-features-inventario-pages-inventario-page-inventario-page.js                     | spec-app-features-inventario-pages-inventario-page-inventario-page                     |  71.00 kB | 
+spec-app-core-layout-shell.js                                                             | spec-app-core-layout-shell                                                             |  68.68 kB | 
+chunk-ZZBJDUEL.js                                                                         | -                                                                                      |  62.57 kB | 
+spec-app-features-proveedores-pages-proveedores-page-proveedores-page.js                  | spec-app-features-proveedores-pages-proveedores-page-proveedores-page                  |  57.99 kB | 
+chunk-5YVWQKQA.js                                                                         | -                                                                                      |  51.42 kB | 
+spec-app-features-pagos-pages-pagos-page-pagos-page.js                                    | spec-app-features-pagos-pages-pagos-page-pagos-page                                    |  46.97 kB | 
+spec-app-features-produccion-pages-lotes-page-lotes-page.js                               | spec-app-features-produccion-pages-lotes-page-lotes-page                               |  43.09 kB | 
+chunk-LQ6NLCTX.js                                                                         | -                                                                                      |  42.48 kB | 
+chunk-L4PBSB5Y.js                                                                         | -                                                                                      |  41.33 kB | 
+spec-app-features-reservas-pages-reservas-page-reservas-page.js                           | spec-app-features-reservas-pages-reservas-page-reservas-page                           |  40.72 kB | 
+chunk-MKAKXHYH.js                                                                         | -                                                                                      |  38.41 kB | 
+spec-app-features-comunicados-pages-comunicados-page-comunicados-page.js                  | spec-app-features-comunicados-pages-comunicados-page-comunicados-page                  |  37.77 kB | 
+chunk-7UUBCYLQ.js                                                                         | -                                                                                      |  37.20 kB | 
+chunk-TU7NBZCU.js                                                                         | -                                                                                      |  34.05 kB | 
+spec-app-features-acopiadores-pages-acopiadores-page-acopiadores-page.js                  | spec-app-features-acopiadores-pages-acopiadores-page-acopiadores-page                  |  32.04 kB | 
+spec-app-features-rutas-pages-rutas-page-rutas-page.js                                    | spec-app-features-rutas-pages-rutas-page-rutas-page                                    |  31.25 kB | 
+chunk-EJXYT6FY.js                                                                         | -                                                                                      |  29.91 kB | 
+chunk-LHEYHGEU.js                                                                         | -                                                                                      |  29.22 kB | 
+chunk-5MGIFRKT.js                                                                         | -                                                                                      |  28.14 kB | 
+spec-app-features-panel-pages-panel-page-panel-page.js                                    | spec-app-features-panel-pages-panel-page-panel-page                                    |  27.73 kB | 
+chunk-5UDYYR5B.js                                                                         | -                                                                                      |  27.35 kB | 
+spec-app-features-usuarios-pages-usuarios-page-usuarios-page.js                           | spec-app-features-usuarios-pages-usuarios-page-usuarios-page                           |  26.12 kB | 
+styles.css                                                                                | styles                                                                                 |  25.50 kB | 
+spec-app-features-produccion-diaria-pages-informe-page-informe-page.js                    | spec-app-features-produccion-diaria-pages-informe-page-informe-page                    |  25.28 kB | 
+chunk-VP76VNAL.js                                                                         | -                                                                                      |  25.05 kB | 
+chunk-OVJPXFOI.js                                                                         | -                                                                                      |  23.80 kB | 
+chunk-ET2A3SB2.js                                                                         | -                                                                                      |  22.86 kB | 
+spec-app-features-ventas-pages-ventas-page-ventas-page.js                                 | spec-app-features-ventas-pages-ventas-page-ventas-page                                 |  22.84 kB | 
+spec-app-features-produccion-ui-lote-detalle-dialog-lote-detalle-dialog.js                | spec-app-features-produccion-ui-lote-detalle-dialog-lote-detalle-dialog                |  22.16 kB | 
+spec-app-features-ventas-ui-venta-form-dialog-venta-form-dialog.js                        | spec-app-features-ventas-ui-venta-form-dialog-venta-form-dialog                        |  22.16 kB | 
+chunk-IEAQYU24.js                                                                         | -                                                                                      |  20.87 kB | 
+spec-app-features-recepcion-pages-recepcion-page-recepcion-page.js                        | spec-app-features-recepcion-pages-recepcion-page-recepcion-page                        |  19.27 kB | 
+chunk-MAHNOGK7.js                                                                         | -                                                                                      |  18.76 kB | 
+chunk-WXM72NS5.js                                                                         | -                                                                                      |  18.47 kB | 
+chunk-MJYL6YOW.js                                                                         | -                                                                                      |  17.58 kB | 
+chunk-G7QEPKZW.js                                                                         | -                                                                                      |  17.48 kB | 
+chunk-3ETNZWFT.js                                                                         | -                                                                                      |  17.39 kB | 
+spec-app-features-unidades-pages-unidades-page-unidades-page.js                           | spec-app-features-unidades-pages-unidades-page-unidades-page                           |  16.91 kB | 
+chunk-OCVBEJTT.js                                                                         | -                                                                                      |  16.86 kB | 
+chunk-T32LQDGK.js                                                                         | -                                                                                      |  16.79 kB | 
+spec-app-features-reservas-ui-reserva-detalle-dialog-reserva-detalle-dialog.js            | spec-app-features-reservas-ui-reserva-detalle-dialog-reserva-detalle-dialog            |  16.51 kB | 
+chunk-TZPPBG4K.js                                                                         | -                                                                                      |  16.04 kB | 
+spec-app-features-produccion-ui-registrar-lote-dialog-registrar-lote-dialog.js            | spec-app-features-produccion-ui-registrar-lote-dialog-registrar-lote-dialog            |  15.81 kB | 
+chunk-PBZ6XLSB.js                                                                         | -                                                                                      |  15.29 kB | 
+chunk-OOESGAGH.js                                                                         | -                                                                                      |  15.02 kB | 
+spec-app-features-jornadas-pages-jornadas-page-jornadas-page.js                           | spec-app-features-jornadas-pages-jornadas-page-jornadas-page                           |  14.97 kB | 
+chunk-TCRSDAEX.js                                                                         | -                                                                                      |  14.83 kB | 
+chunk-GBCXVCHY.js                                                                         | -                                                                                      |  14.60 kB | 
+chunk-AMECQRJ2.js                                                                         | -                                                                                      |  13.72 kB | 
+chunk-FM4YZDFF.js                                                                         | -                                                                                      |  13.70 kB | 
+chunk-JDIFD3E7.js                                                                         | -                                                                                      |  13.70 kB | 
+chunk-G36XGJ7I.js                                                                         | -                                                                                      |  12.98 kB | 
+spec-app-features-catalogos-ui-presentaciones-dialog-presentaciones-dialog.js             | spec-app-features-catalogos-ui-presentaciones-dialog-presentaciones-dialog             |  12.63 kB | 
+spec-app-features-catalogos-ui-producto-form-dialog-producto-form-dialog.js               | spec-app-features-catalogos-ui-producto-form-dialog-producto-form-dialog               |  12.23 kB | 
+chunk-IZADJL54.js                                                                         | -                                                                                      |  12.10 kB | 
+chunk-HKQ2WYFJ.js                                                                         | -                                                                                      |   9.71 kB | 
+spec-app-features-proveedores-ui-proveedor-detalle-dialog-proveedor-detalle-dialog.js     | spec-app-features-proveedores-ui-proveedor-detalle-dialog-proveedor-detalle-dialog     |   8.99 kB | 
+spec-app-features-produccion-ui-nueva-produccion-dialog-nueva-produccion-dialog.js        | spec-app-features-produccion-ui-nueva-produccion-dialog-nueva-produccion-dialog        |   8.89 kB | 
+spec-app-features-jornadas-ui-jornada-detalle-dialog-jornada-detalle-dialog.js            | spec-app-features-jornadas-ui-jornada-detalle-dialog-jornada-detalle-dialog            |   8.62 kB | 
+spec-app-shared-ui-data-table-data-table.js                                               | spec-app-shared-ui-data-table-data-table                                               |   8.48 kB | 
+chunk-IZV5NL3M.js                                                                         | -                                                                                      |   7.92 kB | 
+spec-app-app.js                                                                           | spec-app-app                                                                           |   7.88 kB | 
+spec-app-features-inventario-ui-lotes-presentacion-dialog-lotes-presentacion-dialog.js    | spec-app-features-inventario-ui-lotes-presentacion-dialog-lotes-presentacion-dialog    |   7.17 kB | 
+spec-app-features-unidades-ui-unidad-form-dialog-unidad-form-dialog.js                    | spec-app-features-unidades-ui-unidad-form-dialog-unidad-form-dialog                    |   7.13 kB | 
+spec-app-features-produccion-data-access-lotes-produccion.api.js                          | spec-app-features-produccion-data-access-lotes-produccion.api                          |   6.58 kB | 
+spec-app-features-catalogos-ui-receta-form-dialog-receta-form-dialog.js                   | spec-app-features-catalogos-ui-receta-form-dialog-receta-form-dialog                   |   5.64 kB | 
+chunk-3YXGD3VN.js                                                                         | -                                                                                      |   5.60 kB | 
+chunk-TAIWYILY.js                                                                         | -                                                                                      |   5.36 kB | 
+spec-app-core-auth-auth.service.js                                                        | spec-app-core-auth-auth.service                                                        |   5.09 kB | 
+spec-app-features-produccion-diaria-ui-informe-form-dialog-informe-form-dialog.js         | spec-app-features-produccion-diaria-ui-informe-form-dialog-informe-form-dialog         |   5.01 kB | 
+spec-app-features-unidades-ui-asignar-unidad-dialog-asignar-unidad-dialog.js              | spec-app-features-unidades-ui-asignar-unidad-dialog-asignar-unidad-dialog              |   4.99 kB | 
+spec-app-features-catalogos-data-access-productos.api.js                                  | spec-app-features-catalogos-data-access-productos.api                                  |   4.96 kB | 
+spec-app-features-vencimiento-ui-control-vencimiento-dialog-control-vencimiento-dialog.js | spec-app-features-vencimiento-ui-control-vencimiento-dialog-control-vencimiento-dialog |   4.86 kB | 
+chunk-R3HEAIB3.js                                                                         | -                                                                                      |   4.80 kB | 
+chunk-RSTWSNOR.js                                                                         | -                                                                                      |   4.75 kB | 
+spec-app-features-precios-ui-historial-precio-dialog-historial-precio-dialog.js           | spec-app-features-precios-ui-historial-precio-dialog-historial-precio-dialog           |   4.56 kB | 
+spec-app-features-inventario-ui-historial-ajustes-dialog-historial-ajustes-dialog.js      | spec-app-features-inventario-ui-historial-ajustes-dialog-historial-ajustes-dialog      |   4.55 kB | 
+spec-app-features-inventario-ui-kardex-vista-kardex-vista.js                              | spec-app-features-inventario-ui-kardex-vista-kardex-vista                              |   4.46 kB | 
+spec-app-features-reservas-data-access-reservas.api.js                                    | spec-app-features-reservas-data-access-reservas.api                                    |   4.35 kB | 
+spec-app-core-auth-auth.interceptor.js                                                    | spec-app-core-auth-auth.interceptor                                                    |   4.25 kB | 
+spec-app-shared-ui-chart-bar-chart.js                                                     | spec-app-shared-ui-chart-bar-chart                                                     |   4.25 kB | 
+spec-app-features-precios-ui-precio-queso-form-dialog-precio-queso-form-dialog.js         | spec-app-features-precios-ui-precio-queso-form-dialog-precio-queso-form-dialog         |   4.12 kB | 
+spec-app-features-ventas-ui-venta-detalle-dialog-venta-detalle-dialog.js                  | spec-app-features-ventas-ui-venta-detalle-dialog-venta-detalle-dialog                  |   3.92 kB | 
+spec-app-features-catalogos-data-access-foto-catalogo.js                                  | spec-app-features-catalogos-data-access-foto-catalogo                                  |   3.82 kB | 
+spec-app-features-ventas-data-access-ventas.api.js                                        | spec-app-features-ventas-data-access-ventas.api                                        |   3.81 kB | 
+spec-app-features-inventario-ui-ajustar-stock-dialog-ajustar-stock-dialog.js              | spec-app-features-inventario-ui-ajustar-stock-dialog-ajustar-stock-dialog              |   3.79 kB | 
+spec-app-features-calidad-data-access-calidad.api.js                                      | spec-app-features-calidad-data-access-calidad.api                                      |   3.78 kB | 
+spec-app-features-usuarios-data-access-usuarios.api.js                                    | spec-app-features-usuarios-data-access-usuarios.api                                    |   3.74 kB | 
+spec-app-features-proveedores-data-access-proveedores.api.js                              | spec-app-features-proveedores-data-access-proveedores.api                              |   3.70 kB | 
+spec-app-features-inventario-ui-movimiento-insumo-dialog-movimiento-insumo-dialog.js      | spec-app-features-inventario-ui-movimiento-insumo-dialog-movimiento-insumo-dialog      |   3.66 kB | 
+spec-app-features-catalogos-ui-foto-campo-foto-campo.js                                   | spec-app-features-catalogos-ui-foto-campo-foto-campo                                   |   3.62 kB | 
+spec-app-features-produccion-diaria-data-access-informes-produccion.api.js                | spec-app-features-produccion-diaria-data-access-informes-produccion.api                |   3.54 kB | 
+chunk-XLQ6HNKN.js                                                                         | -                                                                                      |   3.43 kB | 
+chunk-5EETIU4C.js                                                                         | -                                                                                      |   3.43 kB | 
+spec-app-features-recepcion-ui-recepcion-detalle-dialog-recepcion-detalle-dialog.js       | spec-app-features-recepcion-ui-recepcion-detalle-dialog-recepcion-detalle-dialog       |   3.40 kB | 
+chunk-PZLY3KNR.js                                                                         | -                                                                                      |   3.34 kB | 
+spec-app-features-reservas-ui-aceptacion-precio-dialog-aceptacion-precio-dialog.js        | spec-app-features-reservas-ui-aceptacion-precio-dialog-aceptacion-precio-dialog        |   3.33 kB | 
+spec-app-features-precios-data-access-precios-queso.api.js                                | spec-app-features-precios-data-access-precios-queso.api                                |   3.31 kB | 
+chunk-ZYY4DUMA.js                                                                         | -                                                                                      |   3.18 kB | 
+spec-app-features-pagos-data-access-pagos.api.js                                          | spec-app-features-pagos-data-access-pagos.api                                          |   2.92 kB | 
+spec-app-core-auth-token-store.service.js                                                 | spec-app-core-auth-token-store.service                                                 |   2.85 kB | 
+chunk-CJ53MNFJ.js                                                                         | -                                                                                      |   2.77 kB | 
+spec-app-features-inventario-data-access-inventario.api.js                                | spec-app-features-inventario-data-access-inventario.api                                |   2.71 kB | 
+spec-app-features-produccion-domain-revision-produccion.js                                | spec-app-features-produccion-domain-revision-produccion                                |   2.65 kB | 
+chunk-NJJ4UHN5.js                                                                         | -                                                                                      |   2.60 kB | 
+chunk-3R4XRR5K.js                                                                         | -                                                                                      |   2.50 kB | 
+spec-app-features-recepcion-data-access-recepcion.api.js                                  | spec-app-features-recepcion-data-access-recepcion.api                                  |   2.49 kB | 
+chunk-CGSTVECC.js                                                                         | -                                                                                      |   2.46 kB | 
+chunk-TLRQH57A.js                                                                         | -                                                                                      |   2.46 kB | 
+chunk-FMLANEWT.js                                                                         | -                                                                                      |   2.42 kB | 
+spec-app-features-catalogos-data-access-insumos.api.js                                    | spec-app-features-catalogos-data-access-insumos.api                                    |   2.41 kB | 
+spec-app-features-vencimiento-data-access-vencimiento.api.js                              | spec-app-features-vencimiento-data-access-vencimiento.api                              |   2.38 kB | 
+spec-app-features-inventario-data-access-kardex.api.js                                    | spec-app-features-inventario-data-access-kardex.api                                    |   2.38 kB | 
+chunk-R52WJZNT.js                                                                         | -                                                                                      |   2.26 kB | 
+spec-app-features-catalogos-data-access-recetas.api.js                                    | spec-app-features-catalogos-data-access-recetas.api                                    |   2.23 kB | 
+spec-app-features-unidades-data-access-unidades.api.js                                    | spec-app-features-unidades-data-access-unidades.api                                    |   2.21 kB | 
+chunk-422N7TO6.js                                                                         | -                                                                                      |   2.14 kB | 
+chunk-HXMJCJAZ.js                                                                         | -                                                                                      |   2.11 kB | 
+spec-app-features-catalogos-ui-insumo-form-dialog-insumo-form-dialog.js                   | spec-app-features-catalogos-ui-insumo-form-dialog-insumo-form-dialog                   |   2.11 kB | 
+spec-app-features-acopiadores-ui-nuevo-acopiador-dialog-nuevo-acopiador-dialog.js         | spec-app-features-acopiadores-ui-nuevo-acopiador-dialog-nuevo-acopiador-dialog         |   2.10 kB | 
+chunk-NAPDKDBP.js                                                                         | -                                                                                      |   2.08 kB | 
+spec-app-features-precios-data-access-precios.api.js                                      | spec-app-features-precios-data-access-precios.api                                      |   2.07 kB | 
+spec-app-core-auth-role.guard.js                                                          | spec-app-core-auth-role.guard                                                          |   2.07 kB | 
+spec-app-features-comunicados-data-access-comunicados.api.js                              | spec-app-features-comunicados-data-access-comunicados.api                              |   2.02 kB | 
+chunk-PV4AGBNR.js                                                                         | -                                                                                      |   1.90 kB | 
+spec-app-features-catalogos-data-access-familias.api.js                                   | spec-app-features-catalogos-data-access-familias.api                                   |   1.87 kB | 
+chunk-YDEQ3C56.js                                                                         | -                                                                                      |   1.86 kB | 
+chunk-JUYGWIDS.js                                                                         | -                                                                                      |   1.84 kB | 
+chunk-4IGTTHHM.js                                                                         | -                                                                                      |   1.82 kB | 
+chunk-JXMIF3YK.js                                                                         | -                                                                                      |   1.81 kB | 
+spec-app-features-catalogos-data-access-zonas.api.js                                      | spec-app-features-catalogos-data-access-zonas.api                                      |   1.78 kB | 
+chunk-XNLDQIJC.js                                                                         | -                                                                                      |   1.75 kB | 
+spec-app-features-produccion-diaria-ui-informe-detalle-dialog-informe-detalle-dialog.js   | spec-app-features-produccion-diaria-ui-informe-detalle-dialog-informe-detalle-dialog   |   1.73 kB | 
+spec-app-core-auth-auth.guard.js                                                          | spec-app-core-auth-auth.guard                                                          |   1.73 kB | 
+chunk-NDCJFRIE.js                                                                         | -                                                                                      |   1.57 kB | 
+spec-app-features-catalogos-data-access-configuracion.api.js                              | spec-app-features-catalogos-data-access-configuracion.api                              |   1.49 kB | 
+chunk-Z656SIRX.js                                                                         | -                                                                                      |   1.49 kB | 
+spec-app-shared-util-paginacion.js                                                        | spec-app-shared-util-paginacion                                                        |   1.46 kB | 
+spec-app-features-catalogos-data-access-motivos.api.js                                    | spec-app-features-catalogos-data-access-motivos.api                                    |   1.45 kB | 
+chunk-ECOXV3QU.js                                                                         | -                                                                                      |   1.44 kB | 
+chunk-VVFIWGF6.js                                                                         | -                                                                                      |   1.41 kB | 
+spec-app-features-rutas-data-access-rutas.api.js                                          | spec-app-features-rutas-data-access-rutas.api                                          |   1.39 kB | 
+chunk-BA2ZTSM6.js                                                                         | -                                                                                      |   1.36 kB | 
+chunk-JS237USG.js                                                                         | -                                                                                      |   1.36 kB | 
+chunk-RIJJ6S23.js                                                                         | -                                                                                      |   1.35 kB | 
+chunk-PRR5CJLU.js                                                                         | -                                                                                      |   1.35 kB | 
+chunk-ISTTNVF3.js                                                                         | -                                                                                      |   1.35 kB | 
+spec-app-core-http-app-error.js                                                           | spec-app-core-http-app-error                                                           |   1.31 kB | 
+init-testbed.js                                                                           | init-testbed                                                                           |   1.21 kB | 
+chunk-OCHFPRRF.js                                                                         | -                                                                                      |   1.16 kB | 
+chunk-MWXMADVQ.js                                                                         | -                                                                                      |   1.08 kB | 
+chunk-BPMNUSXI.js                                                                         | -                                                                                      |   1.06 kB | 
+spec-app-features-jornadas-data-access-jornadas.api.js                                    | spec-app-features-jornadas-data-access-jornadas.api                                    |   1.05 kB | 
+vitest-mock-patch.js                                                                      | vitest-mock-patch                                                                      | 974 bytes | 
+chunk-PTK4WKLB.js                                                                         | -                                                                                      | 798 bytes | 
+chunk-IE3MSLX2.js                                                                         | -                                                                                      | 489 bytes | 
+chunk-O7CMU7QW.js                                                                         | -                                                                                      | 308 bytes | 
+chunk-XHVUPO3K.js                                                                         | -                                                                                      | 191 bytes | 
+
+                                                                                          | Initial total                                                                          |   2.36 MB
+
+Application bundle generation complete. [11.052 seconds] - 2026-10-21T05:40:07.266Z
+
+
+ RUN  v4.1.11 C:/EcoLacteosProyect/Ecolacteos-Web
+
+
+ Test Files  85 passed (85)
+      Tests  587 passed (587)
+   Start at  00:40:08
+   Duration  12.99s (transform 18.78s, setup 25.05s, import 39.24s, tests 41.38s, environment 337.16s)
+

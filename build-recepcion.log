@@ -1,0 +1,43 @@
+
+> ecolacteos-web@0.0.0 build
+> ng build ecolacteos-web
+
+> Building...
+√ Building...
+Initial chunk files | Names            |  Raw size | Estimated transfer size
+chunk-FJWCEPAS.js   | -                | 195.73 kB |                57.03 kB
+chunk-6E4JUJFM.js   | -                |  76.04 kB |                18.94 kB
+chunk-EEYRCYNY.js   | -                |  54.01 kB |                13.20 kB
+chunk-WR7V4VR6.js   | -                |  45.49 kB |                 9.24 kB
+styles-XBEQG2VP.css | styles           |  33.37 kB |                 5.16 kB
+main-NX6Q7AQS.js    | main             |  31.50 kB |                 8.02 kB
+chunk-YZ7FE2PA.js   | -                |  11.74 kB |                 3.72 kB
+chunk-QEQ2QBWF.js   | -                |   3.63 kB |                 1.16 kB
+chunk-HO5RLINZ.js   | -                |   1.32 kB |               609 bytes
+chunk-7LGF52VS.js   | -                |   1.10 kB |               560 bytes
+chunk-AM3SK6ZK.js   | -                | 537 bytes |               537 bytes
+
+                    | Initial total    | 454.49 kB |               118.17 kB
+
+Lazy chunk files    | Names            |  Raw size | Estimated transfer size
+chunk-ASHDLW43.js   | acopios-page     | 185.59 kB |                46.76 kB
+chunk-4QOOTA6E.js   | lotes-page       |  91.89 kB |                20.05 kB
+chunk-XWQ7LTYF.js   | catalogos-page   |  74.44 kB |                14.72 kB
+chunk-IRIAYL6H.js   | inventario-page  |  55.88 kB |                11.79 kB
+chunk-7YJQ7EHW.js   | reservas-page    |  33.57 kB |                 8.65 kB
+chunk-HIX5ZUQD.js   | precios-page     |  32.22 kB |                 7.32 kB
+chunk-CAN43DUN.js   | proveedores-page |  30.87 kB |                 6.99 kB
+chunk-LRJUZDEX.js   | ventas-page      |  27.26 kB |                 7.21 kB
+chunk-ABBYAEPI.js   | acopiadores-page |  21.01 kB |                 5.36 kB
+chunk-KGUZ6LCG.js   | calidad-page     |  20.86 kB |                 4.95 kB
+chunk-PR54UD3G.js   | informe-page     |  20.61 kB |                 5.36 kB
+chunk-U6M3P446.js   | pagos-page       |  14.23 kB |                 4.25 kB
+chunk-Y4CQSL7R.js   | -                |  13.55 kB |                 4.53 kB
+chunk-AZT7MZ3A.js   | comunicados-page |  12.04 kB |                 3.61 kB
+chunk-OVHXOSVO.js   | -                |  10.02 kB |                 3.21 kB
+...and 33 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [10.496 seconds] - 2026-10-21T05:40:33.152Z
+
+Output location: C:\EcoLacteosProyect\Ecolacteos-Web\dist\ecolacteos-web
+
