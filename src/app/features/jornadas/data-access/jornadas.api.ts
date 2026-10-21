@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { JornadaBandeja } from './jornada.models';
+import { JornadaBandeja, RecepcionJornadaRequest, ResultadoRecepcionJornada } from './jornada.models';
 
 /**
  * Fuente: docs/ENDPOINTS.md, JornadaController.java. Roles: RECEPCION y ADMIN.
@@ -13,6 +13,10 @@ import { JornadaBandeja } from './jornada.models';
 export class JornadasApi {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiBaseUrl;
+
+  recepcionar(request: RecepcionJornadaRequest): Observable<ResultadoRecepcionJornada> {
+    return this.http.post<ResultadoRecepcionJornada>(`${this.baseUrl}/sync/recepciones-jornada`, [request]);
+  }
 
   listarBandeja(): Observable<JornadaBandeja[]> {
     return this.http.get<JornadaBandeja[]>(`${this.baseUrl}/jornadas`);

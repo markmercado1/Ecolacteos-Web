@@ -852,3 +852,21 @@ Backend **260/260** reales (incluida paginación real verificada contra Postgres
 ### Siguiente acción concreta
 
 Si el usuario autoriza levantar o reiniciar un backend de desarrollo (sin tocar `localhost:8080`/`acopio_lechero`): confirmar visualmente `/precios` (filtro de familia, búsqueda, tabla con familia/producto/presentación, paginación con selector de tamaño, celda de precio en dos líneas) en desktop/tablet/móvil, con teclado y foco visible. Si no, **detenerse aquí** -- no avanzar a Fase 3 (Producción/Inventario por presentación) ni al carrito de ventas sin indicación explícita del usuario.
+
+
+## 2026-10-21 — Recepción web de jornadas
+
+- Rama creada antes de editar: `git switch -c codex/recepcion-jornadas-web`, desde main. Preservados cambios previos en docs/ESTADO y projects/web-publica.
+- Archivos de código: `features/jornadas/data-access/{jornada.models,jornadas.api}.ts`, `pages/jornadas-page/{jornadas-page.ts,jornadas-page.html,jornadas-page.spec.ts}`, `ui/jornada-detalle-dialog/{jornada-detalle-dialog.ts,jornada-detalle-dialog.spec.ts}` bajo src/app. Documentación: ESTADO, DECISIONES, REGISTRO. Contrato existente ya documentado en CONTRATOS/ENDPOINTS; sin cambios de API.
+- Backend canónico inspeccionado: RecepcionJornadaRequest, SyncResultResponse, ConciliacionService.registrarRecepcionDeJornada; roles de /jornadas y sync/recepciones-jornada verificados estáticamente. No se modificó backend/móvil.
+- Pruebas nuevas: contrato exacto, doble envío/reintento con request inmutable, rechazo individual HTTP 200, respuesta sin confirmación propia, litros negativos/cero, estado no elegible y actualización de bandeja tras éxito.
+- `npm run build`: aprobado (primer intento sin red falló al descargar Google Fonts; repetición autorizada aprobada). `npm test -- --watch=false`: 585/585, 85 archivos (primer intento restringido bloqueado por EPERM en temporales; repetición autorizada aprobada). `git diff --check`: sin errores. Logs locales build-recepcion.log y test-recepcion.log.
+- Limitaciones: sin prueba HTTP real ni revisión visual; no se recepcionaron jornadas reales. Sin commit/push. Próximo paso: prueba manual de desarrollo, incluida conciliación y caso servidor no disponible.
+
+### 2026-10-21 — Alineación de acciones de Jornadas
+A pedido del usuario, Recepcionar jornada adopta el estilo row-link de Ver detalle. Contenedor flex con alineación central, separación por token y textos sin salto. Archivos: jornadas-page.html y jornadas-page.css. Sin cambios de lógica; git diff --check ejecutado, sin pruebas nuevas por ser ajuste visual. Revisión en navegador pendiente.
+
+
+### 2026-10-21 — Selector de turno y aviso de recepción existente
+Archivos: jornada-detalle-dialog.ts y .spec.ts; ESTADO, DECISIONES y REGISTRO. Reutiliza RecepcionApi.listar con unidadId/fecha, tamaño 100 y recorrido de páginas. Cancela la consulta anterior y limpia resultados al cambiar fecha; al destruir el diálogo cancela suscripciones. Radios accesibles, selección diferenciada por contorno y turnos ya registrados con tokens warning/ warning-bg más texto. Request conserva turno seleccionado e idempotencia previa.
+Pruebas: npm test -- --watch=false, 587/587 (85 archivos); npm run build aprobado; git diff --check sin errores. Sin modificaciones de backend ni móvil. Sin mutaciones en datos reales ni revisión visual; pendiente prueba manual de desarrollo. Cambios previos preservados, sin commit/push.

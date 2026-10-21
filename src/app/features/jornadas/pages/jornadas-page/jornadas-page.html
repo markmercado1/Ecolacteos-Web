@@ -6,6 +6,8 @@
   </div>
 </div>
 
+@if (confirmacion()) { <p role="status">{{ confirmacion() }}</p> }
+
 <ui-data-table
   [columnas]="columnas"
   [filas]="jornadas()"
@@ -20,11 +22,14 @@
   <ng-template #celda let-fila let-columna="columna">
     @switch (columna) {
       @case ('acopiadorNombre') { <strong>{{ fila.acopiadorNombre }}</strong> }
-      @case ('horaInicio') { {{ fila.horaInicio }} }
+      @case ('horaInicio') { {{ fila.horaInicio | date: 'dd/MM/yyyy HH:mm' }} }
       @case ('cantidadProveedores') { {{ fila.cantidadProveedores }} }
       @case ('litrosEsperados') { {{ fila.litrosEsperados }} L }
       @case ('acciones') {
-        <button type="button" class="row-link" (click)="verDetalle(fila)">Ver detalle</button>
+        <div class="acciones-jornada">
+          <button type="button" class="row-link" (click)="verDetalle(fila)">Ver detalle</button>
+          <button type="button" class="row-link" (click)="recepcionar(fila)">Recepcionar jornada</button>
+        </div>
       }
       @default { {{ fila[columna] ?? '—' }} }
     }

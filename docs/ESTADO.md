@@ -301,3 +301,24 @@ Continuación explícita de Fase 4, último bloque (Bloques 1-5 ya validados con
 **Pendientes reales**: (a) backend de desarrollo real con una zona que tenga proyección calculada y otra que no, para confirmar en pantalla real tanto el panel completo como el mensaje "Sin proyección disponible"; (b) revisión visual/responsive humana de las 5 vistas con gráfico (`/panel`, `/acopios`, recepción, lote, perfil de proveedor) en desktop/tablet/móvil, con nombres de proveedor largos y valores grandes; (c) decidir si se aplica la corrección de backend sugerida para el 404-en-cascada de `panel-economico` (no implementada, es cambio de backend).
 
 **Estado final: Fase 4 permanece PARCIAL, no se marca COMPLETADA.** Los 6 bloques de docs/FASES.md tienen código y pruebas automatizadas completas, pero dos criterios de aceptación explícitos de docs/FASES.md siguen sin cumplirse: integración contra backend real y revisión visual con datos variados en pantalla pequeña. Siguiente acción concreta: conseguir acceso a un backend de desarrollo con las dos zonas descritas en (a) y realizar la revisión visual de (b).
+
+## 2026-10-21 — UI de sincronización móvil (validación pendiente)
+
+Por solicitud explícita se ajustó únicamente la presentación en el repositorio móvil vecino `acopio-backend-fase2/acopio-mobile/Ecolacteos-Frontend`: estados de jornada y Cola, mensajes, colores y detalles técnicos. Backend y motor de sincronización sin cambios de esta sesión; recepción desde web sigue pendiente, no implementada. Registro detallado en `docs/PROGRESO_FINALIZACION.md` del móvil. Se añadieron 6 pruebas de presentación, pero Gradle no pudo iniciar la compilación/pruebas por error local Java `Unable to establish loopback connection` (`UnixDomainSockets`, `Invalid argument: connect`). No hay APK nueva verificada ni instalación. Siguiente: resolver entorno Gradle, ejecutar jvmTest/assembleDebug y verificar estados en dispositivo. Sin cambios de código web.
+
+
+## 2026-10-21 — Recepción de jornadas web: IMPLEMENTADA; integración real pendiente
+Rama `codex/recepcion-jornadas-web`, creada desde main antes de implementar. Cambios previos de web pública y documentación preservados. Ampliación explícita autorizada: recepción online con API existente, sin modificar backend.
+
+
+- Implementado: botón «Recepcionar jornada», formulario en detalle, validación, aviso sin acopios, envío idempotente en reintentos, manejo de errores individuales y recarga de bandeja. Fechas de la bandeja formateadas.
+- Evidencia: `npm run build` correcto; `npm test -- --watch=false`: 85 archivos, 585 pruebas aprobadas (7 nuevas). Primeros intentos restringidos fallaron por DNS de Google Fonts y EPERM de temporales Vitest; ambas comprobaciones pasaron con permisos de ejecución apropiados. `git diff --check` sin errores.
+- No ejecutado: recepción contra backend real ni revisión visual en navegador/dispositivo. Ninguna mutación sobre datos reales. Siguiente: probar una jornada de desarrollo desde ADMIN/RECEPCION, confirmar conciliación y salida de bandeja, revisar responsive. No se declara completa la Fase 4.
+- Cambios de la feature sin commit/push, en la rama indicada; cambios previos de web pública preservados. La rama no constituye un respaldo de los cambios previos sin commit.
+
+Ajuste visual posterior (2026-10-21): ambas acciones de Jornadas usan row-link y contenedor flex centrado con separación space-4; sin cambios funcionales. Verificación estática y diff; revisión en navegador pendiente.
+
+
+## 2026-10-21 — Turnos en recepción web: implementado
+En la misma rama `codex/recepcion-jornadas-web`: selector Mañana/Tarde/Único (default Único), enviado como turno real de la recepción. Consulta GET /api/recepcion-planta filtrada por unidadId y fecha de llegada, con todas las páginas. Turnos existentes en ámbar con texto «Ya recepcionado», sin bloqueo local. Consulta cancelada al cambiar fecha; marcas anteriores se limpian, y fallo se muestra como «No se pudo comprobar». Botón de actualización manual. Backend/móvil sin cambios.
+Verificación: build de producción aprobado y 587/587 pruebas en 85 archivos (2 nuevas con casos de paginación, turno enviado, cambio de fecha, cancelación y 403). git diff --check correcto. Pendiente revisión visual y prueba con servidor de desarrollo; no se enviaron recepciones reales. Sin commit/push.

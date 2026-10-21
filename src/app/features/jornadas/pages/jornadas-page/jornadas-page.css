@@ -1,0 +1,9 @@
+.acciones-jornada {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.acciones-jornada .row-link {
+  white-space: nowrap;
+}

@@ -16,3 +16,19 @@ export interface JornadaBandeja {
   cantidadProveedores: number;
   litrosEsperados: number;
 }
+
+
+/** Contrato existente: RecepcionJornadaRequest / SyncResultResponse del backend. */
+export interface RecepcionJornadaRequest {
+  uuidCliente: string;
+  jornadaId: string;
+  litrosReales: number;
+  horaLlegada: string;
+  observacion: string | null;
+  turno: string;
+}
+export interface ResultadoRecepcionJornada {
+  confirmados: string[];
+  errores: { uuidCliente: string; motivo: string }[];
+  confirmadosConId?: { uuidCliente: string; id: string }[];
+}

@@ -1,3 +1,4 @@
+import { Subject } from 'rxjs';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
@@ -60,4 +61,21 @@ describe('JornadasPage', () => {
     expect((abrirSpy.mock.calls[0][1] as { data: { id: string } }).data).toEqual({ id: 'j1' });
     http.verify();
   });
+});
+
+
+it('actualiza la bandeja tras recepción confirmada', () => {
+  TestBed.configureTestingModule({ providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] });
+  const http = TestBed.inject(HttpTestingController);
+  const f = TestBed.createComponent(JornadasPage);
+  http.expectOne(`${base}/jornadas`).flush([jornada]);
+  const closed = new Subject<boolean>();
+  const abrir = vi.spyOn(TestBed.inject(Dialog), 'open').mockReturnValue({ closed } as never);
+  f.componentInstance['recepcionar'](jornada);
+  expect((abrir.mock.calls[0][1] as { data: unknown }).data).toEqual({ id: 'j1', recepcionar: true });
+  closed.next(true);
+  http.expectOne(`${base}/jornadas`).flush([]);
+  expect(f.componentInstance['jornadas']()).toEqual([]);
+  expect(f.componentInstance['confirmacion']()).toContain('confirmada por el servidor');
+  http.verify();
 });
