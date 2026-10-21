@@ -862,3 +862,11 @@ Si el usuario autoriza levantar o reiniciar un backend de desarrollo (sin tocar 
 - Decisión confirmada: los `AjustePago` por corrección de litros siguen valorizados al precio del pago original.
 - Verificación: frontend `npm test` 87 archivos / 598 pruebas y `npm run build` correctos. Backend 679 pruebas, 0 fallos; 24 suites de integración (Testcontainers) **no se pudieron ejecutar: Docker no disponible**, así que la migración V24 no se probó contra PostgreSQL real.
 - Pendiente: probar V24 con Docker/PostgreSQL, revisión visual del modal y de la boleta, y prueba manual con el backend real.
+
+## 2026-10-21 — Panel económico: vista consolidada de todas las zonas (frontend, sin cambios de backend)
+
+- Rama `feature/panel-consolidado` (desde `main`, sin push ni merge). Solo frontend: `features/panel` (página, `util/panel-consolidado.ts`, pruebas).
+- La vista inicial del panel es ahora **«Todas las zonas (consolidado)»**: se pide `GET /api/innovacion/panel-economico` de cada zona **activa** en paralelo y se suma en el cliente (riesgo valorizado, litros estimados, flujo de caja, zonas con alerta de capacidad) con una tabla «Detalle por zona» y «Ver zona» para abrir el detalle de siempre. El detalle de una zona no cambia; se añadió «← Todas las zonas».
+- Reglas: las zonas sin proyección (404 «sin prediccion») o con error **no entran en las sumas** y se listan como tal («Datos de X de Y zonas»); el rechazo estimado no se suma (solo por zona); las ventas por canal son globales en el backend y se muestran una sola vez; si las proyecciones son de semanas distintas se avisa.
+- Límites: una petición por zona activa (no hay endpoint consolidado); las zonas activas de prueba (Test Movil, Prueba) cuentan como «sin proyección» hasta que se desactiven. Backend opcional a futuro: endpoint consolidado y que una zona sin proyección devuelva el resto de datos en vez de 404.
+- Verificación: `npm test` 88 archivos / 619 pruebas y `npm run build` correctos; comprobado con el backend local real (5 de 8 zonas con datos, 3 sin proyección). Sin captura visual (el panel del navegador no pudo dibujarla).

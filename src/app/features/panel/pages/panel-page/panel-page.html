@@ -2,17 +2,21 @@
   <div>
     <div class="eyebrow">VISIÓN GENERAL</div>
     <h1>Panel económico</h1>
-    <p>Riesgo de leche valorizado, última proyección semanal y simulación por zona, más ventas por canal (global, todo el histórico).</p>
+    @if (esConsolidado()) {
+      <p>Consolidado de todas las zonas activas: riesgo de leche valorizado, última proyección semanal y ventas por canal. Elige una zona para ver su detalle y su simulación.</p>
+    } @else {
+      <p>Riesgo de leche valorizado, última proyección semanal y simulación por zona, más ventas por canal (global, todo el histórico).</p>
+    }
   </div>
 </div>
 
 <div class="card card-pad filtros">
   <div class="field">
-    <label for="panel-zona">Zona</label>
+    <label for="panel-zona">Vista</label>
     <select id="panel-zona" [value]="zonaSeleccionada()" (change)="cambiarZona($any($event.target).value)">
-      <option value="">Selecciona una zona</option>
+      <option [value]="TODAS">Todas las zonas (consolidado)</option>
       @for (zona of zonas(); track zona.id) {
-        <option [value]="zona.id">{{ zona.nombre }}</option>
+        <option [value]="zona.id">{{ zona.nombre }}{{ zona.activa ? '' : ' (inactiva)' }}</option>
       }
     </select>
   </div>
@@ -24,75 +28,169 @@
   }
 </div>
 
-@if (!zonaSeleccionada()) {
-  <ui-empty-state mensaje="Selecciona una zona para ver su panel económico." />
-} @else if (cargando()) {
-  <ui-loading-state mensaje="Cargando panel…" />
-} @else if (sinProyeccion()) {
-  <ui-empty-state mensaje="Sin proyección disponible para esta zona. El backend calcula la proyección semanal por job programado; hasta que exista una para esta zona, todo el panel (incluidos el riesgo valorizado y la simulación) queda sin datos, porque el propio endpoint del panel depende de esa proyección." />
-} @else if (error()) {
-  <ui-error-state [error]="error()" (reintentar)="cargarPanel(zonaSeleccionada())" />
-} @else if (panel(); as p) {
-  <div class="grid grid-2">
-    <div class="card card-pad">
-      <div class="section-head">
-        <h2>Riesgo de leche valorizado</h2>
-        <span>Últimos 30 días · Zona: {{ zonaNombre() }}</span>
-      </div>
-      <p class="kpi-valor">S/ {{ p.litrosEnRiesgoValorizados | number: '1.2-2' }}</p>
-      <p class="hint">Litros con alerta de anomalía en los últimos 30 días, valorizados al precio por litro vigente. No es un indicador de riesgo sanitario.</p>
+@if (esConsolidado()) {
+  @if (cargandoConsolidado()) {
+    <ui-loading-state mensaje="Consultando todas las zonas…" />
+  } @else if (sinZonasActivas()) {
+    <ui-empty-state mensaje="No hay zonas activas para consolidar." />
+  } @else if (resultados().length > 0) {
+    @let c = consolidado();
+    <div class="barra-vista" data-testid="barra-consolidado">
+      <span class="badge blue">Consolidado · todas las zonas activas</span>
+      <span class="hint">
+        Datos de {{ c.zonasConDatos }} de {{ c.zonasTotales }} zonas
+        @if (c.zonasSinProyeccion > 0) { · {{ c.zonasSinProyeccion }} sin proyección }
+        @if (c.zonasConError > 0) { · {{ c.zonasConError }} con error }
+      </span>
     </div>
 
-    <div class="card card-pad">
-      <div class="section-head">
-        <h2>Última proyección semanal</h2>
-        <span>Semana desde {{ p.forecastSemana.semanaInicio }} · Zona: {{ zonaNombre() }}</span>
+    @if (c.zonasConDatos === 0) {
+      <ui-empty-state mensaje="Ninguna zona tiene datos para consolidar todavía. Abajo se ve el estado de cada una." />
+    } @else {
+      <div class="grid grid-4 kpis">
+        <div class="card card-pad card-consolidado">
+          <div class="section-head"><h2>Riesgo de leche valorizado</h2></div>
+          <p class="kpi-valor" data-testid="kpi-riesgo">S/ {{ c.riesgoValorizadoTotal | number: '1.2-2' }}</p>
+          <p class="hint">Suma de las zonas con datos · últimos 30 días.</p>
+        </div>
+        <div class="card card-pad card-consolidado">
+          <div class="section-head"><h2>Litros estimados</h2></div>
+          <p class="kpi-valor" data-testid="kpi-litros">{{ c.litrosEstimadosTotal | number: '1.0-2' }} L</p>
+          <p class="hint">Suma de la última proyección semanal de cada zona.</p>
+        </div>
+        <div class="card card-pad card-consolidado">
+          <div class="section-head"><h2>Flujo de caja proyectado</h2></div>
+          <p class="kpi-valor" data-testid="kpi-flujo">S/ {{ c.flujoCajaTotal | number: '1.2-2' }}</p>
+          <p class="hint">Suma de las zonas con datos.</p>
+        </div>
+        <div class="card card-pad card-consolidado">
+          <div class="section-head"><h2>Alertas de capacidad</h2></div>
+          <p class="kpi-valor" data-testid="kpi-alertas">{{ c.zonasConAlertaCapacidad }} de {{ c.zonasConDatos }}</p>
+          <p class="hint">Zonas cuya proyección excede la capacidad de procesamiento diaria.</p>
+        </div>
       </div>
-      <p class="kpi-valor">{{ p.forecastSemana.litrosEstimados | number: '1.0-2' }} L estimados</p>
-      <dl class="detalle-forecast">
-        <div>
-          <dt>Litros reales de esa semana</dt>
-          <dd>{{ p.forecastSemana.litrosReales === null ? 'Aún no disponible (semana sin cerrar)' : (p.forecastSemana.litrosReales | number: '1.0-2') + ' L' }}</dd>
-        </div>
-        <div>
-          <dt>Recomendación de mezcla</dt>
-          <dd>{{ p.forecastSemana.recomendacionMezcla }}</dd>
-        </div>
-        <div>
-          <dt>Flujo de caja proyectado</dt>
-          <dd>S/ {{ p.forecastSemana.flujoCajaProyectado | number: '1.2-2' }}</dd>
-        </div>
-        <div>
-          <dt>Alerta de capacidad</dt>
-          <dd>{{ p.forecastSemana.alertaCapacidad ? 'Sí, excede la capacidad de procesamiento diaria' : 'No' }}</dd>
-        </div>
-      </dl>
-      <p class="hint">Es la única proyección ya calculada por el backend (job semanal); no se genera una serie diaria ni se interpolan semanas faltantes.</p>
-    </div>
-
-    <div class="card card-pad">
-      <div class="section-head">
-        <h2>Simulación: score +10 puntos</h2>
-        <span>Zona: {{ zonaNombre() }}</span>
-      </div>
-      @if (p.pctRechazoSiScoreSube10 === null) {
-        <p class="kpi-valor sin-calculo">No calculado</p>
-        <p class="hint">Histórico insuficiente para la regresión score/rechazo de esta zona. Ausencia de cálculo, no 0%.</p>
-      } @else {
-        <p class="kpi-valor">{{ p.pctRechazoSiScoreSube10 | number: '1.0-2' }}% de rechazo estimado</p>
-        <p class="hint">Simulación estadística (regresión lineal simple), no un umbral de calidad ni una recomendación sanitaria.</p>
+      @if (c.semanas.length > 1) {
+        <p class="hint aviso-semanas" data-testid="aviso-semanas">
+          Las proyecciones no son de la misma semana ({{ c.semanas.join(', ') }}). Cada fila indica la suya.
+        </p>
       }
-    </div>
+    }
 
-    <div class="card card-pad">
-      <ui-bar-chart
-        titulo="Ventas por canal"
-        subtitulo="Global — todo el histórico de la planta. No es específico de esta zona ni de un período; no sumar con paneles de otras zonas."
-        unidad="S/"
-        [datos]="datosVentasCanal()"
-        [decimales]="2"
-        mensajeVacio="Sin ventas registradas todavía."
-      />
-    </div>
+    <ui-data-table
+      [columnas]="columnasZonas"
+      [filas]="resultados()"
+      mensajeVacio="No hay zonas para mostrar."
+      titulo="Detalle por zona"
+      subtitulo="Solo las zonas activas. «Ver zona» abre su detalle completo."
+    >
+      <ng-template #celda let-fila let-columna="columna">
+        @switch (columna) {
+          @case ('zona') {
+            <strong>{{ fila.zona.nombre }}</strong>
+            @if (fila.estado === 'sinProyeccion') { <span class="badge amber">Sin proyección</span> }
+            @if (fila.estado === 'error') { <span class="badge red" [title]="fila.mensaje">Error</span> }
+          }
+          @case ('semana') { {{ fila.panel ? fila.panel.forecastSemana.semanaInicio : '—' }} }
+          @case ('litrosEstimados') { {{ fila.panel ? (fila.panel.forecastSemana.litrosEstimados | number: '1.0-2') + ' L' : '—' }} }
+          @case ('flujoCaja') { {{ fila.panel ? 'S/ ' + (fila.panel.forecastSemana.flujoCajaProyectado | number: '1.2-2') : '—' }} }
+          @case ('riesgo') { {{ fila.panel ? 'S/ ' + (fila.panel.litrosEnRiesgoValorizados | number: '1.2-2') : '—' }} }
+          @case ('rechazo') {
+            {{ !fila.panel ? '—' : fila.panel.pctRechazoSiScoreSube10 === null ? 'No calculado' : (fila.panel.pctRechazoSiScoreSube10 | number: '1.0-2') + '%' }}
+          }
+          @case ('acciones') {
+            <button type="button" class="row-link" (click)="cambiarZona(fila.zona.id)">Ver zona</button>
+          }
+        }
+      </ng-template>
+    </ui-data-table>
+
+    @if (c.zonasConDatos > 0) {
+      <div class="card card-pad ventas-consolidado">
+        <ui-bar-chart
+          titulo="Ventas por canal"
+          subtitulo="Global — todo el histórico de la planta. El backend no las separa por zona, por eso aparecen una sola vez y no se suman."
+          unidad="S/"
+          [datos]="datosVentasConsolidado()"
+          [decimales]="2"
+          mensajeVacio="Sin ventas registradas todavía."
+        />
+      </div>
+    }
+  }
+} @else {
+  <div class="barra-vista" data-testid="barra-zona">
+    <button type="button" class="row-link" (click)="cambiarZona(TODAS)">← Todas las zonas</button>
+    <span class="badge gray">Zona: {{ zonaNombre() }}</span>
   </div>
+
+  @if (cargando()) {
+    <ui-loading-state mensaje="Cargando panel…" />
+  } @else if (sinProyeccion()) {
+    <ui-empty-state mensaje="Sin proyección disponible para esta zona. El backend calcula la proyección semanal por job programado; hasta que exista una para esta zona, todo el panel (incluidos el riesgo valorizado y la simulación) queda sin datos, porque el propio endpoint del panel depende de esa proyección." />
+  } @else if (error()) {
+    <ui-error-state [error]="error()" (reintentar)="cargarPanel(zonaSeleccionada())" />
+  } @else if (panel(); as p) {
+    <div class="grid grid-2">
+      <div class="card card-pad">
+        <div class="section-head">
+          <h2>Riesgo de leche valorizado</h2>
+          <span>Últimos 30 días · Zona: {{ zonaNombre() }}</span>
+        </div>
+        <p class="kpi-valor">S/ {{ p.litrosEnRiesgoValorizados | number: '1.2-2' }}</p>
+        <p class="hint">Litros con alerta de anomalía en los últimos 30 días, valorizados al precio por litro vigente. No es un indicador de riesgo sanitario.</p>
+      </div>
+
+      <div class="card card-pad">
+        <div class="section-head">
+          <h2>Última proyección semanal</h2>
+          <span>Semana desde {{ p.forecastSemana.semanaInicio }} · Zona: {{ zonaNombre() }}</span>
+        </div>
+        <p class="kpi-valor">{{ p.forecastSemana.litrosEstimados | number: '1.0-2' }} L estimados</p>
+        <dl class="detalle-forecast">
+          <div>
+            <dt>Litros reales de esa semana</dt>
+            <dd>{{ p.forecastSemana.litrosReales === null ? 'Aún no disponible (semana sin cerrar)' : (p.forecastSemana.litrosReales | number: '1.0-2') + ' L' }}</dd>
+          </div>
+          <div>
+            <dt>Recomendación de mezcla</dt>
+            <dd>{{ p.forecastSemana.recomendacionMezcla }}</dd>
+          </div>
+          <div>
+            <dt>Flujo de caja proyectado</dt>
+            <dd>S/ {{ p.forecastSemana.flujoCajaProyectado | number: '1.2-2' }}</dd>
+          </div>
+          <div>
+            <dt>Alerta de capacidad</dt>
+            <dd>{{ p.forecastSemana.alertaCapacidad ? 'Sí, excede la capacidad de procesamiento diaria' : 'No' }}</dd>
+          </div>
+        </dl>
+        <p class="hint">Es la única proyección ya calculada por el backend (job semanal); no se genera una serie diaria ni se interpolan semanas faltantes.</p>
+      </div>
+
+      <div class="card card-pad">
+        <div class="section-head">
+          <h2>Simulación: score +10 puntos</h2>
+          <span>Zona: {{ zonaNombre() }}</span>
+        </div>
+        @if (p.pctRechazoSiScoreSube10 === null) {
+          <p class="kpi-valor sin-calculo">No calculado</p>
+          <p class="hint">Histórico insuficiente para la regresión score/rechazo de esta zona. Ausencia de cálculo, no 0%.</p>
+        } @else {
+          <p class="kpi-valor">{{ p.pctRechazoSiScoreSube10 | number: '1.0-2' }}% de rechazo estimado</p>
+          <p class="hint">Simulación estadística (regresión lineal simple), no un umbral de calidad ni una recomendación sanitaria.</p>
+        }
+      </div>
+
+      <div class="card card-pad">
+        <ui-bar-chart
+          titulo="Ventas por canal"
+          subtitulo="Global — todo el histórico de la planta. No es específico de esta zona ni de un período; no sumar con paneles de otras zonas."
+          unidad="S/"
+          [datos]="datosVentasCanal()"
+          [decimales]="2"
+          mensajeVacio="Sin ventas registradas todavía."
+        />
+      </div>
+    </div>
+  }
 }
