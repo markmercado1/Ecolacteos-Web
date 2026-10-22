@@ -176,3 +176,16 @@ Por instrucción explícita, asignar al acopiador una unidad ya existente reempl
 ## 2026-10-21 — Varias recetas en una selección de producción (solo web)
 Por petición explícita, Nueva producción acepta varias filas, cada una con receta y litros, conservando un lote independiente por fila. No se cambia backend ni se mezclan recetas dentro de un lote. GET /recetas/{id}/calculo calcula cada receta; el cliente suma únicamente necesidades en centésimas y no suma existencias compartidas (mínimo observado por insumo). La comprobación conjunta es informativa, sin reserva. No se suman productos esperados de distintas presentaciones.
 Se envía planificar/iniciar secuencialmente con UUID estable por fila; solicitudes y modo quedan congelados desde el primer intento. Un fallo detiene el resto; las filas completadas se conservan y se omiten al reintentar. Una respuesta perdida de iniciar no se presenta como fallo definitivo ni consumo confirmado. No existe atomicidad de grupo: para todo-o-nada haría falta nuevo backend, expresamente fuera de alcance. Cerrar vuelve a cargar historial e inventario de leche. Sin persistencia del borrador entre recargas; se avisa antes de cerrar con operaciones pendientes.
+
+## 2026-10-21 — Recepción de jornadas desde web
+
+Ampliación explícita del usuario al alcance original de Fase 4: ADMIN y RECEPCION pueden recibir jornadas desde la bandeja web, usando exclusivamente `POST /api/sync/recepciones-jornada` existente. No se modifica backend ni móvil. La captura de acopio permanece en móvil. La operación web es online, sin cola offline.
+
+- Formulario dentro del detalle: litros reales >= 0 (sin precargar el esperado), llegada en hora America/Lima, observación opcional; turno UNICO, valor por defecto del contrato. Advierte si no hay acopios en el servidor, sin inventar una prohibición.
+- El servidor calcula campo/planta y realiza la transición; Angular exige el UUID propio en confirmados y prioriza errores individuales incluso con HTTP 200. No confía en el estado mostrado previamente en la tabla: carga detalle al abrir y respeta rechazos del servidor.
+- UUID por apertura, bloqueo de doble envío y request congelado al enviar. Tras error HTTP o respuesta ambigua, reintenta mismo UUID y mismos datos. Solo un rechazo explícito permite corregir. Cerrar tras editar o enviar pide confirmación; el backend existente impide dos recepciones para una jornada incluso si se reabre con otro UUID.
+- Tras cerrar se vuelve a consultar la bandeja; el mensaje de éxito aparece solo por confirmación real. La conciliación se consulta en el módulo Recepción existente.
+
+
+### 2026-10-21 — Selección y marcas de turno
+Se sustituye el turno UNICO fijo por selector MAÑANA/TARDE/UNICO, conforme al móvil. La marca «Ya recepcionado» se calcula exclusivamente con recepciones existentes del mismo vehículo y fecha de llegada (no por acopiador ni fecha de inicio de jornada), leyendo todas las páginas. Es informativa, no una reserva ni garantía de disponibilidad. El esquema existente V1 declara UNIQUE(fecha, unidad_id, turno); se conserva la autoridad del servidor y no se añaden reglas locales ni cambios de API. Los errores de consulta no se interpretan como lista vacía/disponibilidad. Fecha/hora sigue en America/Lima.

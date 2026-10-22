@@ -310,3 +310,24 @@ Rama codex/produccion-varias-recetas creada antes de editar, árbol inicial limp
 - Guardar planifica sin consumir; iniciar planifica e inicia cada lote secuencialmente. Un UUID y solicitud fija por fila; al fallar se detiene, muestra estado parcial y reintenta solo lo pendiente. No hay transacción global ni reversión automática; backend vuelve a validar y descontar por lote.
 - Verificado: npm run build aprobado; npm test -- --watch=false, 605/605 en 88 archivos (7 nuevas de varias recetas; prueba de apertura del diálogo adaptada). git diff --check correcto.
 - Sin cambios backend/móvil ni mutaciones en servidor real. No realizada revisión visual de navegador; pendiente probar en entorno de desarrollo con dos recetas y stock compartido. Rama sin commit/push.
+
+## 2026-10-21 — UI de sincronización móvil (validación pendiente)
+
+Por solicitud explícita se ajustó únicamente la presentación en el repositorio móvil vecino `acopio-backend-fase2/acopio-mobile/Ecolacteos-Frontend`: estados de jornada y Cola, mensajes, colores y detalles técnicos. Backend y motor de sincronización sin cambios de esta sesión; recepción desde web sigue pendiente, no implementada. Registro detallado en `docs/PROGRESO_FINALIZACION.md` del móvil. Se añadieron 6 pruebas de presentación, pero Gradle no pudo iniciar la compilación/pruebas por error local Java `Unable to establish loopback connection` (`UnixDomainSockets`, `Invalid argument: connect`). No hay APK nueva verificada ni instalación. Siguiente: resolver entorno Gradle, ejecutar jvmTest/assembleDebug y verificar estados en dispositivo. Sin cambios de código web.
+
+
+## 2026-10-21 — Recepción de jornadas web: IMPLEMENTADA; integración real pendiente
+Rama `codex/recepcion-jornadas-web`, creada desde main antes de implementar. Cambios previos de web pública y documentación preservados. Ampliación explícita autorizada: recepción online con API existente, sin modificar backend.
+
+
+- Implementado: botón «Recepcionar jornada», formulario en detalle, validación, aviso sin acopios, envío idempotente en reintentos, manejo de errores individuales y recarga de bandeja. Fechas de la bandeja formateadas.
+- Evidencia: `npm run build` correcto; `npm test -- --watch=false`: 85 archivos, 585 pruebas aprobadas (7 nuevas). Primeros intentos restringidos fallaron por DNS de Google Fonts y EPERM de temporales Vitest; ambas comprobaciones pasaron con permisos de ejecución apropiados. `git diff --check` sin errores.
+- No ejecutado: recepción contra backend real ni revisión visual en navegador/dispositivo. Ninguna mutación sobre datos reales. Siguiente: probar una jornada de desarrollo desde ADMIN/RECEPCION, confirmar conciliación y salida de bandeja, revisar responsive. No se declara completa la Fase 4.
+- Cambios de la feature sin commit/push, en la rama indicada; cambios previos de web pública preservados. La rama no constituye un respaldo de los cambios previos sin commit.
+
+Ajuste visual posterior (2026-10-21): ambas acciones de Jornadas usan row-link y contenedor flex centrado con separación space-4; sin cambios funcionales. Verificación estática y diff; revisión en navegador pendiente.
+
+
+## 2026-10-21 — Turnos en recepción web: implementado
+En la misma rama `codex/recepcion-jornadas-web`: selector Mañana/Tarde/Único (default Único), enviado como turno real de la recepción. Consulta GET /api/recepcion-planta filtrada por unidadId y fecha de llegada, con todas las páginas. Turnos existentes en ámbar con texto «Ya recepcionado», sin bloqueo local. Consulta cancelada al cambiar fecha; marcas anteriores se limpian, y fallo se muestra como «No se pudo comprobar». Botón de actualización manual. Backend/móvil sin cambios.
+Verificación: build de producción aprobado y 587/587 pruebas en 85 archivos (2 nuevas con casos de paginación, turno enviado, cambio de fecha, cancelación y 403). git diff --check correcto. Pendiente revisión visual y prueba con servidor de desarrollo; no se enviaron recepciones reales. Sin commit/push.

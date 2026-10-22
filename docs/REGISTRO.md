@@ -879,3 +879,21 @@ Si el usuario autoriza levantar o reiniciar un backend de desarrollo (sin tocar 
 - Reglas: las zonas sin proyección (404 «sin prediccion») o con error **no entran en las sumas** y se listan como tal («Datos de X de Y zonas»); el rechazo estimado no se suma (solo por zona); las ventas por canal son globales en el backend y se muestran una sola vez; si las proyecciones son de semanas distintas se avisa.
 - Límites: una petición por zona activa (no hay endpoint consolidado); las zonas activas de prueba (Test Movil, Prueba) cuentan como «sin proyección» hasta que se desactiven. Backend opcional a futuro: endpoint consolidado y que una zona sin proyección devuelva el resto de datos en vez de 404.
 - Verificación: `npm test` 88 archivos / 619 pruebas y `npm run build` correctos; comprobado con el backend local real (5 de 8 zonas con datos, 3 sin proyección). Sin captura visual (el panel del navegador no pudo dibujarla).
+
+
+## 2026-10-21 — Recepción web de jornadas
+
+- Rama creada antes de editar: `git switch -c codex/recepcion-jornadas-web`, desde main. Preservados cambios previos en docs/ESTADO y projects/web-publica.
+- Archivos de código: `features/jornadas/data-access/{jornada.models,jornadas.api}.ts`, `pages/jornadas-page/{jornadas-page.ts,jornadas-page.html,jornadas-page.spec.ts}`, `ui/jornada-detalle-dialog/{jornada-detalle-dialog.ts,jornada-detalle-dialog.spec.ts}` bajo src/app. Documentación: ESTADO, DECISIONES, REGISTRO. Contrato existente ya documentado en CONTRATOS/ENDPOINTS; sin cambios de API.
+- Backend canónico inspeccionado: RecepcionJornadaRequest, SyncResultResponse, ConciliacionService.registrarRecepcionDeJornada; roles de /jornadas y sync/recepciones-jornada verificados estáticamente. No se modificó backend/móvil.
+- Pruebas nuevas: contrato exacto, doble envío/reintento con request inmutable, rechazo individual HTTP 200, respuesta sin confirmación propia, litros negativos/cero, estado no elegible y actualización de bandeja tras éxito.
+- `npm run build`: aprobado (primer intento sin red falló al descargar Google Fonts; repetición autorizada aprobada). `npm test -- --watch=false`: 585/585, 85 archivos (primer intento restringido bloqueado por EPERM en temporales; repetición autorizada aprobada). `git diff --check`: sin errores. Logs locales build-recepcion.log y test-recepcion.log.
+- Limitaciones: sin prueba HTTP real ni revisión visual; no se recepcionaron jornadas reales. Sin commit/push. Próximo paso: prueba manual de desarrollo, incluida conciliación y caso servidor no disponible.
+
+### 2026-10-21 — Alineación de acciones de Jornadas
+A pedido del usuario, Recepcionar jornada adopta el estilo row-link de Ver detalle. Contenedor flex con alineación central, separación por token y textos sin salto. Archivos: jornadas-page.html y jornadas-page.css. Sin cambios de lógica; git diff --check ejecutado, sin pruebas nuevas por ser ajuste visual. Revisión en navegador pendiente.
+
+
+### 2026-10-21 — Selector de turno y aviso de recepción existente
+Archivos: jornada-detalle-dialog.ts y .spec.ts; ESTADO, DECISIONES y REGISTRO. Reutiliza RecepcionApi.listar con unidadId/fecha, tamaño 100 y recorrido de páginas. Cancela la consulta anterior y limpia resultados al cambiar fecha; al destruir el diálogo cancela suscripciones. Radios accesibles, selección diferenciada por contorno y turnos ya registrados con tokens warning/ warning-bg más texto. Request conserva turno seleccionado e idempotencia previa.
+Pruebas: npm test -- --watch=false, 587/587 (85 archivos); npm run build aprobado; git diff --check sin errores. Sin modificaciones de backend ni móvil. Sin mutaciones en datos reales ni revisión visual; pendiente prueba manual de desarrollo. Cambios previos preservados, sin commit/push.

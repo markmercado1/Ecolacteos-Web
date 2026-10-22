@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DatePipe } from '@angular/common';
 import { Dialog } from '@angular/cdk/dialog';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
@@ -9,7 +10,7 @@ import { JornadaDetalleDialog } from '../../ui/jornada-detalle-dialog/jornada-de
 
 @Component({
   selector: 'app-jornadas-page',
-  imports: [DataTableComponent],
+  imports: [DataTableComponent, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './jornadas-page.html',
   styleUrl: './jornadas-page.css',
@@ -19,6 +20,7 @@ export class JornadasPage {
   private readonly dialog = inject(Dialog);
   private readonly destroy = inject(DestroyRef);
 
+  protected readonly confirmacion = signal<string | null>(null);
   protected readonly cargando = signal(true);
   protected readonly error = signal<AppError | null>(null);
   protected readonly jornadas = signal<JornadaBandeja[]>([]);
@@ -52,6 +54,18 @@ export class JornadasPage {
           this.cargando.set(false);
         },
       });
+  }
+
+  protected recepcionar(jornada: JornadaBandeja): void {
+    this.confirmacion.set(null);
+    this.dialog.open<boolean>(JornadaDetalleDialog, {
+      ariaLabel: `Recepcionar jornada de ${jornada.acopiadorNombre}`,
+      disableClose: true,
+      data: { id: jornada.id, recepcionar: true },
+    }).closed.pipe(takeUntilDestroyed(this.destroy)).subscribe(confirmada => {
+      if (confirmada) this.confirmacion.set(`Recepción de ${jornada.acopiadorNombre} confirmada por el servidor.`);
+      this.cargar();
+    });
   }
 
   protected verDetalle(jornada: JornadaBandeja): void {
