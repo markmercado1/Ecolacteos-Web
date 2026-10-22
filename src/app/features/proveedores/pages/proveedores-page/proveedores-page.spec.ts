@@ -41,47 +41,32 @@ describe('ProveedoresPage', () => {
 
   afterEach(() => http.verify());
 
-  it('busca en todo el padrón desde el servidor (con debounce), combinando filtros y reiniciando la página', async () => {
-    vi.useFakeTimers();
-    try {
-      page['cambiarFiltroZona']('z-1');
-      http.expectOne((r) => r.url === `${base}/proveedores`).flush(pagina0);
-      page['pagina'].set(2);
+  // El debounce, Enter y «×» viven en ui-buscador (buscador.spec.ts); aquí se prueba qué hace la página con el texto.
+  it('busca en todo el padrón desde el servidor, combinando filtros y reiniciando la página', () => {
+    page['cambiarFiltroZona']('z-1');
+    http.expectOne((r) => r.url === `${base}/proveedores`).flush(pagina0);
+    page['pagina'].set(2);
 
-      page['onBusquedaInput']('ro');
-      page['onBusquedaInput']('rosa');
-      await vi.advanceTimersByTimeAsync(349);
-      http.expectNone((r) => r.url === `${base}/proveedores`);
-      await vi.advanceTimersByTimeAsync(1);
+    page['buscar']('rosa');
 
-      const req = http.expectOne((r) => r.url === `${base}/proveedores`);
-      expect(req.request.params.get('busqueda')).toBe('rosa');
-      expect(req.request.params.get('zonaId')).toBe('z-1');
-      expect(req.request.params.get('page')).toBe('0');
-      req.flush({ ...pagina0, contenido: [pagina0.contenido[1]], totalElementos: 1 });
+    const req = http.expectOne((r) => r.url === `${base}/proveedores`);
+    expect(req.request.params.get('busqueda')).toBe('rosa');
+    expect(req.request.params.get('zonaId')).toBe('z-1');
+    expect(req.request.params.get('page')).toBe('0');
+    req.flush({ ...pagina0, contenido: [pagina0.contenido[1]], totalElementos: 1 });
 
-      // La tabla muestra exactamente lo que devolvió el servidor: no se vuelve a filtrar en el cliente.
-      expect(page['proveedores']().map((p: ProveedorAdminResponse) => p.id)).toEqual(['p-2']);
-      expect(page['totalElementos']()).toBe(1);
-    } finally {
-      vi.useRealTimers();
-    }
+    // La tabla muestra exactamente lo que devolvió el servidor: no se vuelve a filtrar en el cliente.
+    expect(page['proveedores']().map((p: ProveedorAdminResponse) => p.id)).toEqual(['p-2']);
+    expect(page['totalElementos']()).toBe(1);
   });
 
-  it('una búsqueda vacía no envía el parámetro', async () => {
-    vi.useFakeTimers();
-    try {
-      page['onBusquedaInput']('x');
-      await vi.advanceTimersByTimeAsync(350);
-      http.expectOne((r) => r.url === `${base}/proveedores`).flush(pagina0);
-      page['onBusquedaInput']('   ');
-      await vi.advanceTimersByTimeAsync(350);
-      const req = http.expectOne((r) => r.url === `${base}/proveedores`);
-      expect(req.request.params.has('busqueda')).toBe(false);
-      req.flush(pagina0);
-    } finally {
-      vi.useRealTimers();
-    }
+  it('una búsqueda vacía no envía el parámetro', () => {
+    page['buscar']('x');
+    http.expectOne((r) => r.url === `${base}/proveedores`).flush(pagina0);
+    page['buscar']('');
+    const req = http.expectOne((r) => r.url === `${base}/proveedores`);
+    expect(req.request.params.has('busqueda')).toBe(false);
+    req.flush(pagina0);
   });
 
   it('corrige una página que quedó fuera de rango (p. ej. tras desactivar con filtro de activos)', () => {
@@ -107,10 +92,19 @@ describe('ProveedoresPage', () => {
     expect(page['pagina']()).toBe(0);
   });
 
-  it('irAPagina no pide una página fuera de rango', () => {
+  it('cambiarPagina no pide una página fuera de rango', () => {
     expect(page['totalPaginas']()).toBe(1);
-    page['irAPagina'](1);
-    http.expectNone((r) => r.url === `${base}/proveedores` && r.params.get('page') === '1');
+    page['cambiarPagina'](1);
+    page['cambiarPagina'](-1);
+    http.expectNone((r) => r.url === `${base}/proveedores`);
+  });
+
+  it('cambiarTamano pide la primera página con el nuevo tamaño', () => {
+    page['cambiarTamano'](50);
+    const req = http.expectOne((r) => r.url === `${base}/proveedores`);
+    expect(req.request.params.get('size')).toBe('50');
+    expect(req.request.params.get('page')).toBe('0');
+    req.flush(pagina0);
   });
 });
 

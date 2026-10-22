@@ -16,8 +16,19 @@
   [error]="error()"
   mensajeVacio="No hay ventas registradas con los filtros seleccionados."
   titulo="Historial de ventas"
-  subtitulo="Filtra por fecha y canal; cada fila abre el detalle confirmado por el servidor."
-  [piePagina]="cargando() ? undefined : 'Página ' + (pagina() + 1) + ' de ' + (totalPaginas() || 1) + ' · ' + totalElementos() + ' ventas en total'"
+  subtitulo="Más recientes primero. Busca por vendedor o producto y filtra por fecha y canal; cada fila abre el detalle confirmado por el servidor."
+  [buscable]="true"
+  placeholderBusqueda="Buscar por vendedor o producto"
+  etiquetaBusqueda="Buscar ventas por vendedor o producto"
+  [pagina]="pagina()"
+  [totalPaginas]="totalPaginas()"
+  [totalElementos]="totalElementos()"
+  [tamano]="tamano()"
+  [tamanos]="tamanos"
+  unidad="ventas"
+  (buscar)="buscar($event)"
+  (cambiarPagina)="cambiarPagina($event)"
+  (cambiarTamano)="cambiarTamano($event)"
   (reintentar)="cargar()"
 >
   <div toolbar class="filtros">
@@ -40,11 +51,6 @@
       <option value="PROVEEDOR">Proveedor</option>
       <option value="PUBLICO">Público</option>
     </select>
-  </div>
-
-  <div paginacion class="paginacion">
-    <button type="button" class="page-btn" [disabled]="pagina() === 0" (click)="irAPagina(-1)" aria-label="Página anterior">‹</button>
-    <button type="button" class="page-btn" [disabled]="pagina() + 1 >= totalPaginas()" (click)="irAPagina(1)" aria-label="Página siguiente">›</button>
   </div>
 
   <ng-template #celda let-fila let-columna="columna">

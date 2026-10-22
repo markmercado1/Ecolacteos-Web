@@ -1,12 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Dialog } from '@angular/cdk/dialog';
-import { Observable, Subject, Subscription, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
 import { ConfirmDialog } from '../../../../shared/ui/dialog/confirm-dialog';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
-import { paginaCorregida, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
+import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
 import { RolResponse, UsuarioResponse } from '../../data-access/usuario.models';
 import { UsuariosApi } from '../../data-access/usuarios.api';
 import { UsuarioFormDialog } from '../../ui/usuario-form-dialog/usuario-form-dialog';
@@ -24,20 +23,19 @@ export class UsuariosPage {
   private readonly usuariosApi = inject(UsuariosApi);
   private readonly dialog = inject(Dialog);
   private readonly toast = inject(ToastService);
-  private readonly destroy = inject(DestroyRef);
 
   protected readonly cargando = signal(true);
   protected readonly error = signal<AppError | null>(null);
   protected readonly usuarios = signal<UsuarioResponse[]>([]);
   protected readonly roles = signal<RolResponse[]>([]);
 
-  /** Valor inmediato del input; el que viaja al servidor es busquedaAplicada (con debounce). */
-  protected readonly busqueda = signal('');
+  /** Texto del buscador estándar (nombre o correo): se envía al servidor y busca entre todos los usuarios. */
   private readonly busquedaAplicada = signal('');
-  private readonly busqueda$ = new Subject<string>();
   protected readonly filtroRol = signal<string>('TODOS');
   protected readonly filtroEstado = signal<FiltroEstado>('TODOS');
   protected readonly pagina = signal(0);
+  protected readonly tamano = signal(TAMANO_PAGINA_POR_DEFECTO);
+  protected readonly tamanos = TAMANOS_PAGINA;
   protected readonly totalElementos = signal(0);
   protected readonly totalPaginas = signal(0);
   private peticion?: Subscription;
@@ -56,14 +54,6 @@ export class UsuariosPage {
       error: () => undefined // el selector de rol del formulario puede quedar vacío; no bloquea el listado
     });
     this.cargar();
-    // Búsqueda en el servidor: debounce para no pedir una página por tecla, reinicio a la página 0.
-    this.busqueda$
-      .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroy))
-      .subscribe((valor) => {
-        this.busquedaAplicada.set(valor.trim());
-        this.pagina.set(0);
-        this.cargar();
-      });
   }
 
   protected cargar(): void {
@@ -75,7 +65,7 @@ export class UsuariosPage {
     this.peticion = this.usuariosApi
       .listarPaginado({
         page: this.pagina(),
-        size: TAMANO_PAGINA_POR_DEFECTO,
+        size: this.tamano(),
         rol: rol === 'TODOS' ? undefined : rol,
         activo: estado === 'TODOS' ? undefined : estado === 'ACTIVOS',
         busqueda: this.busquedaAplicada() || undefined
@@ -100,9 +90,10 @@ export class UsuariosPage {
       });
   }
 
-  protected onBusquedaInput(valor: string): void {
-    this.busqueda.set(valor);
-    this.busqueda$.next(valor);
+  protected buscar(texto: string): void {
+    this.busquedaAplicada.set(texto);
+    this.pagina.set(0);
+    this.cargar();
   }
 
   protected cambiarFiltroRol(valor: string): void {
@@ -117,10 +108,15 @@ export class UsuariosPage {
     this.cargar();
   }
 
-  protected irAPagina(delta: number): void {
-    const siguiente = this.pagina() + delta;
-    if (siguiente < 0 || siguiente >= this.totalPaginas()) return;
-    this.pagina.set(siguiente);
+  protected cambiarPagina(pagina: number): void {
+    if (pagina < 0 || pagina >= this.totalPaginas()) return;
+    this.pagina.set(pagina);
+    this.cargar();
+  }
+
+  protected cambiarTamano(tamano: number): void {
+    this.tamano.set(tamano);
+    this.pagina.set(0);
     this.cargar();
   }
 

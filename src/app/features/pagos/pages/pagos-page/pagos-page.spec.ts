@@ -96,15 +96,40 @@ describe('PagosPage', () => {
       expect(page['totalPaginas']()).toBe(3);
     });
 
-    it('irAPagina pide la página siguiente y no sale del rango', () => {
-      page['irAPagina'](1);
+    it('cambiarPagina pide la página indicada y no sale del rango', () => {
+      page['cambiarPagina'](1);
       const req = http.expectOne((r) => r.url === `${base}/pagos`);
       expect(req.request.params.get('page')).toBe('1');
       req.flush({ contenido: [pago('pg-2')], paginaActual: 1, tamanoPagina: 20, totalElementos: 45, totalPaginas: 3 });
 
-      page['irAPagina'](-2);
+      page['cambiarPagina'](-1);
+      page['cambiarPagina'](3);
       http.expectNone((r) => r.url === `${base}/pagos`);
       expect(page['pagina']()).toBe(1);
+    });
+
+    it('buscar manda el texto al servidor y vuelve a la página 0; vaciar lo quita', () => {
+      page['cambiarPagina'](1);
+      http.expectOne((r) => r.url === `${base}/pagos`).flush({ contenido: [], paginaActual: 1, tamanoPagina: 20, totalElementos: 45, totalPaginas: 3 });
+
+      page['buscar']('huaman');
+      const req = http.expectOne((r) => r.url === `${base}/pagos`);
+      expect(req.request.params.get('busqueda')).toBe('huaman');
+      expect(req.request.params.get('page')).toBe('0');
+      req.flush({ contenido: [pago('pg-9')], paginaActual: 0, tamanoPagina: 20, totalElementos: 1, totalPaginas: 1 });
+
+      page['buscar']('');
+      const sin = http.expectOne((r) => r.url === `${base}/pagos`);
+      expect(sin.request.params.has('busqueda')).toBe(false);
+      sin.flush(paginaVacia);
+    });
+
+    it('cambiarTamano pide la primera página con el nuevo tamaño', () => {
+      page['cambiarTamano'](50);
+      const req = http.expectOne((r) => r.url === `${base}/pagos`);
+      expect(req.request.params.get('size')).toBe('50');
+      expect(req.request.params.get('page')).toBe('0');
+      req.flush(paginaVacia);
     });
 
     it('si la página quedó fuera de rango vuelve a pedir la última válida', () => {
@@ -121,7 +146,7 @@ describe('PagosPage', () => {
     });
 
     it('un error de carga queda expuesto y deja de cargar', () => {
-      page['irAPagina'](1);
+      page['cambiarPagina'](1);
       http.expectOne((r) => r.url === `${base}/pagos`).flush({ mensaje: 'boom' }, { status: 500, statusText: 'Error' });
       expect(page['error']()).not.toBeNull();
       expect(page['cargando']()).toBe(false);

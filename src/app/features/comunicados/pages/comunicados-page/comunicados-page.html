@@ -50,12 +50,20 @@
   <h2>Publicados</h2>
 </div>
 
+<div class="barra-lista">
+  <ui-buscador
+    placeholder="Buscar por mensaje o zona"
+    etiqueta="Buscar comunicados por mensaje o zona"
+    (buscar)="buscar($event)"
+  />
+</div>
+
 @if (cargando()) {
   <ui-loading-state mensaje="Cargando comunicados…" />
 } @else if (error()) {
   <ui-error-state [error]="error()" (reintentar)="cargar()" />
 } @else if (comunicados().length === 0) {
-  <ui-empty-state mensaje="No se ha publicado ningún comunicado todavía." />
+  <ui-empty-state [mensaje]="busqueda() ? 'Ningún comunicado coincide con «' + busqueda() + '».' : 'No se ha publicado ningún comunicado todavía.'" />
 } @else {
   @for (comunicado of comunicados(); track comunicado.id) {
     <div class="card card-pad comunicado-item">
@@ -70,7 +78,10 @@
     [pagina]="pagina()"
     [totalPaginas]="totalPaginas()"
     [totalElementos]="totalElementos()"
+    [tamano]="tamano()"
+    [tamanos]="tamanos"
     unidad="comunicados"
-    (cambiar)="irAPagina($event)"
+    (cambiar)="cambiarPagina($event)"
+    (cambiarTamano)="cambiarTamano($event)"
   />
 }

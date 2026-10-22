@@ -278,6 +278,15 @@ a {
   color: var(--color-text);
 }
 
+/* Barra con el buscador estándar encima de las listas en tarjetas (las tablas lo llevan en su propia barra). */
+.barra-lista {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+
 .paginacion {
   display: flex;
   gap: var(--space-1);

@@ -114,6 +114,7 @@ const TAMANO_PAGINA_HISTORIAL = 10;
         [pagina]="pagina()"
         [totalPaginas]="totalPaginas()"
         [totalElementos]="totalElementos()"
+        [tamano]="tamanoPagina"
         unidad="entregas"
         (cambiar)="irAPagina($event)"
       />
@@ -170,6 +171,7 @@ const TAMANO_PAGINA_HISTORIAL = 10;
   `,
 })
 export class HistorialProveedorDialog {
+  protected readonly tamanoPagina = TAMANO_PAGINA_HISTORIAL;
   protected readonly ref = inject(DialogRef);
   protected readonly data = inject<HistorialProveedorDialogData>(DIALOG_DATA);
   private readonly api = inject(AcopiosApi);

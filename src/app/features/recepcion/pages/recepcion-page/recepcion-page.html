@@ -13,8 +13,19 @@
   [error]="error()"
   mensajeVacio="No hay recepciones registradas con los filtros seleccionados."
   titulo="Historial de recepciones"
-  subtitulo="Filtra por fecha y unidad; cada fila abre el detalle con la diferencia campo/planta."
-  [piePagina]="cargando() ? undefined : 'Página ' + (pagina() + 1) + ' de ' + (totalPaginas() || 1) + ' · ' + totalElementos() + ' recepciones en total'"
+  subtitulo="Más recientes primero. Busca por placa o responsable y filtra por fecha y unidad; cada fila abre el detalle con la diferencia campo/planta."
+  [buscable]="true"
+  placeholderBusqueda="Buscar por placa o responsable"
+  etiquetaBusqueda="Buscar recepciones por placa o responsable"
+  [pagina]="pagina()"
+  [totalPaginas]="totalPaginas()"
+  [totalElementos]="totalElementos()"
+  [tamano]="tamano()"
+  [tamanos]="tamanos"
+  unidad="recepciones"
+  (buscar)="buscar($event)"
+  (cambiarPagina)="cambiarPagina($event)"
+  (cambiarTamano)="cambiarTamano($event)"
   (reintentar)="cargar()"
 >
   <div toolbar class="filtros">
@@ -33,11 +44,6 @@
         <option [value]="unidad.id">{{ unidad.placa }}</option>
       }
     </select>
-  </div>
-
-  <div paginacion class="paginacion">
-    <button type="button" class="page-btn" [disabled]="pagina() === 0" (click)="irAPagina(-1)" aria-label="Página anterior">‹</button>
-    <button type="button" class="page-btn" [disabled]="pagina() + 1 >= totalPaginas()" (click)="irAPagina(1)" aria-label="Página siguiente">›</button>
   </div>
 
   <ng-template #celda let-fila let-columna="columna">

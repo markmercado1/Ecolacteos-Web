@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DecimalPipe } from '@angular/common';
 import { Dialog } from '@angular/cdk/dialog';
 import { Subscription } from 'rxjs';
+import { TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
@@ -12,7 +13,6 @@ import { FiltroInformes, InformesProduccionApi } from '../../data-access/informe
 import { InformeDetalleDialog } from '../../ui/informe-detalle-dialog/informe-detalle-dialog';
 import { InformeFormDialog } from '../../ui/informe-form-dialog/informe-form-dialog';
 
-const TAMANO_PAGINA = 10;
 
 /**
  * Virtualiza el cuadro en papel "INFORME DE PRODUCCION DE QUESOS DIARIO" (área de producción). Página =
@@ -48,6 +48,10 @@ export class InformePage {
   protected readonly errorHistorial = signal<AppError | null>(null);
   protected readonly historial = signal<InformeProduccionDiario[]>([]);
   protected readonly paginaHistorial = signal(0);
+  protected readonly tamano = signal(TAMANO_PAGINA_POR_DEFECTO);
+  protected readonly tamanos = TAMANOS_PAGINA;
+  /** Texto del buscador estándar (responsable): se envía al servidor y busca entre todos los informes. */
+  private readonly busquedaAplicada = signal('');
   protected readonly totalPaginasHistorial = signal(0);
   protected readonly totalElementosHistorial = signal(0);
   private peticionHistorial?: Subscription;
@@ -96,7 +100,7 @@ export class InformePage {
     this.peticionHistorial?.unsubscribe();
     this.cargandoHistorial.set(true);
     this.errorHistorial.set(null);
-    const filtro: FiltroInformes = { page: this.paginaHistorial(), size: TAMANO_PAGINA };
+    const filtro: FiltroInformes = { page: this.paginaHistorial(), size: this.tamano(), busqueda: this.busquedaAplicada() || undefined };
     this.peticionHistorial = this.api
       .listar(filtro)
       .pipe(takeUntilDestroyed(this.destroy))
@@ -114,10 +118,21 @@ export class InformePage {
       });
   }
 
-  protected irAPaginaHistorial(delta: number): void {
-    const siguiente = this.paginaHistorial() + delta;
-    if (siguiente < 0 || siguiente >= this.totalPaginasHistorial()) return;
-    this.paginaHistorial.set(siguiente);
+  protected buscar(texto: string): void {
+    this.busquedaAplicada.set(texto);
+    this.paginaHistorial.set(0);
+    this.cargarHistorial();
+  }
+
+  protected cambiarPagina(pagina: number): void {
+    if (pagina < 0 || pagina >= this.totalPaginasHistorial()) return;
+    this.paginaHistorial.set(pagina);
+    this.cargarHistorial();
+  }
+
+  protected cambiarTamano(tamano: number): void {
+    this.tamano.set(tamano);
+    this.paginaHistorial.set(0);
     this.cargarHistorial();
   }
 

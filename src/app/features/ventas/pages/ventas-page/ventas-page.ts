@@ -1,14 +1,14 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Dialog } from '@angular/cdk/dialog';
+import { Subscription } from 'rxjs';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
+import { TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
 import { TipoClienteVenta, VentaResumenResponse } from '../../data-access/venta.models';
 import { VentasApi } from '../../data-access/ventas.api';
 import { VentaDetalleDialog } from '../../ui/venta-detalle-dialog/venta-detalle-dialog';
 import { VentaFormDialog, VentaFormDialogResultado } from '../../ui/venta-form-dialog/venta-form-dialog';
-
-const TAMANO_PAGINA = 20;
 
 @Component({
   selector: 'app-ventas-page',
@@ -29,6 +29,11 @@ export class VentasPage {
   protected readonly totalPaginas = signal(0);
 
   protected readonly pagina = signal(0);
+  protected readonly tamano = signal(TAMANO_PAGINA_POR_DEFECTO);
+  protected readonly tamanos = TAMANOS_PAGINA;
+  /** Texto del buscador estándar (vendedor, producto o presentación): se envía al servidor y busca entre todas las ventas. */
+  private readonly busquedaAplicada = signal('');
+  private peticion?: Subscription;
   protected readonly filtroFecha = signal('');
   protected readonly filtroTipoCliente = signal<TipoClienteVenta | ''>('');
 
@@ -45,14 +50,16 @@ export class VentasPage {
   }
 
   protected cargar(): void {
+    this.peticion?.unsubscribe();
     this.cargando.set(true);
     this.error.set(null);
-    this.ventasApi
+    this.peticion = this.ventasApi
       .listar({
         page: this.pagina(),
-        size: TAMANO_PAGINA,
+        size: this.tamano(),
         fecha: this.filtroFecha() || undefined,
-        tipoCliente: this.filtroTipoCliente() || undefined
+        tipoCliente: this.filtroTipoCliente() || undefined,
+        busqueda: this.busquedaAplicada() || undefined
       })
       .subscribe({
         next: (respuesta) => {
@@ -80,10 +87,21 @@ export class VentasPage {
     this.cargar();
   }
 
-  protected irAPagina(delta: number): void {
-    const siguiente = this.pagina() + delta;
-    if (siguiente < 0 || siguiente >= this.totalPaginas()) return;
-    this.pagina.set(siguiente);
+  protected buscar(texto: string): void {
+    this.busquedaAplicada.set(texto);
+    this.pagina.set(0);
+    this.cargar();
+  }
+
+  protected cambiarPagina(pagina: number): void {
+    if (pagina < 0 || pagina >= this.totalPaginas()) return;
+    this.pagina.set(pagina);
+    this.cargar();
+  }
+
+  protected cambiarTamano(tamano: number): void {
+    this.tamano.set(tamano);
+    this.pagina.set(0);
     this.cargar();
   }
 

@@ -19,7 +19,7 @@
 @switch (pestana()) {
   @case ('zonas') {
     <ui-data-table
-      [columnas]="columnasZonas" [filas]="zonas()" [cargando]="cargandoZonas()" [error]="errorZonas()"
+      [columnas]="columnasZonas" [lista]="listaZonas" unidad="zonas" placeholderBusqueda="Buscar zona" etiquetaBusqueda="Buscar zonas por nombre" [cargando]="cargandoZonas()" [error]="errorZonas()"
       mensajeVacio="No hay zonas activas." titulo="Zonas" subtitulo="Zonas libres: no restringen el acceso de ningún usuario."
       (reintentar)="cargarZonas()"
     >
@@ -40,7 +40,7 @@
   }
   @case ('motivos') {
     <ui-data-table
-      [columnas]="columnasMotivos" [filas]="motivos()" [cargando]="cargandoMotivos()" [error]="errorMotivos()"
+      [columnas]="columnasMotivos" [lista]="listaMotivos" unidad="motivos" placeholderBusqueda="Buscar motivo" etiquetaBusqueda="Buscar motivos por descripción" [cargando]="cargandoMotivos()" [error]="errorMotivos()"
       mensajeVacio="No hay motivos activos." titulo="Motivos de observación" subtitulo="Usados al registrar correcciones de acopio."
       (reintentar)="cargarMotivos()"
     >
@@ -61,7 +61,7 @@
   }
   @case ('familias') {
     <ui-data-table
-      [columnas]="columnasFamilias" [filas]="familias()" [cargando]="cargandoFamilias()" [error]="errorFamilias()"
+      [columnas]="columnasFamilias" [lista]="listaFamilias" unidad="familias" placeholderBusqueda="Buscar familia" etiquetaBusqueda="Buscar familias por nombre" [cargando]="cargandoFamilias()" [error]="errorFamilias()"
       mensajeVacio="No hay familias activas." titulo="Familias" subtitulo="Agrupan productos: Queso, Yogurt, Leche, Mantequilla, Dulce de leche…"
       (reintentar)="cargarFamilias()"
     >
@@ -82,7 +82,7 @@
   }
   @case ('productos') {
     <ui-data-table
-      [columnas]="columnasProductos" [filas]="productos()" [cargando]="cargandoProductos()" [error]="errorProductos()"
+      [columnas]="columnasProductos" [lista]="listaProductos" unidad="productos" placeholderBusqueda="Buscar producto o familia" etiquetaBusqueda="Buscar productos por nombre o familia" [cargando]="cargandoProductos()" [error]="errorProductos()"
       mensajeVacio="No hay productos activos." titulo="Productos" subtitulo="Cada producto tiene sus propias presentaciones (cómo se cuenta, almacena y vende)."
       (reintentar)="cargarProductos()"
     >
@@ -114,7 +114,7 @@
   }
   @case ('insumos') {
     <ui-data-table
-      [columnas]="columnasInsumos" [filas]="insumos()" [cargando]="cargandoInsumos()" [error]="errorInsumos()"
+      [columnas]="columnasInsumos" [lista]="listaInsumos" unidad="insumos" placeholderBusqueda="Buscar insumo" etiquetaBusqueda="Buscar insumos por nombre" [cargando]="cargandoInsumos()" [error]="errorInsumos()"
       mensajeVacio="No hay insumos activos." titulo="Insumos" subtitulo="Cuajo, sal, etc. El stock cambia solo por movimientos (ingresos, producción, ajustes): gestiónalo en Inventario → Insumos."
       (reintentar)="cargarInsumos()"
     >
@@ -137,7 +137,7 @@
   }
   @case ('recetas') {
     <ui-data-table
-      [columnas]="columnasRecetas" [filas]="recetas()" [cargando]="cargandoRecetas()" [error]="errorRecetas()"
+      [columnas]="columnasRecetas" [lista]="listaRecetas" unidad="recetas" placeholderBusqueda="Buscar receta o producto" etiquetaBusqueda="Buscar recetas por nombre o producto" [cargando]="cargandoRecetas()" [error]="errorRecetas()"
       mensajeVacio="No hay recetas registradas." titulo="Recetas de producción"
       subtitulo="Cantidades por la leche base de cada receta; al producir, el sistema las escala proporcionalmente."
       (reintentar)="cargarRecetas()"
@@ -169,7 +169,7 @@
   }
   @case ('configuracion') {
     <ui-data-table
-      [columnas]="columnasConfig" [filas]="configuracion()" [cargando]="cargandoConfig()" [error]="errorConfig()"
+      [columnas]="columnasConfig" [lista]="listaConfig" unidad="parámetros" placeholderBusqueda="Buscar parámetro" etiquetaBusqueda="Buscar parámetros por clave, valor o descripción" [cargando]="cargandoConfig()" [error]="errorConfig()"
       mensajeVacio="Sin parámetros de configuración." titulo="Configuración del sistema" subtitulo="Las claves son fijas; solo se edita el valor."
       (reintentar)="cargarConfig()"
     >

@@ -16,13 +16,16 @@
 @case ('insumos') {
   <ui-data-table
     [columnas]="columnasInsumos()"
-    [filas]="insumos()"
+    [lista]="listaInsumos"
     [cargando]="cargandoInsumos()"
     [error]="errorInsumos()"
     [identificarFila]="identificarInsumo"
     mensajeVacio="No hay insumos registrados."
     titulo="Stock de insumos"
     subtitulo="Se descuentan al iniciar una producción. Registra aquí los ingresos; los ajustes por conteo físico son solo para ADMIN."
+    placeholderBusqueda="Buscar insumo"
+    etiquetaBusqueda="Buscar insumos por nombre"
+    unidad="insumos"
     (reintentar)="cargarInsumos()"
   >
     <ng-template #celda let-fila let-columna="columna">
@@ -63,10 +66,21 @@
   [cargando]="cargando()"
   [error]="error()"
   [identificarFila]="identificarFila"
-  [piePagina]="resumen()"
   mensajeVacio="No hay presentaciones disponibles en el inventario."
   titulo="Stock por presentación"
   subtitulo="Cada presentación tiene su propio stock. Las presentaciones inactivas con saldo siguen visibles."
+  [buscable]="true"
+  placeholderBusqueda="Buscar producto o presentación"
+  etiquetaBusqueda="Buscar en el inventario por producto o presentación"
+  [pagina]="pagina()"
+  [totalPaginas]="paginas()"
+  [totalElementos]="total()"
+  [tamano]="tamano()"
+  [tamanos]="tamanos"
+  unidad="presentaciones"
+  (buscar)="buscar($event)"
+  (cambiarPagina)="cambiarPagina($event)"
+  (cambiarTamano)="cambiarTamano($event)"
   (reintentar)="cargar()"
 >
   <div toolbar class="filtro-familia">
@@ -142,33 +156,6 @@
       }
     }
   </ng-template>
-  <div paginacion class="paginacion" aria-label="Paginación del inventario">
-    <label
-      >Por página
-      <select #size [value]="tamano()" (change)="cambiarTamano(size.value)" [disabled]="cargando()">
-        <option value="10">10</option>
-        <option value="20">20</option>
-        <option value="50">50</option>
-      </select>
-    </label>
-    <button
-      type="button"
-      class="btn btn-secondary"
-      (click)="cambiarPagina(pagina() - 1)"
-      [disabled]="cargando() || !!error() || pagina() === 0"
-    >
-      Anterior
-    </button>
-    <span>Página {{ paginas() === 0 ? 0 : pagina() + 1 }} de {{ paginas() }}</span>
-    <button
-      type="button"
-      class="btn btn-secondary"
-      (click)="cambiarPagina(pagina() + 1)"
-      [disabled]="cargando() || !!error() || pagina() + 1 >= paginas()"
-    >
-      Siguiente
-    </button>
-  </div>
 </ui-data-table>
 }
 }

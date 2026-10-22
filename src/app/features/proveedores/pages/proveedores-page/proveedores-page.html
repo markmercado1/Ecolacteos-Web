@@ -2,7 +2,7 @@
   <div>
     <div class="eyebrow">OPERACIÓN</div>
     <h1>Proveedores</h1>
-    <p>Padrón de productores. La API pagina y filtra por zona/estado; el buscador de esta página solo mira los resultados ya cargados.</p>
+    <p>Padrón de productores, con los más recientes primero. Busca por nombre o DNI entre todos los proveedores y filtra por zona o estado.</p>
   </div>
   <div class="heading-actions">
     <button type="button" class="btn primary" (click)="nuevoProveedor()">Nuevo proveedor</button>
@@ -32,19 +32,21 @@
   mensajeVacio="No hay proveedores que coincidan con el filtro."
   titulo="Directorio de proveedores"
   subtitulo="Filtra por zona y estado; abre el detalle para ver su historial y código QR."
-  [piePagina]="cargando() ? undefined : 'Página ' + (pagina() + 1) + ' de ' + (totalPaginas() || 1) + ' · ' + totalElementos() + ' proveedores en total'"
+  [buscable]="true"
+  placeholderBusqueda="Buscar por nombre o DNI"
+  etiquetaBusqueda="Buscar proveedor por nombre o DNI"
+  [pagina]="pagina()"
+  [totalPaginas]="totalPaginas()"
+  [totalElementos]="totalElementos()"
+  [tamano]="tamano()"
+  [tamanos]="tamanos"
+  unidad="proveedores"
+  (buscar)="buscar($event)"
+  (cambiarPagina)="cambiarPagina($event)"
+  (cambiarTamano)="cambiarTamano($event)"
   (reintentar)="cargar()"
 >
   <div toolbar class="filtros">
-    <div class="search">
-      <input
-        type="search"
-        [value]="busqueda()"
-        (input)="onBusquedaInput($any($event.target).value)"
-        placeholder="Buscar por nombre o DNI"
-        aria-label="Buscar proveedor por nombre o DNI"
-      >
-    </div>
     <select [value]="filtroZona()" (change)="cambiarFiltroZona($any($event.target).value)" aria-label="Filtrar por zona">
       <option value="">Todas las zonas</option>
       @for (zona of zonas(); track zona.id) {
@@ -56,11 +58,6 @@
       <option value="ACTIVOS">Activos</option>
       <option value="INACTIVOS">Inactivos</option>
     </select>
-  </div>
-
-  <div paginacion class="paginacion">
-    <button type="button" class="page-btn" [disabled]="pagina() === 0" (click)="irAPagina(-1)" aria-label="Página anterior">‹</button>
-    <button type="button" class="page-btn" [disabled]="pagina() + 1 >= totalPaginas()" (click)="irAPagina(1)" aria-label="Página siguiente">›</button>
   </div>
 
   <ng-template #celda let-fila let-columna="columna">

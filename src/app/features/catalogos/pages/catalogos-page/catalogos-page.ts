@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { Dialog } from '@angular/cdk/dialog';
 import { ActivatedRoute } from '@angular/router';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
@@ -6,6 +6,7 @@ import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-tab
 import { CampoUnicoDialog } from '../../../../shared/ui/dialog/campo-unico-dialog';
 import { ConfirmDialog } from '../../../../shared/ui/dialog/confirm-dialog';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
+import { ListaLocal } from '../../../../shared/util/lista-local';
 import { ConfiguracionApi } from '../../data-access/configuracion.api';
 import { ConfiguracionSistemaResponse } from '../../data-access/configuracion.models';
 import { InsumoResponse } from '../../data-access/insumo.models';
@@ -26,6 +27,9 @@ import { ProductoFormDialog, ProductoFormDialogResultado } from '../../ui/produc
 import { PresentacionesDialog } from '../../ui/presentaciones-dialog/presentaciones-dialog';
 import { RecetaFormDialog } from '../../ui/receta-form-dialog/receta-form-dialog';
 import { ControlVencimientoDialog } from '../../../vencimiento/ui/control-vencimiento-dialog/control-vencimiento-dialog';
+
+/** Id del registro que devolvió el diálogo al guardar (para mostrarlo y resaltarlo en la tabla). */
+const idDe = (resultado: unknown): string | undefined => (resultado as { id?: string } | null)?.id;
 
 type Pestana = 'zonas' | 'motivos' | 'familias' | 'productos' | 'insumos' | 'recetas' | 'configuracion';
 const PESTANAS: Pestana[] = ['zonas', 'motivos', 'familias', 'productos', 'insumos', 'recetas', 'configuracion'];
@@ -84,6 +88,33 @@ export class CatalogosPage {
   protected readonly errorConfig = signal<AppError | null>(null);
   protected readonly configuracion = signal<ConfiguracionSistemaResponse[]>([]);
 
+  /**
+   * Las APIs de catálogos entregan todo el conjunto activo en orden alfabético (no hay fecha de creación): cada tabla
+   * se busca y pagina en el cliente sobre TODOS los registros, y el recién creado o editado se resalta unos segundos.
+   */
+  private readonly destroyRef = inject(DestroyRef);
+  protected readonly listaZonas = new ListaLocal(this.zonas, {
+    campos: (z) => [z.nombre], id: (z) => z.id, destroyRef: this.destroyRef
+  });
+  protected readonly listaMotivos = new ListaLocal(this.motivos, {
+    campos: (m) => [m.descripcion], id: (m) => m.id, destroyRef: this.destroyRef
+  });
+  protected readonly listaFamilias = new ListaLocal(this.familias, {
+    campos: (f) => [f.nombre], id: (f) => f.id, destroyRef: this.destroyRef
+  });
+  protected readonly listaProductos = new ListaLocal(this.productos, {
+    campos: (p) => [p.nombre, p.familiaNombre], id: (p) => p.id, destroyRef: this.destroyRef
+  });
+  protected readonly listaInsumos = new ListaLocal(this.insumos, {
+    campos: (i) => [i.nombre, i.unidadMedida], id: (i) => i.id, destroyRef: this.destroyRef
+  });
+  protected readonly listaRecetas = new ListaLocal(this.recetas, {
+    campos: (r) => [r.nombre, r.productoNombre, r.presentacionNombre], id: (r) => r.id, destroyRef: this.destroyRef
+  });
+  protected readonly listaConfig = new ListaLocal(this.configuracion, {
+    campos: (c) => [c.clave, c.valor, c.descripcion], id: (c) => c.clave, destroyRef: this.destroyRef
+  });
+
   protected readonly columnasZonas: ColumnaTabla[] = [
     { clave: 'nombre', etiqueta: 'Zona' },
     { clave: 'acciones', etiqueta: '' }
@@ -138,57 +169,57 @@ export class CatalogosPage {
     return pedida && PESTANAS.includes(pedida) ? pedida : 'zonas';
   }
 
-  protected cargarZonas(): void {
+  protected cargarZonas(revelarId?: string): void {
     this.cargandoZonas.set(true);
     this.errorZonas.set(null);
     this.zonasApi.listarAdmin().subscribe({
-      next: (z) => { this.zonas.set(z); this.cargandoZonas.set(false); },
+      next: (z) => { this.zonas.set(z); this.cargandoZonas.set(false); if (revelarId) this.listaZonas.revelar(revelarId); },
       error: (e) => { this.errorZonas.set(mapHttpError(e)); this.cargandoZonas.set(false); }
     });
   }
 
-  protected cargarMotivos(): void {
+  protected cargarMotivos(revelarId?: string): void {
     this.cargandoMotivos.set(true);
     this.errorMotivos.set(null);
     this.motivosApi.listar().subscribe({
-      next: (m) => { this.motivos.set(m); this.cargandoMotivos.set(false); },
+      next: (m) => { this.motivos.set(m); this.cargandoMotivos.set(false); if (revelarId) this.listaMotivos.revelar(revelarId); },
       error: (e) => { this.errorMotivos.set(mapHttpError(e)); this.cargandoMotivos.set(false); }
     });
   }
 
-  protected cargarFamilias(): void {
+  protected cargarFamilias(revelarId?: string): void {
     this.cargandoFamilias.set(true);
     this.errorFamilias.set(null);
     this.familiasApi.listar().subscribe({
-      next: (f) => { this.familias.set(f); this.cargandoFamilias.set(false); },
+      next: (f) => { this.familias.set(f); this.cargandoFamilias.set(false); if (revelarId) this.listaFamilias.revelar(revelarId); },
       error: (e) => { this.errorFamilias.set(mapHttpError(e)); this.cargandoFamilias.set(false); }
     });
   }
 
-  protected cargarProductos(): void {
+  protected cargarProductos(revelarId?: string): void {
     this.cargandoProductos.set(true);
     this.errorProductos.set(null);
     this.productosApi.listar().subscribe({
-      next: (p) => { this.productos.set(p); this.cargandoProductos.set(false); },
+      next: (p) => { this.productos.set(p); this.cargandoProductos.set(false); if (revelarId) this.listaProductos.revelar(revelarId); },
       error: (e) => { this.errorProductos.set(mapHttpError(e)); this.cargandoProductos.set(false); }
     });
   }
 
-  protected cargarInsumos(): void {
+  protected cargarInsumos(revelarId?: string): void {
     this.cargandoInsumos.set(true);
     this.errorInsumos.set(null);
     this.insumosApi.listar().subscribe({
-      next: (i) => { this.insumos.set(i); this.cargandoInsumos.set(false); },
+      next: (i) => { this.insumos.set(i); this.cargandoInsumos.set(false); if (revelarId) this.listaInsumos.revelar(revelarId); },
       error: (e) => { this.errorInsumos.set(mapHttpError(e)); this.cargandoInsumos.set(false); }
     });
   }
 
   /** Incluye inactivas: a diferencia de otros catálogos, la API de recetas sí permite verlas y reactivarlas. */
-  protected cargarRecetas(): void {
+  protected cargarRecetas(revelarId?: string): void {
     this.cargandoRecetas.set(true);
     this.errorRecetas.set(null);
     this.recetasApi.listar(true).subscribe({
-      next: (r) => { this.recetas.set(r); this.cargandoRecetas.set(false); },
+      next: (r) => { this.recetas.set(r); this.cargandoRecetas.set(false); if (revelarId) this.listaRecetas.revelar(revelarId); },
       error: (e) => { this.errorRecetas.set(mapHttpError(e)); this.cargandoRecetas.set(false); }
     });
   }
@@ -211,7 +242,7 @@ export class CatalogosPage {
         guardar: (nombre: string) => this.zonasApi.crear({ nombre })
       }
     });
-    ref.closed.subscribe((r) => { if (r) { this.toast.exito('Zona creada.'); this.cargarZonas(); } });
+    ref.closed.subscribe((r) => { if (r) { this.toast.exito('Zona creada.'); this.cargarZonas(idDe(r)); } });
   }
 
   protected editarZona(zona: ZonaResponse): void {
@@ -222,7 +253,7 @@ export class CatalogosPage {
         guardar: (nombre: string) => this.zonasApi.actualizar(zona.id, { nombre })
       }
     });
-    ref.closed.subscribe((r) => { if (r) { this.toast.exito('Zona actualizada.'); this.cargarZonas(); } });
+    ref.closed.subscribe((r) => { if (r) { this.toast.exito('Zona actualizada.'); this.cargarZonas(idDe(r)); } });
   }
 
   protected desactivarZona(zona: ZonaResponse): void {
@@ -243,7 +274,7 @@ export class CatalogosPage {
         guardar: (descripcion: string) => this.motivosApi.crear({ descripcion })
       }
     });
-    ref.closed.subscribe((r) => { if (r) { this.toast.exito('Motivo creado.'); this.cargarMotivos(); } });
+    ref.closed.subscribe((r) => { if (r) { this.toast.exito('Motivo creado.'); this.cargarMotivos(idDe(r)); } });
   }
 
   protected editarMotivo(motivo: MotivoObservacionResponse): void {
@@ -254,7 +285,7 @@ export class CatalogosPage {
         guardar: (descripcion: string) => this.motivosApi.actualizar(motivo.id, { descripcion })
       }
     });
-    ref.closed.subscribe((r) => { if (r) { this.toast.exito('Motivo actualizado.'); this.cargarMotivos(); } });
+    ref.closed.subscribe((r) => { if (r) { this.toast.exito('Motivo actualizado.'); this.cargarMotivos(idDe(r)); } });
   }
 
   protected desactivarMotivo(motivo: MotivoObservacionResponse): void {
@@ -275,7 +306,7 @@ export class CatalogosPage {
         guardar: (nombre: string) => this.familiasApi.crear({ nombre })
       }
     });
-    ref.closed.subscribe((r) => { if (r) { this.toast.exito('Familia creada.'); this.cargarFamilias(); } });
+    ref.closed.subscribe((r) => { if (r) { this.toast.exito('Familia creada.'); this.cargarFamilias(idDe(r)); } });
   }
 
   protected editarFamilia(familia: FamiliaResponse): void {
@@ -286,7 +317,7 @@ export class CatalogosPage {
         guardar: (nombre: string) => this.familiasApi.actualizar(familia.id, { nombre })
       }
     });
-    ref.closed.subscribe((r) => { if (r) { this.toast.exito('Familia actualizada.'); this.cargarFamilias(); } });
+    ref.closed.subscribe((r) => { if (r) { this.toast.exito('Familia actualizada.'); this.cargarFamilias(idDe(r)); } });
   }
 
   protected desactivarFamilia(familia: FamiliaResponse): void {
@@ -309,7 +340,7 @@ export class CatalogosPage {
       if (!r) return;
       this.toast.exito(`Producto "${r.producto.nombre}" creado.`);
       if (r.errorFoto) this.avisarErrorFoto(r.errorFoto);
-      this.cargarProductos();
+      this.cargarProductos(r.producto.id);
       if (r.esNuevo) this.abrirPresentaciones(r.producto, true);
     });
   }
@@ -323,7 +354,7 @@ export class CatalogosPage {
       if (!r) return;
       this.toast.exito(`Producto "${r.producto.nombre}" actualizado.`);
       if (r.errorFoto) this.avisarErrorFoto(r.errorFoto);
-      this.cargarProductos();
+      this.cargarProductos(r.producto.id);
     });
   }
 
@@ -363,7 +394,7 @@ export class CatalogosPage {
   // --- Insumos ---
   protected nuevoInsumo(): void {
     const ref = this.dialog.open<InsumoResponse | undefined>(InsumoFormDialog, { ariaLabel: 'Nuevo insumo', data: {} });
-    ref.closed.subscribe((r) => { if (r) { this.toast.exito(`Insumo "${r.nombre}" creado.`); this.cargarInsumos(); } });
+    ref.closed.subscribe((r) => { if (r) { this.toast.exito(`Insumo "${r.nombre}" creado.`); this.cargarInsumos(r.id); } });
   }
 
   protected editarInsumo(insumo: InsumoResponse): void {
@@ -371,7 +402,7 @@ export class CatalogosPage {
       ariaLabel: 'Editar insumo',
       data: { insumo }
     });
-    ref.closed.subscribe((r) => { if (r) { this.toast.exito(`Insumo "${r.nombre}" actualizado.`); this.cargarInsumos(); } });
+    ref.closed.subscribe((r) => { if (r) { this.toast.exito(`Insumo "${r.nombre}" actualizado.`); this.cargarInsumos(r.id); } });
   }
 
   protected desactivarInsumo(insumo: InsumoResponse): void {
@@ -389,7 +420,7 @@ export class CatalogosPage {
       ariaLabel: 'Nueva receta',
       data: { productos: this.productos(), insumos: this.insumos() }
     });
-    ref.closed.subscribe((r) => { if (r) { this.toast.exito(`Receta "${r.nombre}" creada.`); this.cargarRecetas(); } });
+    ref.closed.subscribe((r) => { if (r) { this.toast.exito(`Receta "${r.nombre}" creada.`); this.cargarRecetas(r.id); } });
   }
 
   protected editarReceta(receta: RecetaResponse): void {
@@ -397,7 +428,7 @@ export class CatalogosPage {
       ariaLabel: 'Editar receta',
       data: { receta, productos: this.productos(), insumos: this.insumos() }
     });
-    ref.closed.subscribe((r) => { if (r) { this.toast.exito(`Receta "${r.nombre}" actualizada.`); this.cargarRecetas(); } });
+    ref.closed.subscribe((r) => { if (r) { this.toast.exito(`Receta "${r.nombre}" actualizada.`); this.cargarRecetas(r.id); } });
   }
 
   protected desactivarReceta(receta: RecetaResponse): void {

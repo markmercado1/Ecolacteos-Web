@@ -9,7 +9,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Dialog } from '@angular/cdk/dialog';
-import { Observable, Subject, Subscription, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { Acopio, AcopioPorJornada, AcopiosApi, FiltroAcopiosPaginado, TotalAcopioProveedor } from './acopios.api';
 import { AcopioDetalle } from './acopio-detalle';
 import { HistorialProveedorDialog } from './historial-proveedor-dialog';
@@ -22,7 +22,7 @@ import { BarChartComponent, BarraChart } from '../../shared/ui/chart/bar-chart';
 import { ColumnaTabla, DataTableComponent } from '../../shared/ui/data-table/data-table';
 import { fechaHoyLima } from '../../shared/util/fecha';
 import { PaginaResponse } from '../../shared/models/pagina-response';
-import { paginaCorregida, TAMANO_PAGINA_POR_DEFECTO, textoPie } from '../../shared/util/paginacion';
+import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../../shared/util/paginacion';
 
 @Component({
   selector: 'app-acopios-page',
@@ -71,16 +71,6 @@ import { paginaCorregida, TAMANO_PAGINA_POR_DEFECTO, textoPie } from '../../shar
         >
       </div>
       <button class="btn primary" [disabled]="cargando()" (click)="actualizar()">Actualizar</button>
-      <div class="field">
-        <label for="buscar-acopios">Proveedor o placa</label
-        ><input
-          id="buscar-acopios"
-          type="search"
-          [value]="busqueda()"
-          (input)="onBusquedaInput($any($event.target).value)"
-          placeholder="Buscar en el día seleccionado"
-        />
-      </div>
     </div>
     <p>
       Solo se muestran acopios enviados al servidor. Los pendientes del móvil aparecerán después de
@@ -119,12 +109,20 @@ import { paginaCorregida, TAMANO_PAGINA_POR_DEFECTO, textoPie } from '../../shar
         [error]="error()"
         (reintentar)="cargar()"
         mensajeVacio="No hay acopios para esta fecha y búsqueda."
-        [piePagina]="pie('jornadas')"
+        [buscable]="true"
+        placeholderBusqueda="Buscar por proveedor o placa"
+        etiquetaBusqueda="Buscar acopios por proveedor o placa"
+        [busquedaInicial]="busquedaAplicada()"
+        [pagina]="pagina()"
+        [totalPaginas]="totalPaginas()"
+        [totalElementos]="totalElementos()"
+        [tamano]="tamano()"
+        [tamanos]="tamanos"
+        unidad="jornadas"
+        (buscar)="buscar($event)"
+        (cambiarPagina)="cambiarPagina($event)"
+        (cambiarTamano)="cambiarTamano($event)"
       >
-        <div paginacion class="paginacion">
-          <button type="button" class="page-btn" [disabled]="cargando() || pagina() === 0" (click)="irAPagina(-1)" aria-label="Página anterior">‹</button>
-          <button type="button" class="page-btn" [disabled]="cargando() || pagina() + 1 >= totalPaginas()" (click)="irAPagina(1)" aria-label="Página siguiente">›</button>
-        </div>
         <ng-template #celda let-fila let-columna="columna">
           @switch (columna) {
             @case ('acopiador') {
@@ -160,12 +158,20 @@ import { paginaCorregida, TAMANO_PAGINA_POR_DEFECTO, textoPie } from '../../shar
         [error]="error()"
         (reintentar)="cargar()"
         mensajeVacio="No hay acopios para esta fecha y búsqueda."
-        [piePagina]="pie('entregas')"
+        [buscable]="true"
+        placeholderBusqueda="Buscar por proveedor o placa"
+        etiquetaBusqueda="Buscar acopios por proveedor o placa"
+        [busquedaInicial]="busquedaAplicada()"
+        [pagina]="pagina()"
+        [totalPaginas]="totalPaginas()"
+        [totalElementos]="totalElementos()"
+        [tamano]="tamano()"
+        [tamanos]="tamanos"
+        unidad="entregas"
+        (buscar)="buscar($event)"
+        (cambiarPagina)="cambiarPagina($event)"
+        (cambiarTamano)="cambiarTamano($event)"
       >
-        <div paginacion class="paginacion">
-          <button type="button" class="page-btn" [disabled]="cargando() || pagina() === 0" (click)="irAPagina(-1)" aria-label="Página anterior">‹</button>
-          <button type="button" class="page-btn" [disabled]="cargando() || pagina() + 1 >= totalPaginas()" (click)="irAPagina(1)" aria-label="Página siguiente">›</button>
-        </div>
         <ng-template #celda let-r let-columna="columna">
           @switch (columna) {
             @case ('fechaHora') {
@@ -251,14 +257,13 @@ export class AcopiosPage {
   protected readonly fecha = signal(fechaHoyLima());
   protected readonly filtroZona = signal('');
   protected readonly soloSinAnalisis = signal(false);
-  /** Valor inmediato del input (no se pierde tecleo mientras corre el debounce). */
-  protected readonly busqueda = signal('');
-  /** Valor estabilizado que realmente se envía al servidor (proveedor o placa). */
-  private readonly busquedaAplicada = signal('');
-  private readonly busqueda$ = new Subject<string>();
+  /** Texto del buscador estándar (proveedor o placa) que se envía al servidor: busca entre TODOS los acopios del día. */
+  protected readonly busquedaAplicada = signal('');
   protected readonly filasEntrega = signal<Acopio[]>([]);
   protected readonly filasJornada = signal<AcopioPorJornada[]>([]);
   protected readonly pagina = signal(0);
+  protected readonly tamano = signal(TAMANO_PAGINA_POR_DEFECTO);
+  protected readonly tamanos = TAMANOS_PAGINA;
   protected readonly totalElementos = signal(0);
   protected readonly totalPaginas = signal(0);
   protected readonly unidades = signal<UnidadResponse[]>([]);
@@ -302,21 +307,9 @@ export class AcopiosPage {
     this.cargarUnidades();
     this.cargarZonas();
     this.actualizar();
-    // Búsqueda en el servidor con reinicio de página: el debounce evita una petición por tecla y cargar()
-    // cancela cualquier consulta anterior todavía en vuelo.
-    this.busqueda$
-      .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroy))
-      .subscribe((valor) => {
-        this.busquedaAplicada.set(valor.trim());
-        this.pagina.set(0);
-        this.cargar();
-      });
   }
   protected placa(id: string) {
     return this.unidades().find((u) => u.id === id)?.placa ?? id;
-  }
-  protected pie(unidad: string): string | undefined {
-    return this.cargando() ? undefined : textoPie(this.pagina(), this.totalPaginas(), this.totalElementos(), unidad);
   }
   protected cambiarFecha(fecha: string) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return;
@@ -331,9 +324,11 @@ export class AcopiosPage {
     this.soloSinAnalisis.set(activo);
     this.reiniciarYActualizar();
   }
-  protected onBusquedaInput(valor: string) {
-    this.busqueda.set(valor);
-    this.busqueda$.next(valor);
+  /** Buscador estándar: reinicia a la página 0; cargar() cancela cualquier consulta anterior todavía en vuelo. */
+  protected buscar(texto: string) {
+    this.busquedaAplicada.set(texto);
+    this.pagina.set(0);
+    this.cargar();
   }
   /** Cada vista pagina cosas distintas (jornadas vs. entregas): al cambiar de vista se vuelve a la página 0. */
   protected cambiarVista(vista: 'jornada' | 'entrega') {
@@ -342,10 +337,15 @@ export class AcopiosPage {
     this.pagina.set(0);
     this.cargar();
   }
-  protected irAPagina(delta: number) {
-    const siguiente = this.pagina() + delta;
-    if (siguiente < 0 || siguiente >= this.totalPaginas()) return;
-    this.pagina.set(siguiente);
+  protected cambiarPagina(pagina: number) {
+    if (pagina < 0 || pagina >= this.totalPaginas()) return;
+    this.pagina.set(pagina);
+    this.cargar();
+  }
+
+  protected cambiarTamano(tamano: number) {
+    this.tamano.set(tamano);
+    this.pagina.set(0);
     this.cargar();
   }
   /** Tabla y gráfico: carga inicial, botón "Actualizar" y cambios de fecha/zona/análisis. */
@@ -364,7 +364,7 @@ export class AcopiosPage {
       sinAnalisis: this.soloSinAnalisis() || undefined,
       busqueda: this.busquedaAplicada() || undefined,
       page: this.pagina(),
-      size: TAMANO_PAGINA_POR_DEFECTO,
+      size: this.tamano(),
     };
     const vista = this.vista();
     const peticion: Observable<PaginaResponse<Acopio | AcopioPorJornada>> =

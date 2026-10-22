@@ -77,10 +77,36 @@ describe('VentasPage', () => {
     req.flush({ ...pagina0, paginaActual: 0 });
   });
 
-  it('irAPagina no pide una página fuera de rango', () => {
+  it('cambiarPagina no pide una página fuera de rango', () => {
     expect(page['totalPaginas']()).toBe(1);
-    page['irAPagina'](1);
-    http.expectNone((r) => r.url === `${base}/ventas` && r.params.get('page') === '1');
+    page['cambiarPagina'](1);
+    page['cambiarPagina'](-1);
+    http.expectNone((r) => r.url === `${base}/ventas`);
+  });
+
+  it('buscar manda el texto al servidor junto a los filtros y vuelve a la página 0; vaciar lo quita', () => {
+    page['cambiarFiltroTipoCliente']('MAYORISTA');
+    http.expectOne((r) => r.url === `${base}/ventas`).flush({ ...pagina0, paginaActual: 0 });
+
+    page['buscar']('fresón');
+    const req = http.expectOne((r) => r.url === `${base}/ventas`);
+    expect(req.request.params.get('busqueda')).toBe('fresón');
+    expect(req.request.params.get('tipoCliente')).toBe('MAYORISTA');
+    expect(req.request.params.get('page')).toBe('0');
+    req.flush({ ...pagina0, paginaActual: 0 });
+
+    page['buscar']('');
+    const sin = http.expectOne((r) => r.url === `${base}/ventas`);
+    expect(sin.request.params.has('busqueda')).toBe(false);
+    sin.flush({ ...pagina0, paginaActual: 0 });
+  });
+
+  it('cambiarTamano pide la primera página con el nuevo tamaño', () => {
+    page['cambiarTamano'](10);
+    const req = http.expectOne((r) => r.url === `${base}/ventas`);
+    expect(req.request.params.get('size')).toBe('10');
+    expect(req.request.params.get('page')).toBe('0');
+    req.flush({ ...pagina0, paginaActual: 0 });
   });
 
   it('no muestra la suma de la página como total de todas las ventas', () => {

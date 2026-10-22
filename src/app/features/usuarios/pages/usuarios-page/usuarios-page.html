@@ -2,7 +2,7 @@
   <div>
     <div class="eyebrow">ADMINISTRACIÓN</div>
     <h1>Usuarios</h1>
-    <p>Personas con acceso al sistema y su rol asignado. La búsqueda y los filtros se aplican en el servidor.</p>
+    <p>Personas con acceso al sistema y su rol asignado, con las más recientes primero. La búsqueda y los filtros se aplican en el servidor, entre todos los usuarios.</p>
   </div>
   <div class="heading-actions">
     <button type="button" class="btn primary" (click)="nuevoUsuario()">Nuevo usuario</button>
@@ -17,24 +17,21 @@
   mensajeVacio="No hay usuarios que coincidan con el filtro."
   titulo="Equipo y permisos"
   subtitulo="Los permisos efectivos dependen del rol asignado; el backend los aplica en cada petición."
-  [piePagina]="cargando() ? undefined : 'Página ' + (pagina() + 1) + ' de ' + (totalPaginas() || 1) + ' · ' + totalElementos() + ' usuarios'"
+  [buscable]="true"
+  placeholderBusqueda="Buscar por nombre o correo"
+  etiquetaBusqueda="Buscar usuarios por nombre o correo"
+  [pagina]="pagina()"
+  [totalPaginas]="totalPaginas()"
+  [totalElementos]="totalElementos()"
+  [tamano]="tamano()"
+  [tamanos]="tamanos"
+  unidad="usuarios"
+  (buscar)="buscar($event)"
+  (cambiarPagina)="cambiarPagina($event)"
+  (cambiarTamano)="cambiarTamano($event)"
   (reintentar)="cargar()"
 >
-  <div paginacion class="paginacion">
-    <button type="button" class="page-btn" [disabled]="cargando() || pagina() === 0" (click)="irAPagina(-1)" aria-label="Página anterior">‹</button>
-    <button type="button" class="page-btn" [disabled]="cargando() || pagina() + 1 >= totalPaginas()" (click)="irAPagina(1)" aria-label="Página siguiente">›</button>
-  </div>
-
   <div toolbar class="filtros">
-    <div class="search">
-      <input
-        type="search"
-        [value]="busqueda()"
-        (input)="onBusquedaInput($any($event.target).value)"
-        placeholder="Buscar por nombre o correo"
-        aria-label="Buscar por nombre o correo"
-      >
-    </div>
     <select [value]="filtroRol()" (change)="cambiarFiltroRol($any($event.target).value)" aria-label="Filtrar por rol">
       <option value="TODOS">Todos los roles</option>
       @for (rol of roles(); track rol.id) {

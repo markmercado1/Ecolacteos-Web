@@ -30,13 +30,20 @@
   [cargando]="cargandoHistorial()"
   [error]="errorHistorial()"
   mensajeVacio="No hay informes registrados todavía."
-  [piePagina]="cargandoHistorial() ? undefined : 'Página ' + (paginaHistorial() + 1) + ' de ' + (totalPaginasHistorial() || 1) + ' · ' + totalElementosHistorial() + ' informes en total'"
+  [buscable]="true"
+  placeholderBusqueda="Buscar por responsable"
+  etiquetaBusqueda="Buscar informes por responsable"
+  [pagina]="paginaHistorial()"
+  [totalPaginas]="totalPaginasHistorial()"
+  [totalElementos]="totalElementosHistorial()"
+  [tamano]="tamano()"
+  [tamanos]="tamanos"
+  unidad="informes"
+  (buscar)="buscar($event)"
+  (cambiarPagina)="cambiarPagina($event)"
+  (cambiarTamano)="cambiarTamano($event)"
   (reintentar)="cargarHistorial()"
 >
-  <div paginacion class="paginacion">
-    <button type="button" class="page-btn" [disabled]="paginaHistorial() === 0" (click)="irAPaginaHistorial(-1)" aria-label="Página anterior">‹</button>
-    <button type="button" class="page-btn" [disabled]="paginaHistorial() + 1 >= totalPaginasHistorial()" (click)="irAPaginaHistorial(1)" aria-label="Página siguiente">›</button>
-  </div>
   <ng-template #celda let-fila let-columna="columna">
     @switch (columna) {
       @case ('fecha') {

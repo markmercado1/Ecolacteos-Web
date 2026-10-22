@@ -92,7 +92,7 @@ describe('Acopios', () => {
   it('consulta el día seleccionado, cancela la consulta anterior y vuelve a la página 0', () => {
     const http = setup();
     const { f, c } = crearPagina(http, pagina([filaJornada], 0, 45));
-    c['irAPagina'](1);
+    c['cambiarPagina'](1);
     const anterior = http.expectOne(esJornadas);
     expect(anterior.request.params.get('page')).toBe('1');
     c['cambiarFecha']('2026-09-15');
@@ -116,9 +116,9 @@ describe('Acopios', () => {
     f.detectChanges();
     expect(f.nativeElement.textContent).toContain('Productor');
     expect(f.nativeElement.textContent).toContain('Sin foto');
-    expect(f.nativeElement.textContent).toContain('Página 1 de 3 · 41 entregas');
+    expect(f.nativeElement.textContent).toContain('Mostrando 1–20 de 41 entregas');
 
-    c['irAPagina'](1);
+    c['cambiarPagina'](1);
     const siguiente = http.expectOne(esEntregas);
     expect(siguiente.request.params.get('page')).toBe('1');
     siguiente.flush(pagina([{ ...registro, id: 'r21' }], 1, 41));
@@ -130,7 +130,7 @@ describe('Acopios', () => {
   it('cambiar de vista reinicia la página', () => {
     const http = setup();
     const { c } = crearPagina(http, pagina([filaJornada], 0, 45));
-    c['irAPagina'](2);
+    c['cambiarPagina'](2);
     http.expectOne(esJornadas).flush(pagina([filaJornada], 2, 45));
     c['cambiarVista']('entrega');
     expect(http.expectOne(esEntregas).request.params.get('page')).toBe('0');
@@ -139,9 +139,9 @@ describe('Acopios', () => {
   it('no pide páginas fuera de rango y corrige una página que quedó vacía', () => {
     const http = setup();
     const { c } = crearPagina(http, pagina([filaJornada], 0, 25));
-    c['irAPagina'](-1);
+    c['cambiarPagina'](-1);
     http.expectNone(esJornadas);
-    c['irAPagina'](1);
+    c['cambiarPagina'](1);
     // El total bajó entre consultas: la página 1 ya no existe y se vuelve a pedir la última válida.
     http.expectOne(esJornadas).flush({ contenido: [], paginaActual: 1, tamanoPagina: 20, totalElementos: 20, totalPaginas: 1 });
     const reintento = http.expectOne(esJornadas);
@@ -150,9 +150,8 @@ describe('Acopios', () => {
     expect(c['pagina']()).toBe(0);
     http.verify();
   });
-  it('el gráfico usa los totales globales del servidor, no la página visible ni la búsqueda', async () => {
-    vi.useFakeTimers();
-    try {
+  it('el gráfico usa los totales globales del servidor, no la página visible ni la búsqueda', () => {
+    {
       const http = setup();
       const { c } = crearPagina(http, pagina([filaSuelta], 0, 60), [
         { proveedorId: 'p2', proveedorNombre: 'Otro Productor', totalLitros: 30, cantidad: 2 },
@@ -163,38 +162,43 @@ describe('Acopios', () => {
         { etiqueta: 'Productor', valor: 20 },
       ]);
 
-      c['onBusquedaInput']('Otro');
-      await vi.advanceTimersByTimeAsync(350);
+      c['buscar']('Otro');
       const req = http.expectOne(esJornadas);
       expect(req.request.params.get('busqueda')).toBe('Otro');
       req.flush(pagina([], 0, 0));
       http.expectNone(esResumen);
       expect(c['datosPorProveedor']().length).toBe(2);
       http.verify();
-    } finally {
-      vi.useRealTimers();
     }
   });
-  it('la búsqueda se envía al servidor con debounce y reinicia la página', async () => {
-    vi.useFakeTimers();
-    try {
-      const http = setup();
-      const { c } = crearPagina(http, pagina([filaJornada], 0, 45));
-      c['irAPagina'](1);
-      http.expectOne(esJornadas).flush(pagina([filaJornada], 1, 45));
-      c['onBusquedaInput']('M1');
-      c['onBusquedaInput']('M1A');
-      await vi.advanceTimersByTimeAsync(349);
-      http.expectNone(esJornadas);
-      await vi.advanceTimersByTimeAsync(1);
-      const req = http.expectOne(esJornadas);
-      expect(req.request.params.get('busqueda')).toBe('M1A');
-      expect(req.request.params.get('page')).toBe('0');
-      req.flush(pagina([filaJornada]));
-      http.verify();
-    } finally {
-      vi.useRealTimers();
-    }
+  // El debounce vive en ui-buscador (buscador.spec.ts); aquí se prueba qué hace la página con el texto.
+  it('la búsqueda se envía al servidor, cancela la consulta anterior y reinicia la página', () => {
+    const http = setup();
+    const { c } = crearPagina(http, pagina([filaJornada], 0, 45));
+    c['cambiarPagina'](1);
+    http.expectOne(esJornadas).flush(pagina([filaJornada], 1, 45));
+    c['buscar']('M1');
+    const anterior = http.expectOne(esJornadas);
+    c['buscar']('M1A');
+    expect(anterior.cancelled).toBe(true);
+    const req = http.expectOne(esJornadas);
+    expect(req.request.params.get('busqueda')).toBe('M1A');
+    expect(req.request.params.get('page')).toBe('0');
+    req.flush(pagina([filaJornada]));
+    http.verify();
+  });
+  it('cambiarTamano pide la primera página con el nuevo tamaño y conserva la búsqueda', () => {
+    const http = setup();
+    const { c } = crearPagina(http, pagina([filaJornada], 0, 45));
+    c['buscar']('M1');
+    http.expectOne(esJornadas).flush(pagina([filaJornada], 0, 45));
+    c['cambiarTamano'](50);
+    const req = http.expectOne(esJornadas);
+    expect(req.request.params.get('size')).toBe('50');
+    expect(req.request.params.get('busqueda')).toBe('M1');
+    expect(req.request.params.get('page')).toBe('0');
+    req.flush(pagina([filaJornada], 0, 45));
+    http.verify();
   });
   it('conserva el error 403 en vez de presentarlo como lista vacía', () => {
     const http = setup();
@@ -232,7 +236,7 @@ describe('Acopios', () => {
     expect(filas[0].totalLitros).toBe(20);
     expect(filas[1].esJornada).toBe(false);
     expect(f.nativeElement.textContent).toContain('Cristian');
-    expect(f.nativeElement.textContent).toContain('Página 1 de 1 · 2 jornadas');
+    expect(f.nativeElement.textContent).toContain('Mostrando 1–2 de 2 jornadas');
     http.expectNone((r) => r.url.startsWith(`${base}/jornadas/`));
     http.verify();
   });
@@ -360,7 +364,7 @@ describe('Acopios', () => {
     expect(primera.request.params.get('size')).toBe('10');
     primera.flush(pagina([resumen], 0, 25, 10));
     f.detectChanges();
-    expect(f.nativeElement.textContent).toContain('Página 1 de 3 · 25 entregas');
+    expect(f.nativeElement.textContent).toContain('Mostrando 1–10 de 25 entregas');
 
     f.componentInstance['irAPagina'](2);
     const ultima = http.expectOne((r) => r.url === `${base}/registros-acopio/proveedor/p1/paginado`);

@@ -23,6 +23,7 @@ export class ReservasApi {
     if (filtro.fechaRetiro) params = params.set('fechaRetiro', filtro.fechaRetiro);
     if (filtro.telefono?.trim()) params = params.set('telefono', filtro.telefono.trim());
     if (filtro.codigo?.trim()) params = params.set('codigo', filtro.codigo.trim());
+    if (filtro.busqueda?.trim()) params = params.set('busqueda', filtro.busqueda.trim());
     return this.http.get<PaginaResponse<ReservaResumenResponse>>(this.baseUrl, { params });
   }
 

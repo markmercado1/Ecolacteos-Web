@@ -71,6 +71,7 @@ export interface HistorialAjustesDialogData {
           [pagina]="pagina()"
           [totalPaginas]="totalPaginas()"
           [totalElementos]="totalElementos()"
+          [tamano]="tamanoPagina"
           unidad="ajustes"
           (cambiar)="irAPagina($event)"
         />
@@ -101,6 +102,7 @@ export interface HistorialAjustesDialogData {
   `
 })
 export class HistorialAjustesDialog {
+  protected readonly tamanoPagina = TAMANO_PAGINA_AJUSTES;
   protected readonly dialogRef = inject(DialogRef<void>);
   protected readonly data = inject<HistorialAjustesDialogData>(DIALOG_DATA);
   private readonly inventarioApi = inject(InventarioApi);

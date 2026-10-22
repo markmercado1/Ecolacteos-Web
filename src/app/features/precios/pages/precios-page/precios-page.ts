@@ -3,11 +3,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Dialog } from '@angular/cdk/dialog';
-import { Subject, Subscription, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
-import { paginaCorregida } from '../../../../shared/util/paginacion';
+import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
 import { FamiliaResponse } from '../../../catalogos/data-access/familia.models';
 import { FamiliasApi } from '../../../catalogos/data-access/familias.api';
 import { PresentacionResponse } from '../../../catalogos/data-access/producto.models';
@@ -28,8 +28,6 @@ const ETIQUETAS_MODALIDAD: Record<TipoCliente, string> = {
   PUBLICO: 'Público'
 };
 const MODALIDADES: TipoCliente[] = ['MAYORISTA', 'PROVEEDOR', 'PUBLICO'];
-const TAMANOS_PAGINA = [10, 20, 50];
-const TAMANO_PAGINA_POR_DEFECTO = 20;
 
 @Component({
   selector: 'app-precios-page',
@@ -56,6 +54,7 @@ export class PreciosPage {
   protected readonly error = signal<AppError | null>(null);
   private readonly precios = signal<PrecioLitroResponse[]>([]);
   protected readonly paginaLeche = signal(0);
+  protected readonly tamanoLeche = signal(TAMANO_PAGINA_POR_DEFECTO);
   protected readonly totalElementosLeche = signal(0);
   protected readonly totalPaginasLeche = signal(0);
   protected readonly precioVigente = signal<PrecioLitroResponse | null>(null);
@@ -83,11 +82,8 @@ export class PreciosPage {
   protected readonly errorFamilias = signal(false);
 
   protected readonly filtroFamiliaId = signal('');
-  /** Valor inmediato del input de búsqueda (para no perder tecleo mientras se espera el debounce). */
-  protected readonly busquedaTexto = signal('');
-  /** Valor ya estabilizado (debounced) que realmente se envía al servidor. */
+  /** Texto del buscador estándar (producto o presentación): se envía al servidor y busca entre todas las presentaciones. */
   private readonly filtroBusqueda = signal('');
-  private readonly busqueda$ = new Subject<string>();
 
   protected readonly tamanoPagina = signal(TAMANO_PAGINA_POR_DEFECTO);
   protected readonly pagina = signal(0);
@@ -102,14 +98,6 @@ export class PreciosPage {
     { clave: 'acciones', etiqueta: '' }
   ];
 
-  protected readonly rangoMostrado = computed(() => {
-    const total = this.totalElementos();
-    if (total === 0) return 'Mostrando 0 de 0 resultados';
-    const desde = this.pagina() * this.tamanoPagina() + 1;
-    const hasta = Math.min(desde + this.tamanoPagina() - 1, total);
-    return `Mostrando ${desde}–${hasta} de ${total} resultados`;
-  });
-
   /** Un producto sin presentaciones no tiene id de presentación -- se usa el id del producto como llave
    *  (no puede colisionar con un id de presentación, son UUIDs de tablas distintas). */
   protected readonly identificarFilaPresentacion = (fila: FilaPrecioPresentacionResponse): string =>
@@ -119,17 +107,6 @@ export class PreciosPage {
     this.cargar();
     this.cargarFamilias();
     this.cargarQueso();
-
-    // Búsqueda con reinicio a la primera página y cancelación de consultas obsoletas: el debounce evita
-    // una petición por tecla, y cargarQueso() cancela (unsubscribe) cualquier petición anterior todavía en
-    // vuelo antes de lanzar la nueva.
-    this.busqueda$
-      .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroy))
-      .subscribe((valor) => {
-        this.filtroBusqueda.set(valor);
-        this.pagina.set(0);
-        this.cargarQueso();
-      });
   }
 
   protected estadoDe(precio: PrecioLitroResponse): 'Vigente' | 'Programado' | 'Anterior' {
@@ -152,7 +129,7 @@ export class PreciosPage {
     this.peticionLeche?.unsubscribe();
     this.cargando.set(true);
     this.error.set(null);
-    this.peticionLeche = this.preciosApi.listar({ page: this.paginaLeche(), size: TAMANO_PAGINA_POR_DEFECTO }).subscribe({
+    this.peticionLeche = this.preciosApi.listar({ page: this.paginaLeche(), size: this.tamanoLeche() }).subscribe({
       next: (respuesta) => {
         const corregida = paginaCorregida(respuesta);
         if (corregida !== null) {
@@ -181,10 +158,15 @@ export class PreciosPage {
     });
   }
 
-  protected irAPaginaLeche(delta: number): void {
-    const siguiente = this.paginaLeche() + delta;
-    if (siguiente < 0 || siguiente >= this.totalPaginasLeche()) return;
-    this.paginaLeche.set(siguiente);
+  protected cambiarTamanoLeche(tamano: number): void {
+    this.tamanoLeche.set(tamano);
+    this.paginaLeche.set(0);
+    this.cargar();
+  }
+
+  protected cambiarPaginaLeche(pagina: number): void {
+    if (pagina < 0 || pagina >= this.totalPaginasLeche()) return;
+    this.paginaLeche.set(pagina);
     this.cargar();
   }
 
@@ -231,9 +213,11 @@ export class PreciosPage {
     this.cargarQueso();
   }
 
-  protected onBusquedaInput(valor: string): void {
-    this.busquedaTexto.set(valor);
-    this.busqueda$.next(valor.trim());
+  /** Buscador estándar: reinicia a la primera página; cargarQueso() cancela la consulta anterior en vuelo. */
+  protected buscar(texto: string): void {
+    this.filtroBusqueda.set(texto);
+    this.pagina.set(0);
+    this.cargarQueso();
   }
 
   protected cambiarTamanoPagina(valor: number): void {
@@ -242,10 +226,9 @@ export class PreciosPage {
     this.cargarQueso();
   }
 
-  protected irAPaginaQueso(delta: number): void {
-    const siguiente = this.pagina() + delta;
-    if (siguiente < 0 || siguiente >= this.totalPaginas()) return;
-    this.pagina.set(siguiente);
+  protected cambiarPaginaQueso(pagina: number): void {
+    if (pagina < 0 || pagina >= this.totalPaginas()) return;
+    this.pagina.set(pagina);
     this.cargarQueso();
   }
 

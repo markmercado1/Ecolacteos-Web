@@ -120,7 +120,7 @@ describe('ProveedorDetalleDialog (perfil integral)', () => {
     reqAjustes.flush([]);
     f.detectChanges();
     expect(f.nativeElement.textContent).toContain('200');
-    expect(f.nativeElement.textContent).toContain('Página 1 de 2 · 11 pagos');
+    expect(f.nativeElement.textContent).toContain('Mostrando 1–10 de 11 pagos');
 
     c['irAPaginaPagos'](1);
     const reqPagina2 = http.expectOne((r) => r.url === `${base}/pagos/proveedor/p1/paginado`);

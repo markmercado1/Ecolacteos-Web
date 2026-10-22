@@ -17,9 +17,12 @@ export class ComunicadosApi {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiBaseUrl;
 
-  /** Paginado en el servidor (fecha desc, desempate por id). */
-  listar(filtro: FiltroPagina): Observable<PaginaResponse<ComunicadoResponse>> {
-    return this.http.get<PaginaResponse<ComunicadoResponse>>(`${this.baseUrl}/comunicados`, { params: paramsDePagina(filtro) });
+  /** Paginado en el servidor (más reciente primero); `busqueda` busca en el mensaje y las zonas, entre todos. */
+  listar(filtro: FiltroPagina & { busqueda?: string }): Observable<PaginaResponse<ComunicadoResponse>> {
+    let params = paramsDePagina(filtro);
+    const busqueda = filtro.busqueda?.trim();
+    if (busqueda) params = params.set('busqueda', busqueda);
+    return this.http.get<PaginaResponse<ComunicadoResponse>>(`${this.baseUrl}/comunicados`, { params });
   }
 
   crear(datos: CrearComunicadoRequest): Observable<ComunicadoResponse> {

@@ -12,6 +12,8 @@ import {
 export interface FiltroInformes {
   desde?: string;
   hasta?: string;
+  /** Responsable (contiene, sin acentos ni mayúsculas), entre todos los informes. */
+  busqueda?: string;
   page: number;
   size: number;
 }
@@ -26,6 +28,8 @@ export class InformesProduccionApi {
     let params = new HttpParams().set('page', filtro.page).set('size', filtro.size);
     if (filtro.desde) params = params.set('desde', filtro.desde);
     if (filtro.hasta) params = params.set('hasta', filtro.hasta);
+    const busqueda = filtro.busqueda?.trim();
+    if (busqueda) params = params.set('busqueda', busqueda);
     return this.http.get<PaginaResponse<InformeProduccionDiario>>(`${this.baseUrl}/informes-produccion`, { params });
   }
 

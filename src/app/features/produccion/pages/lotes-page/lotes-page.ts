@@ -1,4 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
 import { DecimalPipe } from '@angular/common';
 import { Dialog } from '@angular/cdk/dialog';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -21,7 +23,6 @@ import { LoteDetalleDialog } from '../../ui/lote-detalle-dialog/lote-detalle-dia
 import { ProduccionMultipleDialog, ProduccionMultipleResultado } from '../../ui/produccion-multiple-dialog/produccion-multiple-dialog';
 import { RegistrarLoteDialog, RegistrarLoteDialogResultado } from '../../ui/registrar-lote-dialog/registrar-lote-dialog';
 
-const TAMANO_PAGINA = 20;
 
 @Component({
   selector: 'app-lotes-page',
@@ -50,6 +51,11 @@ export class LotesPage {
   protected readonly saldoLecheDisponible = signal<number | null>(null);
 
   protected readonly pagina = signal(0);
+  protected readonly tamano = signal(TAMANO_PAGINA_POR_DEFECTO);
+  protected readonly tamanos = TAMANOS_PAGINA;
+  /** Texto del buscador estándar (producto o responsable): se envía al servidor y busca entre todos los lotes. */
+  private readonly busquedaAplicada = signal('');
+  private peticion?: Subscription;
   protected readonly filtroFecha = signal('');
   protected readonly filtroProducto = signal('');
   protected readonly filtroEstado = signal<EstadoLote | ''>('');
@@ -96,15 +102,17 @@ export class LotesPage {
   }
 
   protected cargar(): void {
+    this.peticion?.unsubscribe();
     this.cargando.set(true);
     this.error.set(null);
-    this.lotesApi
+    this.peticion = this.lotesApi
       .listar({
         page: this.pagina(),
-        size: TAMANO_PAGINA,
+        size: this.tamano(),
         fecha: this.filtroFecha() || undefined,
         productoId: this.filtroProducto() || undefined,
-        estado: this.filtroEstado() || undefined
+        estado: this.filtroEstado() || undefined,
+        busqueda: this.busquedaAplicada() || undefined
       })
       .subscribe({
         next: (respuesta) => {
@@ -138,10 +146,21 @@ export class LotesPage {
     this.cargar();
   }
 
-  protected irAPagina(delta: number): void {
-    const siguiente = this.pagina() + delta;
-    if (siguiente < 0 || siguiente >= this.totalPaginas()) return;
-    this.pagina.set(siguiente);
+  protected buscar(texto: string): void {
+    this.busquedaAplicada.set(texto);
+    this.pagina.set(0);
+    this.cargar();
+  }
+
+  protected cambiarPagina(pagina: number): void {
+    if (pagina < 0 || pagina >= this.totalPaginas()) return;
+    this.pagina.set(pagina);
+    this.cargar();
+  }
+
+  protected cambiarTamano(tamano: number): void {
+    this.tamano.set(tamano);
+    this.pagina.set(0);
     this.cargar();
   }
 

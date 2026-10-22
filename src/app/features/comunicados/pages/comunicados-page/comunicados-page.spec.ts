@@ -81,14 +81,14 @@ describe('ComunicadosPage', () => {
     const page = crearPagina(http);
     page['totalPaginas'].set(3);
 
-    page['irAPagina'](1);
+    page['cambiarPagina'](1);
     const req = http.expectOne((r) => r.url === `${base}/comunicados`);
     expect(req.request.params.get('page')).toBe('1');
     expect(req.request.params.get('size')).toBe('20');
     req.flush(paginaDe([comunicado('c-21')], 1, 41));
 
-    page['irAPagina'](3);
-    page['irAPagina'](-1);
+    page['cambiarPagina'](3);
+    page['cambiarPagina'](-1);
     http.expectNone((r) => r.url === `${base}/comunicados`);
     expect(page['pagina']()).toBe(1);
   });

@@ -74,6 +74,37 @@ describe('RecepcionPage', () => {
     expect(c['pagina']()).toBe(0);
   });
 
+  it('buscar manda el texto al servidor junto a los filtros y vuelve a la página 0; vaciar lo quita', () => {
+    const { c } = crear();
+    c['cambiarFiltroUnidad']('u1');
+    http.expectOne((r) => r.url === `${base}/recepcion-planta`).flush({ ...pagina0, paginaActual: 0 });
+    c['pagina'].set(2);
+
+    c['buscar']('abc');
+    const req = http.expectOne((r) => r.url === `${base}/recepcion-planta`);
+    expect(req.request.params.get('busqueda')).toBe('abc');
+    expect(req.request.params.get('unidadId')).toBe('u1');
+    expect(req.request.params.get('page')).toBe('0');
+    req.flush({ ...pagina0, paginaActual: 0 });
+
+    c['buscar']('');
+    const sin = http.expectOne((r) => r.url === `${base}/recepcion-planta`);
+    expect(sin.request.params.has('busqueda')).toBe(false);
+    sin.flush({ ...pagina0, paginaActual: 0 });
+  });
+
+  it('cambiarTamano y cambiarPagina piden lo indicado y no salen del rango', () => {
+    const { c } = crear();
+    c['cambiarPagina'](9);
+    c['cambiarPagina'](-1);
+    http.expectNone((r) => r.url === `${base}/recepcion-planta`);
+    c['cambiarTamano'](50);
+    const req = http.expectOne((r) => r.url === `${base}/recepcion-planta`);
+    expect(req.request.params.get('size')).toBe('50');
+    expect(req.request.params.get('page')).toBe('0');
+    req.flush({ ...pagina0, paginaActual: 0 });
+  });
+
   it('conserva el error 403 en vez de una lista vacía', () => {
     const f = TestBed.createComponent(RecepcionPage);
     http.expectOne(`${base}/unidades/operativo`).flush([]);
