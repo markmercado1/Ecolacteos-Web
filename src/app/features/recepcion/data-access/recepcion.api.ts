@@ -8,6 +8,8 @@ import { RecepcionPlanta } from './recepcion.models';
 export interface FiltroRecepcion {
   unidadId?: string;
   fecha?: string;
+  /** Placa o responsable (contiene, sin acentos ni mayúsculas), entre todas las recepciones. */
+  busqueda?: string;
   page: number;
   size: number;
 }
@@ -25,6 +27,8 @@ export class RecepcionApi {
     let params = new HttpParams().set('page', filtro.page).set('size', filtro.size);
     if (filtro.unidadId) params = params.set('unidadId', filtro.unidadId);
     if (filtro.fecha) params = params.set('fecha', filtro.fecha);
+    const busqueda = filtro.busqueda?.trim();
+    if (busqueda) params = params.set('busqueda', busqueda);
     return this.http.get<PaginaResponse<RecepcionPlanta>>(`${this.baseUrl}/recepcion-planta`, { params });
   }
 

@@ -41,9 +41,28 @@ describe('UnidadesPage', () => {
     const page = TestBed.createComponent(UnidadesPage).componentInstance;
     flushCargaInicial(http);
 
-    expect(page['unidadesFiltradas']().length).toBe(3);
-    page['busqueda'].set('lidia');
-    expect(page['unidadesFiltradas']().map((u: UnidadResponse) => u.id)).toEqual(['un-2']);
+    expect(page['lista'].filtradas().length).toBe(3);
+    page['lista'].buscar('lidia');
+    expect(page['lista'].filtradas().map((u: UnidadResponse) => u.id)).toEqual(['un-2']);
+  });
+
+  it('la búsqueda no distingue mayúsculas ni acentos y recorre TODA la flota, no solo la página visible', () => {
+    const page = TestBed.createComponent(UnidadesPage).componentInstance;
+    flushCargaInicial(http);
+    page['lista'].buscar('  LIDIÁ ');
+    expect(page['lista'].filtradas().map((u: UnidadResponse) => u.id)).toEqual(['un-2']);
+    expect(page['lista'].totalElementos()).toBe(1);
+    expect(page['lista'].paginaActual()).toBe(0);
+  });
+
+  it('pagina en el cliente y respeta el tamaño de página', () => {
+    const page = TestBed.createComponent(UnidadesPage).componentInstance;
+    flushCargaInicial(http);
+    page['lista'].cambiarTamano(2);
+    expect(page['lista'].totalPaginas()).toBe(2);
+    expect(page['lista'].filas()).toHaveLength(2);
+    page['lista'].irA(1);
+    expect(page['lista'].filas()).toHaveLength(1);
   });
 
   it('resuelve el nombre de zona y "Sin zona" cuando no hay zonaId', () => {

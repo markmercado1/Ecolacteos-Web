@@ -81,6 +81,18 @@ describe('PagosApi', () => {
     req.flush({ contenido: [], paginaActual: 1, tamanoPagina: 20, totalElementos: 0, totalPaginas: 0 });
   });
 
+  it('listar() envía la búsqueda recortada solo si hay texto', () => {
+    api.listar({ page: 0, size: 20, busqueda: '  huaman ' }).subscribe();
+    const con = http.expectOne((r) => r.url === `${base}/pagos`);
+    expect(con.request.params.get('busqueda')).toBe('huaman');
+    con.flush({ contenido: [], paginaActual: 0, tamanoPagina: 20, totalElementos: 0, totalPaginas: 0 });
+
+    api.listar({ page: 0, size: 20, busqueda: '   ' }).subscribe();
+    const sin = http.expectOne((r) => r.url === `${base}/pagos`);
+    expect(sin.request.params.has('busqueda')).toBe(false);
+    sin.flush({ contenido: [], paginaActual: 0, tamanoPagina: 20, totalElementos: 0, totalPaginas: 0 });
+  });
+
   it('historialPorProveedor() usa la variante /paginado (la lista completa queda para la app móvil)', () => {
     api.historialPorProveedor('p-1', { page: 0, size: 10 }).subscribe();
     const req = http.expectOne((r) => r.url === `${base}/pagos/proveedor/p-1/paginado`);

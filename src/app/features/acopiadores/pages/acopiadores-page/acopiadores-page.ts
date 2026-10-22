@@ -8,6 +8,7 @@ import { EmptyStateComponent } from '../../../../shared/ui/state/empty-state';
 import { ErrorStateComponent } from '../../../../shared/ui/state/error-state';
 import { LoadingStateComponent } from '../../../../shared/ui/state/loading-state';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
+import { BuscadorComponent } from '../../../../shared/ui/buscador/buscador';
 import { PaginadorComponent } from '../../../../shared/ui/paginador/paginador';
 import { paginaCorregida } from '../../../../shared/util/paginacion';
 import { ZonaResponse } from '../../../catalogos/data-access/zona.models';
@@ -31,7 +32,7 @@ interface AcopiadorConUnidades {
 
 @Component({
   selector: 'app-acopiadores-page',
-  imports: [CardComponent, LoadingStateComponent, EmptyStateComponent, ErrorStateComponent, PaginadorComponent],
+  imports: [CardComponent, LoadingStateComponent, EmptyStateComponent, ErrorStateComponent, PaginadorComponent, BuscadorComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './acopiadores-page.html',
   styleUrl: './acopiadores-page.css'
@@ -48,6 +49,11 @@ export class AcopiadoresPage {
   /** Solo la página visible de usuarios con rol ACOPIADOR (filtrado y paginado en el servidor). */
   private readonly usuarios = signal<UsuarioResponse[]>([]);
   protected readonly pagina = signal(0);
+  /** Múltiplo de 3 (grilla de tarjetas completa); el selector «Filas» ofrece solo múltiplos de 3. */
+  protected readonly tamano = signal(TAMANO_PAGINA_ACOPIADORES);
+  protected readonly tamanos = [6, 12, 24];
+  /** Texto del buscador estándar (nombre o correo): se envía al servidor y busca entre todos los acopiadores. */
+  protected readonly busqueda = signal('');
   protected readonly totalElementos = signal(0);
   protected readonly totalPaginas = signal(0);
   private peticion?: Subscription;
@@ -86,7 +92,7 @@ export class AcopiadoresPage {
     this.error.set(null);
     this.peticion?.unsubscribe();
     this.peticion = this.usuariosApi
-      .listarPaginado({ page: this.pagina(), size: TAMANO_PAGINA_ACOPIADORES, rol: 'ACOPIADOR' })
+      .listarPaginado({ page: this.pagina(), size: this.tamano(), rol: 'ACOPIADOR', busqueda: this.busqueda() || undefined })
       .subscribe({
         next: (respuesta) => {
           const corregida = paginaCorregida(respuesta);
@@ -107,9 +113,21 @@ export class AcopiadoresPage {
       });
   }
 
-  protected irAPagina(pagina: number): void {
+  protected buscar(texto: string): void {
+    this.busqueda.set(texto);
+    this.pagina.set(0);
+    this.cargarAcopiadores();
+  }
+
+  protected cambiarPagina(pagina: number): void {
     if (pagina < 0 || pagina >= this.totalPaginas()) return;
     this.pagina.set(pagina);
+    this.cargarAcopiadores();
+  }
+
+  protected cambiarTamano(tamano: number): void {
+    this.tamano.set(tamano);
+    this.pagina.set(0);
     this.cargarAcopiadores();
   }
 

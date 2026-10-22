@@ -119,13 +119,13 @@ describe('AcopiadoresPage', () => {
     http.expectOne(`${base}/admin/unidades`).flush([]);
     http.expectOne(esPaginado).flush(paginaDe(acopiadores, 0, 14));
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Página 1 de 2 · 14 acopiadores');
+    expect(fixture.nativeElement.textContent).toContain('Mostrando 1–12 de 14 acopiadores');
 
-    page['irAPagina'](1);
+    page['cambiarPagina'](1);
     const req = http.expectOne(esPaginado);
     expect(req.request.params.get('page')).toBe('1');
     req.flush(paginaDe([acopiadores[0]], 1, 14));
-    page['irAPagina'](2);
+    page['cambiarPagina'](2);
     http.expectNone(esPaginado);
   });
 

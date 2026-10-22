@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { Subscription } from 'rxjs';
+import { TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
 import { Dialog } from '@angular/cdk/dialog';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
@@ -9,7 +11,6 @@ import { RecepcionPlanta } from '../../data-access/recepcion.models';
 import { RecepcionApi } from '../../data-access/recepcion.api';
 import { RecepcionDetalleDialog } from '../../ui/recepcion-detalle-dialog/recepcion-detalle-dialog';
 
-const TAMANO_PAGINA = 20;
 
 @Component({
   selector: 'app-recepcion-page',
@@ -30,6 +31,11 @@ export class RecepcionPage {
   protected readonly totalElementos = signal(0);
   protected readonly totalPaginas = signal(0);
   protected readonly pagina = signal(0);
+  protected readonly tamano = signal(TAMANO_PAGINA_POR_DEFECTO);
+  protected readonly tamanos = TAMANOS_PAGINA;
+  /** Texto del buscador estándar (placa o responsable): se envía al servidor y busca entre todas las recepciones. */
+  private readonly busquedaAplicada = signal('');
+  private peticion?: Subscription;
   protected readonly filtroFecha = signal('');
   protected readonly filtroUnidad = signal('');
 
@@ -55,14 +61,16 @@ export class RecepcionPage {
   }
 
   protected cargar(): void {
+    this.peticion?.unsubscribe();
     this.cargando.set(true);
     this.error.set(null);
-    this.api
+    this.peticion = this.api
       .listar({
         page: this.pagina(),
-        size: TAMANO_PAGINA,
+        size: this.tamano(),
         unidadId: this.filtroUnidad() || undefined,
         fecha: this.filtroFecha() || undefined,
+        busqueda: this.busquedaAplicada() || undefined,
       })
       .pipe(takeUntilDestroyed(this.destroy))
       .subscribe({
@@ -91,10 +99,21 @@ export class RecepcionPage {
     this.cargar();
   }
 
-  protected irAPagina(delta: number): void {
-    const siguiente = this.pagina() + delta;
-    if (siguiente < 0 || siguiente >= this.totalPaginas()) return;
-    this.pagina.set(siguiente);
+  protected buscar(texto: string): void {
+    this.busquedaAplicada.set(texto);
+    this.pagina.set(0);
+    this.cargar();
+  }
+
+  protected cambiarPagina(pagina: number): void {
+    if (pagina < 0 || pagina >= this.totalPaginas()) return;
+    this.pagina.set(pagina);
+    this.cargar();
+  }
+
+  protected cambiarTamano(tamano: number): void {
+    this.tamano.set(tamano);
+    this.pagina.set(0);
     this.cargar();
   }
 

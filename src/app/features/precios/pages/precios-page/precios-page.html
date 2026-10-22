@@ -28,14 +28,17 @@
       [error]="error()"
       mensajeVacio="Todavía no se registró ningún precio."
       titulo="Historial de vigencias"
-      subtitulo="La fecha vigenteDesde es única; el servidor rechaza una duplicada."
-      [piePagina]="cargando() ? undefined : 'Página ' + (paginaLeche() + 1) + ' de ' + (totalPaginasLeche() || 1) + ' · ' + totalElementosLeche() + ' vigencias en total'"
+      subtitulo="La fecha vigenteDesde es única; el servidor rechaza una duplicada. La más reciente primero."
+      [pagina]="paginaLeche()"
+      [totalPaginas]="totalPaginasLeche()"
+      [totalElementos]="totalElementosLeche()"
+      [tamano]="tamanoLeche()"
+      [tamanos]="tamanosPagina"
+      unidad="vigencias"
+      (cambiarPagina)="cambiarPaginaLeche($event)"
+      (cambiarTamano)="cambiarTamanoLeche($event)"
       (reintentar)="cargar()"
     >
-      <div paginacion class="paginacion">
-        <button type="button" class="page-btn" [disabled]="paginaLeche() === 0" (click)="irAPaginaLeche(-1)" aria-label="Página anterior">‹</button>
-        <button type="button" class="page-btn" [disabled]="paginaLeche() + 1 >= totalPaginasLeche()" (click)="irAPaginaLeche(1)" aria-label="Página siguiente">›</button>
-      </div>
       <div toolbar><button type="button" class="btn primary small" (click)="registrarPrecio()">Registrar nuevo precio</button></div>
       <ng-template #celda let-fila let-columna="columna">
         @switch (columna) {
@@ -65,7 +68,18 @@
       mensajeVacio="No hay productos que coincidan con la familia o la búsqueda seleccionadas."
       titulo="Precios por presentación"
       subtitulo="Organizado por familia; cada presentación tiene sus propios precios por modalidad."
-      [piePagina]="cargandoQueso() ? undefined : rangoMostrado()"
+      [buscable]="true"
+      placeholderBusqueda="Buscar producto o presentación"
+      etiquetaBusqueda="Buscar precios por producto o presentación"
+      [pagina]="pagina()"
+      [totalPaginas]="totalPaginas()"
+      [totalElementos]="totalElementos()"
+      [tamano]="tamanoPagina()"
+      [tamanos]="tamanosPagina"
+      unidad="presentaciones"
+      (buscar)="buscar($event)"
+      (cambiarPagina)="cambiarPaginaQueso($event)"
+      (cambiarTamano)="cambiarTamanoPagina($event)"
       (reintentar)="cargarQueso()"
     >
       <div toolbar class="filtros">
@@ -78,32 +92,6 @@
             }
           </select>
           @if (errorFamilias()) { <span class="hint error-inline">No se pudieron cargar las familias.</span> }
-        </div>
-        <div class="field">
-          <label for="filtro-busqueda">Buscar</label>
-          <input
-            id="filtro-busqueda"
-            type="search"
-            placeholder="Producto o presentación…"
-            [value]="busquedaTexto()"
-            (input)="onBusquedaInput($any($event.target).value)"
-          >
-        </div>
-      </div>
-
-      <div paginacion class="paginacion-completa">
-        <label class="tamano-pagina">
-          <span class="hint">Filas por página</span>
-          <select [value]="tamanoPagina()" (change)="cambiarTamanoPagina(+$any($event.target).value)">
-            @for (tamano of tamanosPagina; track tamano) {
-              <option [value]="tamano">{{ tamano }}</option>
-            }
-          </select>
-        </label>
-        <div class="paginacion">
-          <button type="button" class="page-btn" [disabled]="pagina() === 0" (click)="irAPaginaQueso(-1)" aria-label="Página anterior">‹</button>
-          <span class="hint pagina-actual">Página {{ pagina() + 1 }} de {{ totalPaginas() || 1 }}</span>
-          <button type="button" class="page-btn" [disabled]="pagina() + 1 >= totalPaginas()" (click)="irAPaginaQueso(1)" aria-label="Página siguiente">›</button>
         </div>
       </div>
 

@@ -4,13 +4,12 @@ import { Dialog } from '@angular/cdk/dialog';
 import { Subscription } from 'rxjs';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
-import { paginaCorregida } from '../../../../shared/util/paginacion';
+import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
 import { COLOR_ESTADO, ESTADOS_FILTRABLES, ETIQUETAS_ESTADO } from '../../data-access/reserva.etiquetas';
 import { EstadoReserva, ReservaResumenResponse } from '../../data-access/reserva.models';
 import { ReservasApi } from '../../data-access/reservas.api';
 import { ReservaDetalleDialog } from '../../ui/reserva-detalle-dialog/reserva-detalle-dialog';
 
-const TAMANO_PAGINA = 20;
 
 /** Estados que se resumen arriba como contadores de atajo (el total lo informa el servidor, no se suma aquí). */
 const ESTADOS_RESUMEN: EstadoReserva[] = ['PENDIENTE', 'CONFIRMADA', 'VENCIDA'];
@@ -41,13 +40,17 @@ export class ReservasPage {
   protected readonly totalElementos = signal(0);
   protected readonly totalPaginas = signal(0);
   protected readonly pagina = signal(0);
+  protected readonly tamano = signal(TAMANO_PAGINA_POR_DEFECTO);
+  protected readonly tamanos = TAMANOS_PAGINA;
+  /** Texto del buscador estándar (cliente, teléfono o código): se envía al servidor y busca entre todas las reservas. */
+  protected readonly busqueda = signal('');
 
   protected readonly filtroEstado = signal<EstadoReserva | ''>('');
   protected readonly filtroFecha = signal('');
   protected readonly filtroTelefono = signal('');
   protected readonly filtroCodigo = signal('');
   protected readonly hayFiltros = computed(
-    () => !!(this.filtroEstado() || this.filtroFecha() || this.filtroTelefono().trim() || this.filtroCodigo().trim())
+    () => !!(this.busqueda() || this.filtroEstado() || this.filtroFecha() || this.filtroTelefono().trim() || this.filtroCodigo().trim())
   );
 
   /** Total por estado informado por el servidor; null = aún no cargado o falló (se muestra «—»). */
@@ -80,11 +83,12 @@ export class ReservasPage {
     this.consulta = this.api
       .listar({
         page: this.pagina(),
-        size: TAMANO_PAGINA,
+        size: this.tamano(),
         estado: this.filtroEstado() || undefined,
         fechaRetiro: this.filtroFecha() || undefined,
         telefono: this.filtroTelefono(),
-        codigo: this.filtroCodigo()
+        codigo: this.filtroCodigo(),
+        busqueda: this.busqueda() || undefined
       })
       .subscribe({
         next: (respuesta) => {
@@ -164,11 +168,20 @@ export class ReservasPage {
     this.cargar();
   }
 
-  protected irAPagina(delta: number): void {
-    const siguiente = this.pagina() + delta;
-    if (siguiente < 0 || siguiente >= this.totalPaginas()) return;
-    this.pagina.set(siguiente);
+  protected buscar(texto: string): void {
+    this.busqueda.set(texto);
+    this.aplicarFiltros();
+  }
+
+  protected cambiarPagina(pagina: number): void {
+    if (pagina < 0 || pagina >= this.totalPaginas()) return;
+    this.pagina.set(pagina);
     this.cargar();
+  }
+
+  protected cambiarTamano(tamano: number): void {
+    this.tamano.set(tamano);
+    this.aplicarFiltros();
   }
 
   // -------------------------------------------------------------------------------- presentación

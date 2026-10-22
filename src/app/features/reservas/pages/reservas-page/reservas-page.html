@@ -37,7 +37,18 @@
   [mensajeVacio]="hayFiltros() ? 'No hay reservas con los filtros seleccionados.' : 'Todavía no hay reservas.'"
   titulo="Listado de reservas"
   subtitulo="Más recientes primero. Cada fila abre el detalle con las acciones disponibles según su estado."
-  [piePagina]="cargando() ? undefined : 'Página ' + (pagina() + 1) + ' de ' + (totalPaginas() || 1) + ' · ' + totalElementos() + ' reservas'"
+  [buscable]="true"
+  placeholderBusqueda="Buscar por cliente, teléfono o código"
+  etiquetaBusqueda="Buscar reservas por cliente, teléfono o código"
+  [pagina]="pagina()"
+  [totalPaginas]="totalPaginas()"
+  [totalElementos]="totalElementos()"
+  [tamano]="tamano()"
+  [tamanos]="tamanos"
+  unidad="reservas"
+  (buscar)="buscar($event)"
+  (cambiarPagina)="cambiarPagina($event)"
+  (cambiarTamano)="cambiarTamano($event)"
   (reintentar)="cargar()"
 >
   <div toolbar class="filtros">
@@ -83,11 +94,6 @@
     @if (hayFiltros()) {
       <button type="button" class="btn small" (click)="limpiarFiltros()">Limpiar filtros</button>
     }
-  </div>
-
-  <div paginacion class="paginacion">
-    <button type="button" class="page-btn" [disabled]="pagina() === 0" (click)="irAPagina(-1)" aria-label="Página anterior">‹</button>
-    <button type="button" class="page-btn" [disabled]="pagina() + 1 >= totalPaginas()" (click)="irAPagina(1)" aria-label="Página siguiente">›</button>
   </div>
 
   <ng-template #celda let-fila let-columna="columna">

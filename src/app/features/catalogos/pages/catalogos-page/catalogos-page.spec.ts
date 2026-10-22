@@ -165,6 +165,37 @@ describe('CatalogosPage', () => {
     http.expectOne((r) => r.url === `${base}/recetas`).flush([receta()]);
   });
 
+  it('cada catálogo se busca sobre todos sus registros, sin distinguir mayúsculas ni acentos', () => {
+    const { page, http } = crear();
+    page['cargarProductos']();
+    http.expectOne(`${base}/admin/productos`).flush([
+      { ...productoConId('p-1'), nombre: 'Queso Andino', familiaNombre: 'Quesos' },
+      { ...productoConId('p-2'), nombre: 'Yogurt de fresa', familiaNombre: 'Yogurt' },
+      { ...productoConId('p-3'), nombre: 'Mantequilla', familiaNombre: 'Lácteos' }
+    ]);
+    page['listaProductos'].cambiarTamano(1);
+    page['listaProductos'].buscar('LACTEOS');
+    expect(page['listaProductos'].filtradas().map((p: ProductoResponse) => p.id)).toEqual(['p-3']);
+    expect(page['listaProductos'].totalElementos()).toBe(1);
+    page['listaProductos'].buscar('');
+    expect(page['listaProductos'].totalPaginas()).toBe(3);
+  });
+
+  it('el producto recién creado se muestra (en su página) y se resalta tras recargar', () => {
+    const { page, http, dialogFalso } = crear();
+    page['cargarProductos']();
+    http.expectOne(`${base}/admin/productos`).flush([productoConId('p-1'), productoConId('p-2')]);
+    page['listaProductos'].cambiarTamano(1);
+
+    page['nuevoProducto']();
+    dialogFalso.cerrarUltima({ producto: { ...productoConId('p-2'), nombre: 'Nuevo' }, esNuevo: false });
+    http.expectOne(`${base}/admin/productos`).flush([productoConId('p-1'), productoConId('p-2')]);
+
+    expect(page['listaProductos'].paginaActual()).toBe(1);
+    expect(page['listaProductos'].esResaltada(productoConId('p-2'))).toBe(true);
+    expect(page['listaProductos'].esResaltada(productoConId('p-1'))).toBe(false);
+  });
+
   it('reactivarReceta() usa PATCH /recetas/{id}/reactivar y recarga', () => {
     const { page, http } = crear({}, [receta(false)]);
     page['reactivarReceta'](receta(false));

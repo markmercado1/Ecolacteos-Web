@@ -37,6 +37,24 @@ describe('JornadasPage', () => {
     http.verify();
   });
 
+  it('busca por acopiador o vehículo sobre toda la bandeja y conserva el orden de llegada', () => {
+    TestBed.configureTestingModule({ providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] });
+    const http = TestBed.inject(HttpTestingController);
+    const f = TestBed.createComponent(JornadasPage);
+    http.expectOne(`${base}/jornadas`).flush([
+      { ...jornada, id: 'j1', acopiadorNombre: 'Zoila Quispe', unidadPlaca: 'AAA-111' },
+      { ...jornada, id: 'j2', acopiadorNombre: 'Juan Pérez', unidadPlaca: 'BBB-222' },
+      { ...jornada, id: 'j3', acopiadorNombre: 'María Núñez', unidadPlaca: 'CCC-333' }
+    ]);
+    const lista = f.componentInstance['lista'];
+    expect(lista.filas().map((j: JornadaBandeja) => j.id)).toEqual(['j1', 'j2', 'j3']);
+    lista.buscar('perez');
+    expect(lista.filtradas().map((j: JornadaBandeja) => j.id)).toEqual(['j2']);
+    lista.buscar('ccc');
+    expect(lista.filtradas().map((j: JornadaBandeja) => j.id)).toEqual(['j3']);
+    http.verify();
+  });
+
   it('conserva el error 403 en vez de mostrar una bandeja vacía', () => {
     TestBed.configureTestingModule({ providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] });
     const http = TestBed.inject(HttpTestingController);

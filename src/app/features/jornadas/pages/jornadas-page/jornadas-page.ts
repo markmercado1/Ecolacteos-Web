@@ -5,6 +5,7 @@ import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
 import { JornadaBandeja } from '../../data-access/jornada.models';
 import { JornadasApi } from '../../data-access/jornadas.api';
+import { ListaLocal } from '../../../../shared/util/lista-local';
 import { JornadaDetalleDialog } from '../../ui/jornada-detalle-dialog/jornada-detalle-dialog';
 
 @Component({
@@ -22,6 +23,16 @@ export class JornadasPage {
   protected readonly cargando = signal(true);
   protected readonly error = signal<AppError | null>(null);
   protected readonly jornadas = signal<JornadaBandeja[]>([]);
+
+  /**
+   * La bandeja llega completa y en el orden de llegada a planta (el mismo contrato que usa la app móvil): se busca y se
+   * pagina en el cliente sin reordenar.
+   */
+  protected readonly lista = new ListaLocal(this.jornadas, {
+    campos: (j) => [j.acopiadorNombre, j.unidadPlaca],
+    id: (j) => j.id,
+    destroyRef: this.destroy
+  });
 
   protected readonly columnas: ColumnaTabla[] = [
     { clave: 'acopiadorNombre', etiqueta: 'Acopiador' },

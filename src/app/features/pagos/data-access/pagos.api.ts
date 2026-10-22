@@ -19,8 +19,11 @@ export class PagosApi {
   private readonly baseUrl = environment.apiBaseUrl;
 
   /** Paginado en el servidor (semanaInicio desc, desempate por id). */
-  listar(filtro: FiltroPagina): Observable<PaginaResponse<PagoResponse>> {
-    return this.http.get<PaginaResponse<PagoResponse>>(`${this.baseUrl}/pagos`, { params: paramsDePagina(filtro) });
+  listar(filtro: FiltroPagina & { busqueda?: string }): Observable<PaginaResponse<PagoResponse>> {
+    let params = paramsDePagina(filtro);
+    const busqueda = filtro.busqueda?.trim();
+    if (busqueda) params = params.set('busqueda', busqueda);
+    return this.http.get<PaginaResponse<PagoResponse>>(`${this.baseUrl}/pagos`, { params });
   }
 
   /**

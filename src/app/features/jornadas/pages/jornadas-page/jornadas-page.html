@@ -8,14 +8,16 @@
 
 <ui-data-table
   [columnas]="columnas"
-  [filas]="jornadas()"
+  [lista]="lista"
+  placeholderBusqueda="Buscar por acopiador o vehículo"
+  etiquetaBusqueda="Buscar jornadas por acopiador o vehículo"
+  unidad="jornadas"
   [cargando]="cargando()"
   [error]="error()"
   (reintentar)="cargar()"
   mensajeVacio="No hay jornadas regresando a planta en este momento."
   titulo="Regresando a planta"
   subtitulo="Solo jornadas en camino a planta; no es un histórico ni la lista de todas las jornadas activas."
-  [piePagina]="jornadas().length + ' jornadas'"
 >
   <ng-template #celda let-fila let-columna="columna">
     @switch (columna) {

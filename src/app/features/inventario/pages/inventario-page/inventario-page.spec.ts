@@ -44,7 +44,7 @@ describe('InventarioPage', () => {
     expect(req.request.params.get('size')).toBe('20');
     req.flush(respuesta());
     expect(page['stock']()).toEqual([fila]);
-    expect(page['resumen']()).toBe('Mostrando 1–1 de 1 presentaciones');
+    expect(page['total']()).toBe(1);
     expect(page['cargando']()).toBe(false);
   });
   it('consulta otra página en el servidor y reinicia al cambiar tamaño', () => {
@@ -53,7 +53,7 @@ describe('InventarioPage', () => {
     const segunda = peticion();
     expect(segunda.request.params.get('page')).toBe('1');
     segunda.flush(respuesta(1, 41));
-    page['cambiarTamano']('10');
+    page['cambiarTamano'](10);
     const nueva = peticion();
     expect(nueva.request.params.get('page')).toBe('0');
     expect(nueva.request.params.get('size')).toBe('10');
@@ -66,7 +66,27 @@ describe('InventarioPage', () => {
     page['cargar']();
     peticion().flush({ contenido: [], paginaActual: 0, tamanoPagina: 20, totalElementos: 0, totalPaginas: 0 });
     expect(page['error']()).toBeNull();
-    expect(page['resumen']()).toBe('Mostrando 0–0 de 0 presentaciones');
+    expect(page['total']()).toBe(0);
+  });
+
+  it('buscar manda el texto al servidor junto a la familia y vuelve a la página 0; vaciar lo quita', () => {
+    peticion().flush(respuesta(0, 41));
+    page['cambiarFamilia']('f');
+    peticion().flush(respuesta(0, 41));
+    page['cambiarPagina'](1);
+    peticion().flush(respuesta(1, 41));
+
+    page['buscar']('botella');
+    const req = peticion();
+    expect(req.request.params.get('busqueda')).toBe('botella');
+    expect(req.request.params.get('familiaId')).toBe('f');
+    expect(req.request.params.get('page')).toBe('0');
+    req.flush(respuesta());
+
+    page['buscar']('');
+    const sin = peticion();
+    expect(sin.request.params.has('busqueda')).toBe(false);
+    sin.flush(respuesta());
   });
   it('cancela consultas anteriores', () => {
     const anterior = peticion();
@@ -95,7 +115,7 @@ describe('InventarioPage', () => {
     expect(filtrada.request.params.get('familiaId')).toBe('f');
     expect(filtrada.request.params.get('page')).toBe('0');
     filtrada.flush(respuesta());
-    page['cambiarTamano']('10');
+    page['cambiarTamano'](10);
     const pequena = peticion();
     expect(pequena.request.params.get('familiaId')).toBe('f');
     pequena.flush({ ...respuesta(), tamanoPagina: 10 });

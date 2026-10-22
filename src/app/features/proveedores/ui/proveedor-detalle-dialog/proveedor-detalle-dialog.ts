@@ -129,6 +129,7 @@ type Pestana = 'general' | 'zonas' | 'pagos';
             [pagina]="paginaPagos()"
             [totalPaginas]="totalPaginasPagos()"
             [totalElementos]="totalPagos()"
+            [tamano]="tamanoPagos"
             unidad="pagos"
             (cambiar)="irAPaginaPagos($event)"
           />
@@ -179,6 +180,7 @@ type Pestana = 'general' | 'zonas' | 'pagos';
   `
 })
 export class ProveedorDetalleDialog {
+  protected readonly tamanoPagos = TAMANO_PAGINA_PAGOS;
   protected readonly dialogRef = inject(DialogRef<void>);
   protected readonly data = inject<ProveedorDetalleDialogData>(DIALOG_DATA);
   private readonly proveedoresApi = inject(ProveedoresApi);

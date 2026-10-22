@@ -26,15 +26,21 @@
     [error]="error()"
     mensajeVacio="No se ha generado ningún pago todavía."
     titulo="Historial de pagos"
-    subtitulo="Más recientes primero (por semana de inicio)."
-    [piePagina]="cargando() ? undefined : 'Página ' + (pagina() + 1) + ' de ' + (totalPaginas() || 1) + ' · ' + totalElementos() + ' pagos en total'"
+    subtitulo="Más recientes primero (por semana de inicio y, dentro de la semana, por creación)."
+    [buscable]="true"
+    placeholderBusqueda="Buscar por proveedor o DNI"
+    etiquetaBusqueda="Buscar pagos por proveedor o DNI"
+    [pagina]="pagina()"
+    [totalPaginas]="totalPaginas()"
+    [totalElementos]="totalElementos()"
+    [tamano]="tamano()"
+    [tamanos]="tamanos"
+    unidad="pagos"
+    (buscar)="buscar($event)"
+    (cambiarPagina)="cambiarPagina($event)"
+    (cambiarTamano)="cambiarTamano($event)"
     (reintentar)="cargar()"
   >
-    <div paginacion class="paginacion">
-      <button type="button" class="page-btn" [disabled]="pagina() === 0" (click)="irAPagina(-1)" aria-label="Página anterior">‹</button>
-      <button type="button" class="page-btn" [disabled]="pagina() + 1 >= totalPaginas()" (click)="irAPagina(1)" aria-label="Página siguiente">›</button>
-    </div>
-
     <ng-template #celda let-fila let-columna="columna">
       @switch (columna) {
         @case ('proveedorNombre') { <strong>{{ fila.proveedorNombre }}</strong> }

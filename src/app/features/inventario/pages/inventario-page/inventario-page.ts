@@ -7,6 +7,8 @@ import {
   signal
 } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { ListaLocal } from '../../../../shared/util/lista-local';
+import { TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Dialog } from '@angular/cdk/dialog';
 import { FamiliaResponse } from '../../../catalogos/data-access/familia.models';
@@ -56,6 +58,13 @@ export class InventarioPage {
   protected readonly seccion = signal<Seccion>('productos');
 
   protected readonly insumos = signal<InsumoResponse[]>([]);
+  /** Insumos: el servidor entrega la lista completa (pocos y alfabéticos); se busca y pagina en el cliente. */
+  protected readonly listaInsumos = new ListaLocal(this.insumos, {
+    campos: (i) => [i.nombre, i.unidadMedida],
+    id: (i) => i.id,
+    destroyRef: this.destroyRef
+  });
+  protected readonly tamanos = TAMANOS_PAGINA;
   protected readonly cargandoInsumos = signal(false);
   protected readonly errorInsumos = signal<AppError | null>(null);
   private insumosCargados = false;
@@ -74,15 +83,11 @@ export class InventarioPage {
   protected readonly error = signal<AppError | null>(null);
   protected readonly stock = signal<FilaStockResponse[]>([]);
   protected readonly pagina = signal(0);
-  protected readonly tamano = signal(20);
+  protected readonly tamano = signal(TAMANO_PAGINA_POR_DEFECTO);
+  /** Texto del buscador estándar (producto o presentación): se envía al servidor y busca entre todo el inventario. */
+  private readonly busquedaAplicada = signal('');
   protected readonly total = signal(0);
   protected readonly paginas = signal(0);
-  protected readonly resumen = computed(() => {
-    if (this.cargando()) return 'Cargando inventario…';
-    if (this.error()) return 'No se pudo cargar el inventario.';
-    const inicio = this.total() === 0 ? 0 : this.pagina() * this.tamano() + 1;
-    return `Mostrando ${inicio}–${Math.min(this.pagina() * this.tamano() + this.stock().length, this.total())} de ${this.total()} presentaciones`;
-  });
   protected readonly identificarFila = (fila: FilaStockResponse) => fila.presentacionId;
   protected readonly columnas = computed<ColumnaTabla[]>(() => [
     { clave: 'familiaNombre', etiqueta: 'Familia' },
@@ -190,8 +195,14 @@ export class InventarioPage {
     this.cargar();
   }
 
-  protected cambiarTamano(valor: string): void {
-    this.tamano.set(Number(valor));
+  protected cambiarTamano(valor: number): void {
+    this.tamano.set(valor);
+    this.pagina.set(0);
+    this.cargar();
+  }
+
+  protected buscar(texto: string): void {
+    this.busquedaAplicada.set(texto);
     this.pagina.set(0);
     this.cargar();
   }
@@ -204,7 +215,8 @@ export class InventarioPage {
       .listarStock({
         page: this.pagina(),
         size: this.tamano(),
-        familiaId: this.familiaId() || undefined
+        familiaId: this.familiaId() || undefined,
+        busqueda: this.busquedaAplicada() || undefined
       })
       .subscribe({
         next: (resultado) => {

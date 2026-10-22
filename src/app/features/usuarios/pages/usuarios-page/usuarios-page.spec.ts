@@ -73,33 +73,35 @@ describe('UsuariosPage (filtros y paginación en el servidor)', () => {
     expect(http.expectOne(esPaginado).request.params.has('activo')).toBe(false);
   });
 
-  it('la búsqueda viaja al servidor con debounce, combinada con rol y estado', async () => {
-    vi.useFakeTimers();
-    try {
-      page['cambiarFiltroRol']('ADMIN');
-      http.expectOne(esPaginado).flush(paginaDe([usuarios[0]]));
-      page['cambiarFiltroEstado']('ACTIVOS');
-      http.expectOne(esPaginado).flush(paginaDe([usuarios[0]]));
+  // El debounce vive en ui-buscador (buscador.spec.ts); aquí se prueba qué hace la página con el texto.
+  it('la búsqueda viaja al servidor combinada con rol y estado y vuelve a la página 0', () => {
+    page['cambiarFiltroRol']('ADMIN');
+    http.expectOne(esPaginado).flush(paginaDe([usuarios[0]]));
+    page['cambiarFiltroEstado']('ACTIVOS');
+    http.expectOne(esPaginado).flush(paginaDe([usuarios[0]]));
 
-      page['onBusquedaInput']('an');
-      page['onBusquedaInput']('ana');
-      await vi.advanceTimersByTimeAsync(350);
-      const req = http.expectOne(esPaginado);
-      expect(req.request.params.get('busqueda')).toBe('ana');
-      expect(req.request.params.get('rol')).toBe('ADMIN');
-      expect(req.request.params.get('activo')).toBe('true');
-      expect(req.request.params.get('page')).toBe('0');
-      req.flush(paginaDe([usuarios[0]]));
-    } finally {
-      vi.useRealTimers();
-    }
+    page['buscar']('ana');
+    const req = http.expectOne(esPaginado);
+    expect(req.request.params.get('busqueda')).toBe('ana');
+    expect(req.request.params.get('rol')).toBe('ADMIN');
+    expect(req.request.params.get('activo')).toBe('true');
+    expect(req.request.params.get('page')).toBe('0');
+    req.flush(paginaDe([usuarios[0]]));
   });
 
-  it('irAPagina no sale del rango y corrige una página que quedó vacía tras desactivar', () => {
-    page['irAPagina'](-1);
+  it('cambiarTamano pide la primera página con el nuevo tamaño', () => {
+    page['cambiarTamano'](10);
+    const req = http.expectOne(esPaginado);
+    expect(req.request.params.get('size')).toBe('10');
+    expect(req.request.params.get('page')).toBe('0');
+    req.flush(paginaDe(usuarios));
+  });
+
+  it('cambiarPagina no sale del rango y corrige una página que quedó vacía tras desactivar', () => {
+    page['cambiarPagina'](-1);
     http.expectNone(esPaginado);
 
-    page['irAPagina'](2);
+    page['cambiarPagina'](2);
     http.expectOne(esPaginado).flush({ contenido: [], paginaActual: 2, tamanoPagina: 20, totalElementos: 40, totalPaginas: 2 });
     const reintento = http.expectOne(esPaginado);
     expect(reintento.request.params.get('page')).toBe('1');

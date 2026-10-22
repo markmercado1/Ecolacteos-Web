@@ -9,6 +9,8 @@ import { CrearVentaCarritoRequest, TipoClienteVenta, VentaResumenResponse } from
 export interface FiltroVentas {
   fecha?: string;
   tipoCliente?: TipoClienteVenta;
+  /** Vendedor, producto o presentación (contiene, sin acentos ni mayúsculas), entre todas las ventas. */
+  busqueda?: string;
   page: number;
   size: number;
 }
@@ -23,6 +25,8 @@ export class VentasApi {
     let params = new HttpParams().set('page', filtro.page).set('size', filtro.size);
     if (filtro.fecha) params = params.set('fecha', filtro.fecha);
     if (filtro.tipoCliente) params = params.set('tipoCliente', filtro.tipoCliente);
+    const busqueda = filtro.busqueda?.trim();
+    if (busqueda) params = params.set('busqueda', busqueda);
     return this.http.get<PaginaResponse<VentaResumenResponse>>(`${this.baseUrl}/ventas`, { params });
   }
 

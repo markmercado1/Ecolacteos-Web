@@ -147,15 +147,48 @@ describe('ReservasPage', () => {
     expect(el.textContent).toContain('Todavía no hay reservas.');
   });
 
-  it('irAPagina no pide una página fuera de rango', () => {
+  it('cambiarPagina no pide una página fuera de rango', () => {
     const f = TestBed.createComponent(ReservasPage);
     listado().flush(pagina([base], 45));
     for (const estado of ['PENDIENTE', 'CONFIRMADA', 'VENCIDA']) resumen(estado).flush(pagina([], 0));
     const page = f.componentInstance as unknown as Record<string, (...a: unknown[]) => void>;
-    page['irAPagina'](-1);
+    page['cambiarPagina'](-1);
+    page['cambiarPagina'](9);
     http.expectNone((r) => r.url === url);
-    page['irAPagina'](1);
+    page['cambiarPagina'](1);
     expect(listado().request.params.get('page')).toBe('1');
+  });
+
+  it('buscar manda el texto al servidor junto a los filtros y vuelve a la página 0; vaciar lo quita', () => {
+    const f = TestBed.createComponent(ReservasPage);
+    listado().flush(pagina([base], 45));
+    for (const estado of ['PENDIENTE', 'CONFIRMADA', 'VENCIDA']) resumen(estado).flush(pagina([], 0));
+    const page = f.componentInstance as unknown as Record<string, (...a: unknown[]) => void>;
+    page['cambiarEstado']('CONFIRMADA');
+    listado().flush(pagina([base], 45));
+
+    page['buscar']('José');
+    const req = listado();
+    expect(req.request.params.get('busqueda')).toBe('José');
+    expect(req.request.params.get('estado')).toBe('CONFIRMADA');
+    expect(req.request.params.get('page')).toBe('0');
+    req.flush(pagina([base], 1));
+
+    page['buscar']('');
+    const sin = listado();
+    expect(sin.request.params.has('busqueda')).toBe(false);
+    sin.flush(pagina([base], 45));
+  });
+
+  it('cambiarTamano pide la primera página con el nuevo tamaño', () => {
+    const f = TestBed.createComponent(ReservasPage);
+    listado().flush(pagina([base], 45));
+    for (const estado of ['PENDIENTE', 'CONFIRMADA', 'VENCIDA']) resumen(estado).flush(pagina([], 0));
+    const page = f.componentInstance as unknown as Record<string, (...a: unknown[]) => void>;
+    page['cambiarTamano'](50);
+    const req = http.expectOne((r) => r.url === url && r.params.get('size') === '50');
+    expect(req.request.params.get('page')).toBe('0');
+    req.flush(pagina([base], 45));
   });
 
   it('abrir el detalle usa el id de la reserva y recarga listado y contadores solo si hubo cambios', () => {

@@ -106,15 +106,23 @@ describe('PreciosPage', () => {
     expect(page['totalElementosLeche']()).toBe(45);
     expect(page['totalPaginasLeche']()).toBe(3);
 
-    page['irAPaginaLeche'](1);
+    page['cambiarPaginaLeche'](1);
     const req = http.expectOne((r) => r.url === `${base}/admin/precios-litro`);
     expect(req.request.params.get('page')).toBe('1');
     expect(req.request.params.get('size')).toBe('20');
     req.flush({ contenido: [], paginaActual: 1, tamanoPagina: 20, totalElementos: 45, totalPaginas: 3 });
     http.expectOne(`${base}/admin/precios-litro/vigente`).flush(null);
 
-    page['irAPaginaLeche'](-5);
+    page['cambiarPaginaLeche'](-5);
+    page['cambiarPaginaLeche'](9);
     http.expectNone((r) => r.url === `${base}/admin/precios-litro`);
+
+    page['cambiarTamanoLeche'](10);
+    const conTamano = http.expectOne((r) => r.url === `${base}/admin/precios-litro`);
+    expect(conTamano.request.params.get('size')).toBe('10');
+    expect(conTamano.request.params.get('page')).toBe('0');
+    conTamano.flush({ contenido: [], paginaActual: 0, tamanoPagina: 10, totalElementos: 45, totalPaginas: 5 });
+    http.expectOne(`${base}/admin/precios-litro/vigente`).flush(null);
   });
 
   it('carga la primera página de productos al iniciar, con tamaño de página por defecto', () => {
@@ -141,24 +149,30 @@ describe('PreciosPage', () => {
     req.flush(paginaCon([]));
   });
 
-  it('la búsqueda se aplica con debounce, reinicia a la primera página y cancela la consulta anterior', async () => {
-    vi.useFakeTimers();
-    try {
-      flushCargaInicial([], [], paginaCon([]));
-      page['pagina'].set(2);
+  // El debounce vive en ui-buscador (buscador.spec.ts); aquí se prueba qué hace la página con el texto.
+  it('la búsqueda reinicia a la primera página, viaja al servidor y cancela la consulta anterior', () => {
+    flushCargaInicial([], [], paginaCon([]));
+    page['pagina'].set(2);
 
-      page['onBusquedaInput']('bot');
-      expect(page['busquedaTexto']()).toBe('bot'); // el texto se refleja de inmediato
-      page['onBusquedaInput']('botella');
-      await vi.advanceTimersByTimeAsync(350);
+    page['buscar']('bot');
+    page['buscar']('botella'); // la anterior sigue en vuelo: se cancela
 
-      expect(page['pagina']()).toBe(0);
-      const req = http.expectOne((r) => r.url === `${base}/admin/precios-queso/presentaciones`);
-      expect(req.request.params.get('busqueda')).toBe('botella');
-      req.flush(paginaCon([]));
-    } finally {
-      vi.useRealTimers();
-    }
+    expect(page['pagina']()).toBe(0);
+    const pendientes = http.match((r) => r.url === `${base}/admin/precios-queso/presentaciones`);
+    expect(pendientes).toHaveLength(2);
+    expect(pendientes[0].cancelled).toBe(true);
+    expect(pendientes[1].request.params.get('busqueda')).toBe('botella');
+    pendientes[1].flush(paginaCon([]));
+  });
+
+  it('vaciar la búsqueda quita el parámetro', () => {
+    flushCargaInicial([], [], paginaCon([]));
+    page['buscar']('botella');
+    http.expectOne((r) => r.url === `${base}/admin/precios-queso/presentaciones`).flush(paginaCon([]));
+    page['buscar']('');
+    const req = http.expectOne((r) => r.url === `${base}/admin/precios-queso/presentaciones`);
+    expect(req.request.params.has('busqueda')).toBe(false);
+    req.flush(paginaCon([]));
   });
 
   it('cambiar el tamaño de página reinicia a la primera página', () => {
@@ -173,33 +187,19 @@ describe('PreciosPage', () => {
     req.flush(paginaCon([]));
   });
 
-  it('irAPaginaQueso respeta los límites (no retrocede antes de 0 ni avanza más allá del total)', () => {
+  it('cambiarPaginaQueso respeta los límites (no retrocede antes de 0 ni avanza más allá del total)', () => {
     flushCargaInicial([], [], paginaCon([], { totalPaginas: 2 }));
 
-    page['irAPaginaQueso'](-1);
+    page['cambiarPaginaQueso'](-1);
     expect(page['pagina']()).toBe(0);
     http.expectNone((r) => r.url === `${base}/admin/precios-queso/presentaciones`);
 
-    page['irAPaginaQueso'](1);
+    page['cambiarPaginaQueso'](1);
     expect(page['pagina']()).toBe(1);
     http.expectOne((r) => r.url === `${base}/admin/precios-queso/presentaciones`).flush(paginaCon([], { totalPaginas: 2, paginaActual: 1 }));
 
-    page['irAPaginaQueso'](1);
-    expect(page['pagina']()).toBe(1); // ya está en la última página
-  });
-
-  it('muestra el rango "Mostrando X–Y de Z resultados" calculado de la página actual', () => {
-    flushCargaInicial([], [], paginaCon([fila({ productoId: 'p-1', productoNombre: 'Yogurt' })], { totalElementos: 45, tamanoPagina: 20, paginaActual: 1 }));
-    page['pagina'].set(1);
-    page['totalElementos'].set(45);
-    page['tamanoPagina'].set(20);
-
-    expect(page['rangoMostrado']()).toBe('Mostrando 21–40 de 45 resultados');
-  });
-
-  it('sin resultados, el rango se muestra como "Mostrando 0 de 0 resultados"', () => {
-    flushCargaInicial([], [], paginaCon([]));
-    expect(page['rangoMostrado']()).toBe('Mostrando 0 de 0 resultados');
+    page['cambiarPaginaQueso'](2);
+    expect(page['pagina']()).toBe(1); // no existe la página 3
   });
 
   it('un producto activo sin presentaciones llega representado por una fila con presentacionId null', () => {
@@ -232,14 +232,12 @@ describe('PreciosPage', () => {
     expect(page['filas']()).toEqual([]); // ahora es "sin resultados", no un error
   });
 
-  it('después de registrar un precio, recarga la página actual conservando familia/búsqueda/página', async () => {
-    vi.useFakeTimers();
-    try {
+  it('después de registrar un precio, recarga la página actual conservando familia/búsqueda/página', () => {
+    {
       flushCargaInicial([], [{ id: 'fam-1', nombre: 'Queso', activo: true }], paginaCon([]));
       page['cambiarFamilia']('fam-1');
       http.expectOne((r) => r.url === `${base}/admin/precios-queso/presentaciones`).flush(paginaCon([]));
-      page['onBusquedaInput']('botella');
-      await vi.advanceTimersByTimeAsync(350);
+      page['buscar']('botella');
       http.expectOne((r) => r.url === `${base}/admin/precios-queso/presentaciones`).flush(paginaCon([]));
 
       const dialog = TestBed.inject(Dialog);
@@ -263,8 +261,6 @@ describe('PreciosPage', () => {
       expect(req.request.params.get('familiaId')).toBe('fam-1');
       expect(req.request.params.get('busqueda')).toBe('botella');
       req.flush(paginaCon([]));
-    } finally {
-      vi.useRealTimers();
     }
   });
 

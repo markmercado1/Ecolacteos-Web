@@ -16,6 +16,8 @@ export interface FiltroLotes {
   fecha?: string;
   productoId?: string;
   estado?: EstadoLote;
+  /** Producto o responsable (contiene, sin acentos ni mayúsculas), entre todos los lotes. */
+  busqueda?: string;
   page: number;
   size: number;
 }
@@ -40,6 +42,8 @@ export class LotesProduccionApi {
     if (filtro.fecha) params = params.set('fecha', filtro.fecha);
     if (filtro.productoId) params = params.set('productoId', filtro.productoId);
     if (filtro.estado) params = params.set('estado', filtro.estado);
+    const busqueda = filtro.busqueda?.trim();
+    if (busqueda) params = params.set('busqueda', busqueda);
     return this.http.get<PaginaResponse<LoteProduccion>>(`${this.baseUrl}/lotes-produccion`, { params });
   }
 

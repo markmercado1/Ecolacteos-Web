@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { Dialog } from '@angular/cdk/dialog';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
+import { ListaLocal } from '../../../../shared/util/lista-local';
 import { ZonaResponse } from '../../../catalogos/data-access/zona.models';
 import { ZonasApi } from '../../../catalogos/data-access/zonas.api';
 import { UsuarioResponse } from '../../../usuarios/data-access/usuario.models';
@@ -32,7 +33,15 @@ export class UnidadesPage {
   private readonly acopiadores = signal<UsuarioResponse[]>([]);
   private readonly todosLosUsuarios = signal<UsuarioResponse[]>([]);
 
-  protected readonly busqueda = signal('');
+  /**
+   * La API entrega la flota completa, en orden alfabético por placa (no hay fecha de creación): se busca y se pagina en
+   * el cliente sobre TODAS las unidades, y la unidad recién creada o editada se resalta (ver ListaLocal.revelar).
+   */
+  protected readonly lista = new ListaLocal(this.unidades, {
+    campos: (u) => [u.placa, u.responsableNombre],
+    id: (u) => u.id,
+    destroyRef: inject(DestroyRef)
+  });
   protected readonly zonaPorId = computed(() => new Map(this.zonas().map((z) => [z.id, z.nombre])));
 
   protected readonly columnas: ColumnaTabla[] = [
@@ -43,13 +52,6 @@ export class UnidadesPage {
     { clave: 'acciones', etiqueta: '' }
   ];
 
-  protected readonly unidadesFiltradas = computed(() => {
-    const termino = this.busqueda().trim().toLowerCase();
-    if (!termino) return this.unidades();
-    return this.unidades().filter((u) =>
-      `${u.placa} ${u.responsableNombre}`.toLowerCase().includes(termino)
-    );
-  });
 
   constructor() {
     this.cargar();
@@ -60,7 +62,7 @@ export class UnidadesPage {
     return this.zonaPorId().get(zonaId) ?? 'Zona no encontrada';
   }
 
-  protected cargar(): void {
+  protected cargar(revelarId?: string): void {
     this.cargando.set(true);
     this.error.set(null);
     this.zonasApi.listarAdmin().subscribe({ next: (z) => this.zonas.set(z), error: () => undefined });
@@ -75,6 +77,7 @@ export class UnidadesPage {
       next: (unidades) => {
         this.unidades.set(unidades);
         this.cargando.set(false);
+        if (revelarId) this.lista.revelar(revelarId);
       },
       error: (error) => {
         this.error.set(mapHttpError(error));
@@ -108,7 +111,7 @@ export class UnidadesPage {
     ref.closed.subscribe((resultado) => {
       if (!resultado) return;
       this.toast.exito(unidad ? `Unidad "${resultado.placa}" actualizada.` : `Unidad "${resultado.placa}" creada.`);
-      this.cargar();
+      this.cargar(resultado.id);
     });
   }
 }

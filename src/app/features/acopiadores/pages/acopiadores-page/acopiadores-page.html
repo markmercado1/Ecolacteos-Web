@@ -9,12 +9,20 @@
   </div>
 </div>
 
+<div class="barra-lista">
+  <ui-buscador
+    placeholder="Buscar por nombre o correo"
+    etiqueta="Buscar acopiadores por nombre o correo"
+    (buscar)="buscar($event)"
+  />
+</div>
+
 @if (cargando()) {
   <ui-loading-state mensaje="Cargando acopiadores…" />
 } @else if (error()) {
   <ui-error-state [error]="error()" (reintentar)="cargar()" />
 } @else if (acopiadores().length === 0) {
-  <ui-empty-state mensaje="No hay usuarios con rol ACOPIADOR todavía." />
+  <ui-empty-state [mensaje]="busqueda() ? 'Ningún acopiador coincide con «' + busqueda() + '».' : 'No hay usuarios con rol ACOPIADOR todavía.'" />
 } @else {
   <div class="grid grid-3">
     @for (item of acopiadores(); track item.usuario.id) {
@@ -52,7 +60,10 @@
     [pagina]="pagina()"
     [totalPaginas]="totalPaginas()"
     [totalElementos]="totalElementos()"
+    [tamano]="tamano()"
+    [tamanos]="tamanos"
     unidad="acopiadores"
-    (cambiar)="irAPagina($event)"
+    (cambiar)="cambiarPagina($event)"
+    (cambiarTamano)="cambiarTamano($event)"
   />
 }

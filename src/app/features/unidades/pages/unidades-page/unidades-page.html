@@ -11,27 +11,17 @@
 
 <ui-data-table
   [columnas]="columnas"
-  [filas]="unidadesFiltradas()"
+  [lista]="lista"
   [cargando]="cargando()"
   [error]="error()"
   mensajeVacio="No hay unidades registradas todavía."
   titulo="Flota registrada"
-  subtitulo="Cada unidad tiene un único responsable (usuario con rol ACOPIADOR)."
-  [piePagina]="cargando() ? undefined : unidadesFiltradas().length + ' de ' + unidades().length + ' unidades'"
+  subtitulo="Cada unidad tiene un único responsable (usuario con rol ACOPIADOR). En orden alfabético por placa."
+  placeholderBusqueda="Buscar por placa o responsable"
+  etiquetaBusqueda="Buscar unidades por placa o responsable"
+  unidad="unidades"
   (reintentar)="cargar()"
 >
-  <div toolbar class="filtros">
-    <div class="search">
-      <input
-        type="search"
-        [value]="busqueda()"
-        (input)="busqueda.set($any($event.target).value)"
-        placeholder="Buscar por placa o responsable"
-        aria-label="Buscar por placa o responsable"
-      >
-    </div>
-  </div>
-
   <ng-template #celda let-fila let-columna="columna">
     @switch (columna) {
       @case ('placa') { <strong>{{ fila.placa }}</strong> }

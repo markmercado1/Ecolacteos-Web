@@ -127,6 +127,46 @@ describe('LotesPage', () => {
     expect(f.componentInstance['pagina']()).toBe(0);
   });
 
+  it('buscar manda el texto al servidor junto a los filtros y vuelve a la página 0; vaciar lo quita', () => {
+    tokenStore.establecer({ token: 't', refreshToken: 'r', expiraEn: 0, refreshExpiraEn: Date.now() + 100000, usuario: usuarioCon('ADMIN') });
+    const f = TestBed.createComponent(LotesPage);
+    http.expectOne(`${base}/admin/productos`).flush([]);
+    http.expectOne((r) => r.url === `${base}/lotes-produccion`).flush(pagina0);
+    flushSaldoLeche(http);
+
+    f.componentInstance['cambiarFiltroProducto']('t1');
+    http.expectOne((r) => r.url === `${base}/lotes-produccion`).flush({ ...pagina0, paginaActual: 0 });
+    f.componentInstance['pagina'].set(2);
+    f.componentInstance['buscar']('paín');
+    const req = http.expectOne((r) => r.url === `${base}/lotes-produccion`);
+    expect(req.request.params.get('busqueda')).toBe('paín');
+    expect(req.request.params.get('productoId')).toBe('t1');
+    expect(req.request.params.get('page')).toBe('0');
+    req.flush({ ...pagina0, paginaActual: 0 });
+
+    f.componentInstance['buscar']('');
+    const sin = http.expectOne((r) => r.url === `${base}/lotes-produccion`);
+    expect(sin.request.params.has('busqueda')).toBe(false);
+    sin.flush({ ...pagina0, paginaActual: 0 });
+  });
+
+  it('cambiarTamano y cambiarPagina piden lo indicado y no salen del rango', () => {
+    tokenStore.establecer({ token: 't', refreshToken: 'r', expiraEn: 0, refreshExpiraEn: Date.now() + 100000, usuario: usuarioCon('ADMIN') });
+    const f = TestBed.createComponent(LotesPage);
+    http.expectOne(`${base}/admin/productos`).flush([]);
+    http.expectOne((r) => r.url === `${base}/lotes-produccion`).flush(pagina0);
+    flushSaldoLeche(http);
+
+    f.componentInstance['cambiarPagina'](9);
+    f.componentInstance['cambiarPagina'](-1);
+    http.expectNone((r) => r.url === `${base}/lotes-produccion`);
+    f.componentInstance['cambiarTamano'](10);
+    const req = http.expectOne((r) => r.url === `${base}/lotes-produccion`);
+    expect(req.request.params.get('size')).toBe('10');
+    expect(req.request.params.get('page')).toBe('0');
+    req.flush({ ...pagina0, paginaActual: 0 });
+  });
+
   it('conserva el error 403 en vez de una lista vacía', () => {
     tokenStore.establecer({ token: 't', refreshToken: 'r', expiraEn: 0, refreshExpiraEn: Date.now() + 100000, usuario: usuarioCon('ADMIN') });
     const f = TestBed.createComponent(LotesPage);

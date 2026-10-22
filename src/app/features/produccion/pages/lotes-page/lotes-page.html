@@ -23,8 +23,19 @@
   [error]="error()"
   mensajeVacio="No hay lotes registrados con los filtros seleccionados."
   titulo="Historial de producciones"
-  subtitulo="Esperado = estimación de la receta; obtenido = lo registrado al finalizar. Cada fila abre el detalle."
-  [piePagina]="cargando() ? undefined : 'Página ' + (pagina() + 1) + ' de ' + (totalPaginas() || 1) + ' · ' + totalElementos() + ' lotes en total'"
+  subtitulo="Más recientes primero. Esperado = estimación de la receta; obtenido = lo registrado al finalizar. Cada fila abre el detalle."
+  [buscable]="true"
+  placeholderBusqueda="Buscar por producto o responsable"
+  etiquetaBusqueda="Buscar producciones por producto o responsable"
+  [pagina]="pagina()"
+  [totalPaginas]="totalPaginas()"
+  [totalElementos]="totalElementos()"
+  [tamano]="tamano()"
+  [tamanos]="tamanos"
+  unidad="lotes"
+  (buscar)="buscar($event)"
+  (cambiarPagina)="cambiarPagina($event)"
+  (cambiarTamano)="cambiarTamano($event)"
   (reintentar)="cargar()"
 >
   <div toolbar class="filtros">
@@ -49,11 +60,6 @@
         <option [value]="e[0]">{{ e[1] }}</option>
       }
     </select>
-  </div>
-
-  <div paginacion class="paginacion">
-    <button type="button" class="page-btn" [disabled]="pagina() === 0" (click)="irAPagina(-1)" aria-label="Página anterior">‹</button>
-    <button type="button" class="page-btn" [disabled]="pagina() + 1 >= totalPaginas()" (click)="irAPagina(1)" aria-label="Página siguiente">›</button>
   </div>
 
   <ng-template #celda let-fila let-columna="columna">

@@ -90,6 +90,8 @@ export interface FiltroReservas {
   fechaRetiro?: string;
   telefono?: string;
   codigo?: string;
+  /** Cliente, teléfono o código (contiene, sin acentos ni mayúsculas), entre todas las reservas. */
+  busqueda?: string;
   page: number;
   size: number;
 }

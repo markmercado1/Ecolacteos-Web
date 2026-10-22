@@ -11,7 +11,7 @@ import { EmptyStateComponent } from '../../../../shared/ui/state/empty-state';
 import { ErrorStateComponent } from '../../../../shared/ui/state/error-state';
 import { LoadingStateComponent } from '../../../../shared/ui/state/loading-state';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
-import { paginaCorregida, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
+import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
 import { ProveedorPublicoResponse } from '../../../proveedores/data-access/proveedor.models';
 import { ProveedoresApi } from '../../../proveedores/data-access/proveedores.api';
 import { AjustePagoResponse, PagoResponse, pagoAjustado } from '../../data-access/pago.models';
@@ -42,6 +42,10 @@ export class PagosPage {
   protected readonly error = signal<AppError | null>(null);
   protected readonly pagos = signal<PagoResponse[]>([]);
   protected readonly pagina = signal(0);
+  protected readonly tamano = signal(TAMANO_PAGINA_POR_DEFECTO);
+  protected readonly tamanos = TAMANOS_PAGINA;
+  /** Texto del buscador estándar (proveedor o DNI): se envía al servidor y busca entre todos los pagos. */
+  private readonly busquedaAplicada = signal('');
   protected readonly totalElementos = signal(0);
   protected readonly totalPaginas = signal(0);
   private peticion?: Subscription;
@@ -72,7 +76,7 @@ export class PagosPage {
     this.peticion?.unsubscribe();
     this.cargando.set(true);
     this.error.set(null);
-    this.peticion = this.pagosApi.listar({ page: this.pagina(), size: TAMANO_PAGINA_POR_DEFECTO }).subscribe({
+    this.peticion = this.pagosApi.listar({ page: this.pagina(), size: this.tamano(), busqueda: this.busquedaAplicada() || undefined }).subscribe({
       next: (respuesta) => {
         const corregida = paginaCorregida(respuesta);
         if (corregida !== null) {
@@ -96,10 +100,21 @@ export class PagosPage {
     return pagoAjustado(pago);
   }
 
-  protected irAPagina(delta: number): void {
-    const siguiente = this.pagina() + delta;
-    if (siguiente < 0 || siguiente >= this.totalPaginas()) return;
-    this.pagina.set(siguiente);
+  protected buscar(texto: string): void {
+    this.busquedaAplicada.set(texto);
+    this.pagina.set(0);
+    this.cargar();
+  }
+
+  protected cambiarPagina(pagina: number): void {
+    if (pagina < 0 || pagina >= this.totalPaginas()) return;
+    this.pagina.set(pagina);
+    this.cargar();
+  }
+
+  protected cambiarTamano(tamano: number): void {
+    this.tamano.set(tamano);
+    this.pagina.set(0);
     this.cargar();
   }
 
