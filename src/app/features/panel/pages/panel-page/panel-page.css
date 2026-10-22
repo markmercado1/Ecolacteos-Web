@@ -41,3 +41,28 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Vista consolidada (todas las zonas): se distingue del detalle de una zona por la barra de vista y por las tarjetas
+   con borde de acento. */
+.barra-vista {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin: 0 0 var(--space-4);
+}
+.barra-vista .hint {
+  margin: 0;
+}
+.kpis {
+  margin-bottom: var(--space-4);
+}
+.card-consolidado {
+  border-left: 4px solid var(--color-primary);
+}
+.aviso-semanas {
+  margin: 0 0 var(--space-4);
+}
+.ventas-consolidado {
+  margin-top: var(--space-4);
+}
