@@ -77,10 +77,11 @@ describe('errorAmigable', () => {
 });
 
 describe('configuración del sitio', () => {
-  it('sin datos reales configurados no hay contacto ni WhatsApp (nada inventado)', () => {
-    expect(hayDatosDeContacto()).toBe(false);
+  it('sin WhatsApp real configurado no hay enlace (nada inventado) y la ubicación cuenta como dato de contacto', () => {
     expect(enlaceWhatsapp('hola')).toBeNull();
     expect(SITIO.contacto.whatsapp).toBe('');
+    expect(hayDatosDeContacto()).toBe(true); // la ubicación configurada (mapaUrl)
+    expect(hayDatosDeContacto({ ...SITIO.contacto, mapaUrl: '' })).toBe(false); // sin ningún dato real
   });
 
   it('con un número real genera el enlace de WhatsApp y con un dato de contacto se considera que hay contacto', () => {

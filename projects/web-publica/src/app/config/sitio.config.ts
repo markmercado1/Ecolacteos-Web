@@ -23,6 +23,8 @@ export interface Sitio {
     horario: string;
     /** Enlace de Google Maps de la ubicación real (https://maps.app.goo.gl/… o https://www.google.com/maps/…). */
     mapaUrl: string;
+    /** URL de incrustación del mapa (https://www.google.com/maps?q=…&output=embed). Vacío = no se muestra el mapa, solo el botón «Cómo llegar». */
+    mapaEmbedUrl: string;
     redes: { facebook: string; instagram: string; tiktok: string; youtube: string };
   };
 }
@@ -68,7 +70,9 @@ export const SITIO: Sitio = {
     direccion: '',
     referencia: '',
     horario: '',
-    mapaUrl: '',
+    mapaUrl: 'https://maps.app.goo.gl/kbGYGuQX4PpEGZ7w8',
+    // Lugar «Huata» (-15.6149462, -69.9719035) según el enlace anterior; afínalo con el punto exacto del local si hace falta.
+    mapaEmbedUrl: 'https://www.google.com/maps?q=-15.6149462,-69.9719035&z=16&hl=es&output=embed',
     redes: { facebook: '', instagram: '', tiktok: '', youtube: '' }
   }
 };

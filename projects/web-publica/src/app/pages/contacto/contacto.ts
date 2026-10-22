@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SITIO, enlaceWhatsapp, hayDatosDeContacto } from '../../config/sitio.config';
+import { MapaUbicacion } from '../../shared/mapa-ubicacion';
 
 /**
  * Contacto y ubicación. Cada dato aparece SOLO si está configurado en config/sitio.config.ts: nada se inventa ni se muestra vacío.
@@ -8,7 +9,7 @@ import { SITIO, enlaceWhatsapp, hayDatosDeContacto } from '../../config/sitio.co
  */
 @Component({
   selector: 'pub-contacto',
-  imports: [RouterLink],
+  imports: [RouterLink, MapaUbicacion],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="page-title">
@@ -40,11 +41,14 @@ import { SITIO, enlaceWhatsapp, hayDatosDeContacto } from '../../config/sitio.co
           </article>
         }
         @if (c.contacto.direccion || c.contacto.mapaUrl) {
-          <article class="card card-pad">
+          <article class="card card-pad ubicacion" [class.con-mapa]="c.contacto.mapaEmbedUrl">
             <h2>Dónde encontrarnos</h2>
             @if (c.contacto.direccion) { <p>{{ c.contacto.direccion }}</p> }
             @if (c.contacto.referencia) { <p class="muted">{{ c.contacto.referencia }}</p> }
             @if (c.contacto.mapaUrl) { <a class="btn btn-outline btn-sm" [href]="c.contacto.mapaUrl" target="_blank" rel="noopener noreferrer">Cómo llegar (Google Maps)</a> }
+            @if (c.contacto.mapaEmbedUrl) {
+              <pub-mapa-ubicacion class="mapa" [embedUrl]="c.contacto.mapaEmbedUrl" [titulo]="'Mapa de la ubicación de ' + c.nombre" />
+            }
           </article>
         }
         @if (c.contacto.horario) {
@@ -78,6 +82,8 @@ import { SITIO, enlaceWhatsapp, hayDatosDeContacto } from '../../config/sitio.co
     .destacado { background: var(--color-sage-soft); }
     .botones { display: flex; gap: 0.6rem; flex-wrap: wrap; }
     article p:last-child { margin-bottom: 0; }
+    .ubicacion.con-mapa { grid-column: 1 / -1; }
+    .mapa { display: block; margin-top: 1rem; }
   `
 })
 export class ContactoPage {

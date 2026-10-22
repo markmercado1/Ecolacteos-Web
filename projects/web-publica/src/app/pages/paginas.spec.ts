@@ -298,14 +298,27 @@ describe('páginas públicas', () => {
       expect(texto(f)).toContain('EcoLácteos Huata es una empresa de productos lácteos');
     });
 
-    it('Contacto, sin datos configurados, no muestra WhatsApp, teléfono ni dirección y ofrece las reservas en línea', () => {
+    it('Contacto, sin WhatsApp ni teléfono configurados, no los muestra y ofrece las reservas en línea', () => {
       const f = TestBed.createComponent(ContactoPage);
       f.detectChanges();
       const t = texto(f);
       expect(t).not.toContain('WhatsApp');
       expect(t).not.toContain('Teléfono');
-      expect(t).not.toContain('Dónde encontrarnos');
       expect(t).toContain('Reservas en línea');
+    });
+
+    it('Contacto muestra la ubicación con el botón «Cómo llegar» y el mapa incrustado de Google Maps', () => {
+      const f = TestBed.createComponent(ContactoPage);
+      f.detectChanges();
+      const el = f.nativeElement as HTMLElement;
+      expect(texto(f)).toContain('Dónde encontrarnos');
+      const boton = Array.from(el.querySelectorAll('a')).find((a) => a.textContent?.includes('Cómo llegar')) as HTMLAnchorElement;
+      expect(boton.href).toContain('maps.app.goo.gl');
+      expect(boton.rel).toContain('noopener');
+      const iframe = el.querySelector('pub-mapa-ubicacion iframe') as HTMLIFrameElement;
+      expect(iframe.src).toContain('https://www.google.com/maps');
+      expect(iframe.title).toContain('EcoLácteos Huata');
+      expect(iframe.getAttribute('loading')).toBe('lazy');
     });
 
     it('Preguntas frecuentes describe el funcionamiento real de las reservas', () => {
