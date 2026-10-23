@@ -27,6 +27,7 @@ import { ProductoFormDialog, ProductoFormDialogResultado } from '../../ui/produc
 import { PresentacionesDialog } from '../../ui/presentaciones-dialog/presentaciones-dialog';
 import { RecetaFormDialog } from '../../ui/receta-form-dialog/receta-form-dialog';
 import { ControlVencimientoDialog } from '../../../vencimiento/ui/control-vencimiento-dialog/control-vencimiento-dialog';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 /** Id del registro que devolvió el diálogo al guardar (para mostrarlo y resaltarlo en la tabla). */
 const idDe = (resultado: unknown): string | undefined => (resultado as { id?: string } | null)?.id;
@@ -39,7 +40,7 @@ const AVISO_LIMITACION_INACTIVOS =
 
 @Component({
   selector: 'app-catalogos-page',
-  imports: [DataTableComponent],
+  imports: [ExportarExcelComponent, DataTableComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './catalogos-page.html',
   styleUrl: './catalogos-page.css'

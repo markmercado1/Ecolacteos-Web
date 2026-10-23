@@ -60,4 +60,7 @@
       @default { {{ fila[columna] }} }
     }
   </ng-template>
+  <div toolbar>
+    <ui-exportar-excel recurso="informes-produccion" [filtro]="filtroExportacion()" />
+  </div>
 </ui-data-table>

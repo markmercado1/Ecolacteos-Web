@@ -58,6 +58,7 @@
       <option value="ACTIVOS">Activos</option>
       <option value="INACTIVOS">Inactivos</option>
     </select>
+    <ui-exportar-excel recurso="proveedores" [filtro]="filtroExportacion()" />
   </div>
 
   <ng-template #celda let-fila let-columna="columna">

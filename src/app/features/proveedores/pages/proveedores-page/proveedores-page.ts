@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Dialog } from '@angular/cdk/dialog';
 import { Observable, Subscription } from 'rxjs';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
 import { ConfirmDialog } from '../../../../shared/ui/dialog/confirm-dialog';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO, paginaCorregida } from '../../../../shared/util/paginacion';
 import { ZonaResponse } from '../../../catalogos/data-access/zona.models';
@@ -18,7 +19,7 @@ type FiltroEstado = 'TODOS' | 'ACTIVOS' | 'INACTIVOS';
 
 @Component({
   selector: 'app-proveedores-page',
-  imports: [DataTableComponent],
+  imports: [DataTableComponent, ExportarExcelComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './proveedores-page.html',
   styleUrl: './proveedores-page.css'
@@ -45,6 +46,12 @@ export class ProveedoresPage {
   private readonly busquedaAplicada = signal('');
   private peticion?: Subscription;
   protected readonly codigoQrBuscado = signal('');
+  /** Filtro y búsqueda vigentes: el Excel trae todas las filas que cumplen esto, no solo la página visible. */
+  protected readonly filtroExportacion = computed(() => ({
+    zonaId: this.filtroZona() || undefined,
+    activo: this.filtroEstado() === 'TODOS' ? undefined : this.filtroEstado() === 'ACTIVOS',
+    busqueda: this.busquedaAplicada() || undefined
+  }));
 
   protected readonly columnas: ColumnaTabla[] = [
     { clave: 'nombre', etiqueta: 'Proveedor' },

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Dialog } from '@angular/cdk/dialog';
 import { Observable, Subscription } from 'rxjs';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
@@ -9,12 +9,13 @@ import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../.
 import { RolResponse, UsuarioResponse } from '../../data-access/usuario.models';
 import { UsuariosApi } from '../../data-access/usuarios.api';
 import { UsuarioFormDialog } from '../../ui/usuario-form-dialog/usuario-form-dialog';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 type FiltroEstado = 'TODOS' | 'ACTIVOS' | 'INACTIVOS';
 
 @Component({
   selector: 'app-usuarios-page',
-  imports: [DataTableComponent],
+  imports: [ExportarExcelComponent, DataTableComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './usuarios-page.html',
   styleUrl: './usuarios-page.css'
@@ -47,6 +48,9 @@ export class UsuariosPage {
     { clave: 'estado', etiqueta: 'Estado' },
     { clave: 'acciones', etiqueta: '' }
   ];
+
+  /** Filtros y búsqueda vigentes: el Excel trae todos los usuarios que los cumplen (sin contraseñas), no solo la página visible. */
+  protected readonly filtroExportacion = computed(() => ({ rol: this.filtroRol() === 'TODOS' ? undefined : this.filtroRol(), activo: this.filtroEstado() === 'TODOS' ? undefined : this.filtroEstado() === 'ACTIVOS', busqueda: this.busquedaAplicada() || undefined }));
 
   constructor() {
     this.usuariosApi.listarRoles().subscribe({

@@ -18,6 +18,7 @@ import { PreciosApi } from '../../data-access/precios.api';
 import { PrecioQuesoFormDialog } from '../../ui/precio-queso-form-dialog/precio-queso-form-dialog';
 import { HistorialPrecioDialog } from '../../ui/historial-precio-dialog/historial-precio-dialog';
 import { PrecioFormDialog } from '../../ui/precio-form-dialog/precio-form-dialog';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 type Pestana = 'leche' | 'queso';
 type TipoCliente = PrecioQuesoResponse['modalidad'];
@@ -31,7 +32,7 @@ const MODALIDADES: TipoCliente[] = ['MAYORISTA', 'PROVEEDOR', 'PUBLICO'];
 
 @Component({
   selector: 'app-precios-page',
-  imports: [DataTableComponent, NgTemplateOutlet, RouterLink],
+  imports: [ExportarExcelComponent, DataTableComponent, NgTemplateOutlet, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './precios-page.html',
   styleUrl: './precios-page.css'
@@ -102,6 +103,9 @@ export class PreciosPage {
    *  (no puede colisionar con un id de presentación, son UUIDs de tablas distintas). */
   protected readonly identificarFilaPresentacion = (fila: FilaPrecioPresentacionResponse): string =>
     fila.presentacionId ?? `sin-presentacion:${fila.productoId}`;
+
+  /** Familia y búsqueda vigentes: el Excel trae todas las presentaciones que las cumplen, no solo la página visible. */
+  protected readonly filtroExportacionPresentacion = computed(() => ({ familiaId: this.filtroFamiliaId() || undefined, busqueda: this.filtroBusqueda() || undefined }));
 
   constructor() {
     this.cargar();

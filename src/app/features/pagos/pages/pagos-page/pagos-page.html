@@ -41,6 +41,10 @@
     (cambiarTamano)="cambiarTamano($event)"
     (reintentar)="cargar()"
   >
+    <div toolbar>
+      <ui-exportar-excel recurso="pagos" [filtro]="filtroExportacion()" />
+    </div>
+
     <ng-template #celda let-fila let-columna="columna">
       @switch (columna) {
         @case ('proveedorNombre') { <strong>{{ fila.proveedorNombre }}</strong> }

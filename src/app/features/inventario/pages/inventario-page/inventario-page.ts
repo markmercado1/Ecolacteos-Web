@@ -29,13 +29,14 @@ import { KardexDialog } from '../../ui/kardex-dialog/kardex-dialog';
 import { LotesPresentacionDialog } from '../../ui/lotes-presentacion-dialog/lotes-presentacion-dialog';
 import { KardexVistaComponent } from '../../ui/kardex-vista/kardex-vista';
 import { MovimientoInsumoDialog } from '../../ui/movimiento-insumo-dialog/movimiento-insumo-dialog';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 /** Producto terminado: PRODUCCION, VENTAS y ADMIN. Insumos y leche: solo PRODUCCION y ADMIN (V19). */
 type Seccion = 'productos' | 'insumos' | 'leche';
 
 @Component({
   selector: 'app-inventario-page',
-  imports: [DataTableComponent, DecimalPipe, KardexVistaComponent],
+  imports: [ExportarExcelComponent, DataTableComponent, DecimalPipe, KardexVistaComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './inventario-page.html',
   styleUrl: './inventario-page.css'
@@ -96,6 +97,12 @@ export class InventarioPage {
     { clave: 'stock', etiqueta: 'Existencias', alinearFin: true },
     { clave: 'acciones', etiqueta: '' }
   ]);
+
+  /** Familia y búsqueda vigentes: el Excel trae todas las presentaciones que las cumplen, no solo la página visible. */
+  protected readonly filtroExportacionStock = computed(() => ({ familiaId: this.familiaId() || undefined, busqueda: this.busquedaAplicada() || undefined }));
+
+  /** Búsqueda vigente de la tabla de insumos. */
+  protected readonly filtroExportacionInsumos = computed(() => ({ busqueda: this.listaInsumos.busqueda() || undefined }));
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.consulta?.unsubscribe());

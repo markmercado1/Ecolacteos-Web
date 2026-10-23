@@ -11,10 +11,11 @@ import { UsuariosApi } from '../../../usuarios/data-access/usuarios.api';
 import { UnidadResponse } from '../../data-access/unidad.models';
 import { UnidadesApi } from '../../data-access/unidades.api';
 import { UnidadFormDialog } from '../../ui/unidad-form-dialog/unidad-form-dialog';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 @Component({
   selector: 'app-unidades-page',
-  imports: [DataTableComponent],
+  imports: [ExportarExcelComponent, DataTableComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './unidades-page.html',
   styleUrl: './unidades-page.css'
@@ -52,6 +53,9 @@ export class UnidadesPage {
     { clave: 'acciones', etiqueta: '' }
   ];
 
+
+  /** Búsqueda vigente de la tabla. */
+  protected readonly filtroExportacion = computed(() => ({ busqueda: this.lista.busqueda() || undefined }));
 
   constructor() {
     this.cargar();

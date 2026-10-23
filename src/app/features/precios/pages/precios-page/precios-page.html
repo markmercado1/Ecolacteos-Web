@@ -51,6 +51,9 @@
           }
         }
       </ng-template>
+      <div toolbar>
+        <ui-exportar-excel recurso="precios-litro" />
+      </div>
     </ui-data-table>
   }
   @case ('queso') {
@@ -121,6 +124,9 @@
           }
         }
       </ng-template>
+      <div toolbar>
+        <ui-exportar-excel recurso="precios-presentacion" [filtro]="filtroExportacionPresentacion()" />
+      </div>
     </ui-data-table>
 
     <ng-template #celdaModalidad let-estado="modalidad">

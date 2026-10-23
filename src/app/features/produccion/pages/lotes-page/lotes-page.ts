@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
 import { DecimalPipe } from '@angular/common';
@@ -22,11 +22,12 @@ import { LotesProduccionApi } from '../../data-access/lotes-produccion.api';
 import { LoteDetalleDialog } from '../../ui/lote-detalle-dialog/lote-detalle-dialog';
 import { ProduccionMultipleDialog, ProduccionMultipleResultado } from '../../ui/produccion-multiple-dialog/produccion-multiple-dialog';
 import { RegistrarLoteDialog, RegistrarLoteDialogResultado } from '../../ui/registrar-lote-dialog/registrar-lote-dialog';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 
 @Component({
   selector: 'app-lotes-page',
-  imports: [DataTableComponent, DecimalPipe],
+  imports: [ExportarExcelComponent, DataTableComponent, DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './lotes-page.html',
   styleUrl: './lotes-page.css'
@@ -81,6 +82,9 @@ export class LotesPage {
     { clave: 'rendimientoPct', etiqueta: 'Rendimiento', alinearFin: true },
     { clave: 'acciones', etiqueta: '' }
   ];
+
+  /** Filtros y búsqueda vigentes: el Excel trae todos los lotes que los cumplen, no solo la página visible. */
+  protected readonly filtroExportacion = computed(() => ({ fecha: this.filtroFecha() || undefined, productoId: this.filtroProducto() || undefined, estado: this.filtroEstado() || undefined, busqueda: this.busquedaAplicada() || undefined }));
 
   constructor() {
     this.cargar();

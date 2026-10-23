@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DecimalPipe } from '@angular/common';
 import { Dialog } from '@angular/cdk/dialog';
@@ -12,6 +12,7 @@ import { InformeProduccionDiario } from '../../data-access/informe-produccion.mo
 import { FiltroInformes, InformesProduccionApi } from '../../data-access/informes-produccion.api';
 import { InformeDetalleDialog } from '../../ui/informe-detalle-dialog/informe-detalle-dialog';
 import { InformeFormDialog } from '../../ui/informe-form-dialog/informe-form-dialog';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 
 /**
@@ -25,7 +26,7 @@ import { InformeFormDialog } from '../../ui/informe-form-dialog/informe-form-dia
  */
 @Component({
   selector: 'app-informe-page',
-  imports: [DataTableComponent, DecimalPipe],
+  imports: [ExportarExcelComponent, DataTableComponent, DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './informe-page.html',
   styleUrl: './informe-page.css'
@@ -65,6 +66,9 @@ export class InformePage {
     { clave: 'recorteEnKilos', etiqueta: 'Recorte (kg)', alinearFin: true },
     { clave: 'acciones', etiqueta: '' }
   ];
+
+  /** Búsqueda vigente: el Excel trae todos los informes que la cumplen, no solo la página visible. */
+  protected readonly filtroExportacion = computed(() => ({ busqueda: this.busquedaAplicada() || undefined }));
 
   constructor() {
     this.cargarInformeDeHoy();

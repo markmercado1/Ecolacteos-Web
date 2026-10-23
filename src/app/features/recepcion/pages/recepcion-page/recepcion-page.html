@@ -62,4 +62,7 @@
       @default { {{ fila[columna] ?? '—' }} }
     }
   </ng-template>
+  <div toolbar>
+    <ui-exportar-excel recurso="recepciones" [filtro]="filtroExportacion()" />
+  </div>
 </ui-data-table>
