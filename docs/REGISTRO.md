@@ -897,3 +897,11 @@ A pedido del usuario, Recepcionar jornada adopta el estilo row-link de Ver detal
 ### 2026-10-21 — Selector de turno y aviso de recepción existente
 Archivos: jornada-detalle-dialog.ts y .spec.ts; ESTADO, DECISIONES y REGISTRO. Reutiliza RecepcionApi.listar con unidadId/fecha, tamaño 100 y recorrido de páginas. Cancela la consulta anterior y limpia resultados al cambiar fecha; al destruir el diálogo cancela suscripciones. Radios accesibles, selección diferenciada por contorno y turnos ya registrados con tokens warning/ warning-bg más texto. Request conserva turno seleccionado e idempotencia previa.
 Pruebas: npm test -- --watch=false, 587/587 (85 archivos); npm run build aprobado; git diff --check sin errores. Sin modificaciones de backend ni móvil. Sin mutaciones en datos reales ni revisión visual; pendiente prueba manual de desarrollo. Cambios previos preservados, sin commit/push.
+
+
+## 2026-10-22 — Integración de las funcionalidades 1–6
+- Rama `integracion/panel-1-6` (desde `deploy/panel`): merges de `feature/panel-consolidado`, `codex/recepcion-jornadas-web`, `feature/tablas-busqueda-paginacion` y `feature/mapa-contacto`. Conflictos solo en `docs/DECISIONES.md`, `ESTADO.md` y `REGISTRO.md` (ambos lados agregaron al final): se conservaron ambos bloques. El código se unió sin conflictos de texto; `jornadas-page` (lista local + acciones de recepción) se comprobó con pruebas.
+- Correcciones en `features/produccion` (diálogo de varias recetas, `domain/disponibilidad-multiple.ts`, `lotes-page`) y en `features/jornadas` (`ui/recepcion-jornada-form`, `jornada-detalle-dialog`, `jornadas-page`); `shared/util/fecha.ts` gana `fechaHoraActualLima()`.
+- Pruebas añadidas: diálogo de varias recetas (fallo parcial, filas pendientes, cierre con `ConfirmDialog`), `lotes-page` (aviso, detalle, cancelación, proceso incompleto), `RecepcionJornadaForm` (éxito, 4xx/5xx, HTTP 200 con errores funcionales, doble envío, reintentos, uuid nuevo tras rechazo, validaciones), `jornada-detalle-dialog`, `jornadas-page` (toast y recarga), `fecha`.
+- Resultados: panel 95 archivos / 724 pruebas OK y build OK; web pública 6 archivos / 72 pruebas OK y build OK.
+- Pendiente: revisión visual, backend de las ramas nuevas en ejecución para probar contra HTTP real, y el despliegue (push y publicación) que decide el usuario.

@@ -331,3 +331,11 @@ Ajuste visual posterior (2026-10-21): ambas acciones de Jornadas usan row-link y
 ## 2026-10-21 — Turnos en recepción web: implementado
 En la misma rama `codex/recepcion-jornadas-web`: selector Mañana/Tarde/Único (default Único), enviado como turno real de la recepción. Consulta GET /api/recepcion-planta filtrada por unidadId y fecha de llegada, con todas las páginas. Turnos existentes en ámbar con texto «Ya recepcionado», sin bloqueo local. Consulta cancelada al cambiar fecha; marcas anteriores se limpian, y fallo se muestra como «No se pudo comprobar». Botón de actualización manual. Backend/móvil sin cambios.
 Verificación: build de producción aprobado y 587/587 pruebas en 85 archivos (2 nuevas con casos de paginación, turno enviado, cambio de fecha, cancelación y 403). git diff --check correcto. Pendiente revisión visual y prueba con servidor de desarrollo; no se enviaron recepciones reales. Sin commit/push.
+
+
+## 2026-10-22 — Integración 1–6 en rama `integracion/panel-1-6` → `deploy/panel` (local, sin push)
+- **Integradas en el frontend:** `feature/panel-consolidado` (merge que estaba abierto; conflicto de `REGISTRO.md` resuelto conservando ambos bloques), `codex/recepcion-jornadas-web`, `feature/tablas-busqueda-paginacion`, `feature/mapa-contacto`. Ya estaban en `deploy/panel`: `codex/produccion-varias-recetas` y `feature/ajuste-pago-boleta`.
+- **Defectos corregidos — varias recetas:** aviso y detalle restaurados, sin recarga al cancelar, `ConfirmDialog`, `NuevaProduccionDialog` eliminado, código reescrito con tipos concretos, filas no enviadas rotuladas tras un fallo. Sigue sin ser transaccional.
+- **Defectos corregidos — recepción de jornadas:** formulario extraído a `RecepcionJornadaForm`, `uuidCliente` nuevo tras un rechazo definitivo (el mismo si el resultado es incierto), `ConfirmDialog`, aviso por `ToastService`.
+- **Verificación:** panel `ng test ecolacteos-web` 95 archivos / 724 pruebas y `npm run build`; web pública `ng test web-publica` 6 archivos / 72 pruebas y `npm run build:publica`. Backend en su repositorio (ver REGISTRO).
+- **Sin verificar:** revisión visual en navegador, integración HTTP contra un backend con las ramas nuevas, prueba de V24/V25 con Testcontainers (Docker no disponible; sí contra PostgreSQL 17 local). Nada está desplegado: un merge local no es un despliegue.
