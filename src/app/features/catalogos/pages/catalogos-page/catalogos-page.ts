@@ -28,6 +28,7 @@ import { PresentacionesDialog } from '../../ui/presentaciones-dialog/presentacio
 import { RecetaFormDialog } from '../../ui/receta-form-dialog/receta-form-dialog';
 import { ControlVencimientoDialog } from '../../../vencimiento/ui/control-vencimiento-dialog/control-vencimiento-dialog';
 import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
+import { ImportarExcelDialog } from '../../../../shared/ui/importar-excel/importar-excel-dialog';
 
 /** Id del registro que devolvió el diálogo al guardar (para mostrarlo y resaltarlo en la tabla). */
 const idDe = (resultado: unknown): string | undefined => (resultado as { id?: string } | null)?.id;
@@ -393,6 +394,20 @@ export class CatalogosPage {
   }
 
   // --- Insumos ---
+  /** Importa insumos (con su stock inicial en el kardex) desde la plantilla oficial de Excel; solo crea, nunca actualiza. */
+  protected importarInsumos(): void {
+    const ref = this.dialog.open<number | undefined>(ImportarExcelDialog, {
+      ariaLabel: 'Importar insumos desde Excel',
+      data: { tipo: 'insumos', nombre: 'insumos' }
+    });
+    ref.closed.subscribe((creados) => {
+      if (creados) {
+        this.toast.exito(`Se importaron ${creados} ${creados === 1 ? 'insumo' : 'insumos'}.`);
+        this.cargarInsumos();
+      }
+    });
+  }
+
   protected nuevoInsumo(): void {
     const ref = this.dialog.open<InsumoResponse | undefined>(InsumoFormDialog, { ariaLabel: 'Nuevo insumo', data: {} });
     ref.closed.subscribe((r) => { if (r) { this.toast.exito(`Insumo "${r.nombre}" creado.`); this.cargarInsumos(r.id); } });

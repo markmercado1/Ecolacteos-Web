@@ -130,7 +130,10 @@
       mensajeVacio="No hay insumos activos." titulo="Insumos" subtitulo="Cuajo, sal, etc. El stock cambia solo por movimientos (ingresos, producción, ajustes): gestiónalo en Inventario → Insumos."
       (reintentar)="cargarInsumos()"
     >
-      <div toolbar><button type="button" class="btn primary small" (click)="nuevoInsumo()">Nuevo insumo</button></div>
+      <div toolbar>
+        <button type="button" class="btn small" (click)="importarInsumos()">Importar desde Excel</button>
+        <button type="button" class="btn primary small" (click)="nuevoInsumo()">Nuevo insumo</button>
+      </div>
       <ng-template #celda let-fila let-columna="columna">
         @switch (columna) {
           @case ('nombre') { <strong>{{ fila.nombre }}</strong> }

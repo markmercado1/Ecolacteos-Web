@@ -32,7 +32,7 @@ export function nombreDeContentDisposition(cabecera: string | null, respaldo: st
 }
 
 /** Los errores de una descarga llegan como Blob: se lee el JSON del servidor para conservar su mensaje. */
-function conMensajeLegible(error: unknown): Observable<never> {
+export function conMensajeLegible(error: unknown): Observable<never> {
   if (!(error instanceof HttpErrorResponse) || !(error.error instanceof Blob)) {
     return throwError(() => error);
   }

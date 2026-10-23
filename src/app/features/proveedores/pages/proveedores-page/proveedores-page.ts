@@ -5,6 +5,7 @@ import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
 import { ConfirmDialog } from '../../../../shared/ui/dialog/confirm-dialog';
 import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
+import { ImportarExcelDialog } from '../../../../shared/ui/importar-excel/importar-excel-dialog';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO, paginaCorregida } from '../../../../shared/util/paginacion';
 import { ZonaResponse } from '../../../catalogos/data-access/zona.models';
@@ -149,6 +150,21 @@ export class ProveedoresPage {
     ref.closed.subscribe((proveedor) => {
       if (proveedor) {
         this.toast.exito(`Proveedor "${proveedor.nombre}" creado.`);
+        this.cargar();
+      }
+    });
+  }
+
+  /** Importa el padrón desde la plantilla oficial de Excel (vista previa + confirmación; solo crea, nunca actualiza). */
+  protected importarExcel(): void {
+    const ref = this.dialog.open<number | undefined>(ImportarExcelDialog, {
+      ariaLabel: 'Importar proveedores desde Excel',
+      data: { tipo: 'proveedores', nombre: 'proveedores' }
+    });
+    ref.closed.subscribe((creados) => {
+      if (creados) {
+        this.toast.exito(`Se importaron ${creados} ${creados === 1 ? 'proveedor' : 'proveedores'}.`);
+        this.pagina.set(0);
         this.cargar();
       }
     });
