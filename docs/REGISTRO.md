@@ -1,5 +1,33 @@
 # Registro acumulativo
 
+## Exportar e importar Excel — 2026-10-22
+
+Autorizado por el usuario («implementa todas las fases»; decisiones: importar solo datos maestros, DNI duplicado se omite, solo filas válidas tras
+vista previa y confirmación). Auditoría previa: no había Excel en ningún lado; las tablas del servidor paginan de a 20 (el Excel debe generarse en el
+backend); `ProveedorService.crear` no validaba el formato del DNI ni del teléfono (la importación sí).
+
+**Aislamiento:** worktrees nuevos `Ecolacteos-Web-excel` (desde `deploy/panel`) y `acopio-backend-fase2/ecolacteos-backend-excel` (desde `main`); la
+copia de trabajo del backend (rama `feature/ajuste-pago-boleta`, con `target/` y `.idea` modificados) no se tocó.
+
+**Backend (commits en `feature/excel-import-export`):** POI 5.4.1; paquete `excel` (límites, escritor con neutralización de fórmulas, exportación en
+streaming, lector seguro de `.xlsx`); `ExportacionController`/`ExportacionAdminController`; paquete `importacion` (tipos, plantilla, lector de
+plantilla, servicio, controlador); V26 `importacion_excel`; consultas `ProveedorRepository.dnisExistentes` e `InsumoRepository.todosLosNombres`;
+`BusquedaTexto.plegar` pasa a público; CORS expone `Content-Disposition`.
+
+**Panel:** `ui-exportar-excel`, `ExportacionExcelApi`, `DescargaArchivos`, `ImportarExcelDialog`, `ImportacionExcelApi`; botones en 26 tablas y en
+Proveedores / Catálogos→Insumos.
+
+**Comandos y resultados:** `mvn -o test "-Dtest=!com.planta.acopio.integration.**"` → 877/877. Integraciones sin Docker: `initdb`+`pg_ctl` de PostgreSQL 17
+en el scratchpad (puerto 55432, `max_connections=1500`: la primera pasada falló por agotar 100 conexiones con tantos contextos en caché, artefacto
+del ejecutor), `ECO_TEST_PG_ADMIN_URL`, y las 25 clases preexistentes con su datasource redirigido temporalmente (parche revertido, no versionado) →
+**203/203**. Mutaciones: sin idempotencia, sin bloqueo `FOR UPDATE`, sin neutralización de fórmulas y exportar solo la primera página → las pruebas fallan
+en los cuatro casos. Panel: `ng test` 761/761 (101 archivos) y `ng build`.
+
+**Hallazgos durante la verificación:** la validación de esquema real detectó `CHAR(64)` vs `varchar` en `hash_archivo` (corregido antes de publicar); la
+migración nueva se numeró V26 porque `main` ya trae V25 (`venta.creado_en`).
+
+**Limitaciones:** ver `EXCEL.md`. Servidor Tomcat real no verificado en este equipo.
+
 ## Web pública — cantidad disponible con pocas unidades y corrección de CORS — 2026-10-11
 
 **CORS (commit `6d85920`):** el POST de reserva respondía 403 en desarrollo porque el navegador envía `Origin: http://localhost:4300` y el backend solo permite `CORS_ALLOWED_ORIGINS` (por defecto `localhost:4200`). Verificado con `curl` contra el backend: con ese Origin 403, sin él 400 (validación). `proxy.conf.json` → `proxy.conf.js` (quita `Origin`); un 401/403 se muestra como «acceso denegado».

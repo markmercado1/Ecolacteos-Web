@@ -1,5 +1,23 @@
 # Estado vigente
 
+## 2026-10-22 — Exportar e importar Excel (5 fases): IMPLEMENTADO, commiteado sin push
+
+Ramas `feature/excel-import-export` (backend y panel), base `main` (backend, 74a2865) y `deploy/panel` (panel, be88f45); sin push ni merge.
+Detalle, endpoints, límites y limitaciones en `EXCEL.md`.
+
+- **Exportar:** botón «Exportar a Excel» en 26 tablas del panel; el archivo (Apache POI, streaming, tope 50 000 filas, fórmulas neutralizadas) trae
+  todas las filas del filtro y la búsqueda vigentes. 24 recursos `GET /api/exportaciones/*` con los mismos roles que su listado.
+- **Importar (solo datos maestros):** proveedores (Proveedores) e insumos (Catálogos → Insumos) con plantilla oficial, vista previa, confirmación
+  en una transacción y reporte descargable. Solo crea; DNI/nombre repetido se omite. Proveedores por `ProveedorService.crear` (QR, historial de
+  zona, sincronización móvil); insumos por `InsumoService.crear` (SALDO_INICIAL en el kardex).
+- **Verificado (ejecutado):** backend 877/877 unitarias y WebMvc; **203/203 integraciones en PostgreSQL 17 temporal** (160 preexistentes + 43 nuevas,
+  incluida concurrencia, atomicidad y HTTP con JWT real); mutaciones críticas detectadas 4/4; panel 761/761 y `ng build` de producción sin advertencias.
+- **No verificado:** servidor real con Tomcat (el embebido no arranca en este equipo: «Unable to establish loopback connection», ajeno al código; se
+  verificó el stack HTTP con MockMvc sobre el contexto real); abrir un `.xlsx` en Excel/LibreOffice de escritorio; contra el backend y la base reales
+  del usuario; Docker/Testcontainers (no disponible; las integraciones se corrieron contra un PostgreSQL 17 temporal).
+- **Antes de desplegar:** el backend necesita la migración V26 (Flyway la aplica sola) y las ramas deben integrarse en orden: backend `main` ya contiene
+  ajuste-pago y búsqueda/paginación (sin push); el panel nuevo contra un backend sin esta rama mostraría el botón pero el servidor respondería 404.
+
 ## 2026-10-11 — Web pública: cantidad disponible cuando quedan pocas unidades
 
 A pedido del usuario (un cliente pidió 3 y solo quedaban 2, y la web no lo mostraba). El catálogo público publica ahora `unidadesDisponibles` **solo cuando la presentación está en «Pocas unidades»** (1 hasta el umbral, 5 por defecto); con más stock sigue sin publicarse la cantidad (decisión de la Fase 3). La web muestra «Quedan N unidades» en tarjetas, detalle y reserva, limita el `+` y el campo de cantidad a ese máximo, limita lo que se agrega al borrador y bloquea el envío con un aviso en la línea («Pediste 3 y solo quedan 2 · Usar 2») si el stock bajó. Es una ayuda de pantalla: el servidor sigue validando al reservar (por fecha de retiro). Si se quisiera mostrar siempre la cantidad exacta, es un cambio de una línea en `CatalogoPublicoService` (decisión de negocio: revela el inventario). Tarea aparte ya corregida: el proxy de desarrollo quita la cabecera `Origin` (evitaba el 403 de CORS al reservar).
