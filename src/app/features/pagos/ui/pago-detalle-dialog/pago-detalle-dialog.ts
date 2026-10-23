@@ -10,13 +10,16 @@ import { ErrorStateComponent } from '../../../../shared/ui/state/error-state';
 import { LoadingStateComponent } from '../../../../shared/ui/state/loading-state';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import {
-  AjustePagoResponse, AjustePrecioPagoResponse, PagoResponse, pagoAjustado, totalDePago
+  AjusteCalidadEntregaResponse, AjustePagoResponse, AjustePrecioPagoResponse, PagoResponse, pagoAjustado, pagoConAjusteDeCalidad, totalDePago
 } from '../../data-access/pago.models';
 import { PagosApi } from '../../data-access/pagos.api';
+import { EntregasPagoDialog } from '../entregas-pago-dialog/entregas-pago-dialog';
 
 export interface PagoDetalleDialogData {
   pago: PagoResponse;
   esAdmin: boolean;
+  /** ADMIN, RECEPCION y CALIDAD pueden consultar el historial de precios de calidad (GET /pagos/{id}/ajustes-calidad). */
+  puedeVerHistorialCalidad?: boolean;
 }
 
 /** El motivo es obligatorio y no puede ser solo espacios (el servidor también lo exige). */
@@ -41,16 +44,27 @@ function motivoConTexto(control: AbstractControl): ValidationErrors | null {
         <b>S/ {{ pago().precioLitro | number: '1.2-3' }}</b>
       </div>
       <div class="detail-row">
-        <span>{{ ajustado() ? 'Total original' : 'Total' }}</span>
+        <span>{{ ajustado() || conCalidad() ? 'Total original' : 'Total' }}</span>
         <b>S/ {{ pago().total | number: '1.2-2' }}</b>
       </div>
       @if (ajustado()) {
         <div class="detail-row" data-testid="precio-ajustado">
-          <span>Precio por litro ajustado</span><b>S/ {{ pago().precioLitroEfectivo | number: '1.2-3' }}</b>
+          <span>Precio por litro ajustado (todo el pago)</span><b>S/ {{ pago().precioLitroEfectivo | number: '1.2-3' }}</b>
         </div>
+      }
+      @if (conCalidad()) {
+        <div class="detail-row" data-testid="ajuste-calidad">
+          <span>Ajuste por precios de calidad de entregas</span>
+          <b>{{ pago().ajusteCalidad < 0 ? '−' : '+' }}S/ {{ absoluto(pago().ajusteCalidad) | number: '1.2-2' }}</b>
+        </div>
+      }
+      @if (ajustado() || conCalidad()) {
         <div class="detail-row total-pagar" data-testid="total-a-pagar">
           <span>Total a pagar</span><b>S/ {{ pago().totalAPagar | number: '1.2-2' }}</b>
         </div>
+        <small class="nota-total" data-testid="nota-total">
+          El servidor calcula el total sumando, entrega por entrega, los litros liquidados por el precio aplicado a cada una.
+        </small>
       }
       <div class="detail-row"><span>Registros de acopio incluidos</span><b>{{ pago().registroAcopioIds.length }}</b></div>
       <div class="detail-row">
@@ -63,6 +77,10 @@ function motivoConTexto(control: AbstractControl): ValidationErrors | null {
           {{ marcando() ? 'Guardando…' : 'Marcar comprobante generado' }}
         </button>
       }
+
+      <button type="button" class="btn entregas-btn" data-testid="ver-entregas" (click)="verEntregas()">
+        Ver entregas y precios de calidad
+      </button>
 
       @if (data.esAdmin) {
         @if (!ajustando()) {
@@ -134,8 +152,35 @@ function motivoConTexto(control: AbstractControl): ValidationErrors | null {
         }
       }
 
+      @if (data.puedeVerHistorialCalidad) {
+        <div class="section-head">
+          <h2>Historial de precios de calidad</h2>
+        </div>
+        @if (cargandoCalidad()) {
+          <ui-loading-state mensaje="Cargando precios de calidad…" />
+        } @else if (errorCalidad()) {
+          <ui-error-state [error]="errorCalidad()" (reintentar)="cargarAjustesCalidad()" />
+        } @else if (ajustesCalidad().length === 0) {
+          <ui-empty-state mensaje="Ninguna entrega de este pago tiene un precio de calidad propio." />
+        } @else {
+          @for (c of ajustesCalidad(); track c.id) {
+            <div class="ajuste-calidad" data-testid="ajuste-calidad-item">
+              <div class="detail-row">
+                <span>Entrega …{{ c.registroAcopioId.slice(-6) }} · S/ {{ c.precioAnterior | number: '1.2-3' }} → S/ {{ c.precioLitroNuevo | number: '1.2-3' }}</span>
+                <b>{{ c.efectoEnElTotal < 0 ? '−' : '+' }}S/ {{ absoluto(c.efectoEnElTotal) | number: '1.2-2' }}</b>
+              </div>
+              <small class="meta">
+                Análisis {{ c.analisisFolio }}{{ c.analisisResultado ? ' (' + c.analisisResultado + ')' : '' }} · {{ c.litrosLiquidados | number: '1.0-2' }} L
+                · precio normal S/ {{ c.precioNormal | number: '1.2-3' }}
+              </small>
+              <small class="meta">{{ c.motivo }} · {{ c.usuarioNombre }} · {{ c.creadoEn | date: 'dd/MM/yyyy HH:mm' }}</small>
+            </div>
+          }
+        }
+      }
+
       <div class="section-head">
-        <h2>Ajustes de este pago</h2>
+        <h2>Ajustes de litros de este pago</h2>
       </div>
       @if (cargandoAjustes()) {
         <ui-loading-state mensaje="Cargando ajustes…" />
@@ -145,9 +190,24 @@ function motivoConTexto(control: AbstractControl): ValidationErrors | null {
         <ui-empty-state mensaje="Sin ajustes registrados para este pago." />
       } @else {
         @for (ajuste of ajustes(); track ajuste.id) {
-          <div class="detail-row">
-            <span>{{ ajuste.litrosDiferencia > 0 ? '+' : '' }}{{ ajuste.litrosDiferencia }} L</span>
-            <b>S/ {{ ajuste.monto }} · {{ ajuste.estado }}</b>
+          <div class="ajuste-litros" data-testid="ajuste-litros">
+            <div class="detail-row">
+              <span>
+                {{ ajuste.litrosDiferencia > 0 ? '+' : '' }}{{ ajuste.litrosDiferencia }} L
+                <span class="badge" [class.amber]="ajuste.estado === 'PENDIENTE'" [class.gray]="ajuste.estado === 'LIQUIDADO'">{{ ajuste.estado }}</span>
+              </span>
+              <b>S/ {{ ajuste.monto | number: '1.2-2' }}</b>
+            </div>
+            <small class="meta" data-testid="ajuste-precio-litro">
+              @if (ajuste.estado === 'PENDIENTE') {
+                Precio vigente S/ {{ ajuste.precioLitro | number: '1.2-3' }}: sigue al precio de su entrega mientras esté pendiente.
+              } @else {
+                Precio congelado al liquidar S/ {{ ajuste.precioLitro | number: '1.2-3' }}.
+              }
+              @if (ajuste.precioLitroAlCrear !== ajuste.precioLitro) {
+                Al crearlo valía S/ {{ ajuste.precioLitroAlCrear | number: '1.2-3' }} (S/ {{ ajuste.montoAlCrear | number: '1.2-2' }}).
+              }
+            </small>
           </div>
         }
       }
@@ -174,6 +234,10 @@ function motivoConTexto(control: AbstractControl): ValidationErrors | null {
     .detail-row.total-pagar span { color: inherit; font-weight: 800; }
     .detail-row.total-pagar b { font-size: var(--font-size-md, 1rem); }
     .marcar-btn { width: 100%; margin: var(--space-4) 0 0; }
+    .entregas-btn { width: 100%; margin: var(--space-3) 0 0; }
+    .nota-total { display: block; color: var(--color-text-muted); font-size: 0.75rem; padding: var(--space-2) 0 0; }
+    .ajuste-calidad .meta, .ajuste-litros .meta { display: block; color: var(--color-text-muted); font-size: 0.75rem; padding: var(--space-1) 0 var(--space-1); overflow-wrap: anywhere; }
+    .ajuste-litros .badge { margin-left: var(--space-2); }
     .ajustar-btn { width: 100%; margin: var(--space-3) 0 var(--space-2); }
     .ajuste-form { border: 1px solid var(--color-border); border-radius: var(--radius-control); padding: var(--space-4); margin: var(--space-3) 0; background: var(--color-surface-soft); }
     .ajuste-form h3 { font-size: var(--font-size-sm); font-weight: 800; margin: 0 0 var(--space-2); }
@@ -201,6 +265,7 @@ export class PagoDetalleDialog {
 
   protected readonly pago = signal(this.data.pago);
   protected readonly ajustado = computed(() => pagoAjustado(this.pago()));
+  protected readonly conCalidad = computed(() => pagoConAjusteDeCalidad(this.pago()));
   protected readonly cambiado = signal(false);
   protected readonly marcando = signal(false);
   protected readonly abriendoBoleta = signal(false);
@@ -212,6 +277,10 @@ export class PagoDetalleDialog {
   protected readonly cargandoPrecios = signal(true);
   protected readonly errorPrecios = signal<AppError | null>(null);
   protected readonly ajustesPrecio = signal<AjustePrecioPagoResponse[]>([]);
+
+  protected readonly cargandoCalidad = signal(false);
+  protected readonly errorCalidad = signal<AppError | null>(null);
+  protected readonly ajustesCalidad = signal<AjusteCalidadEntregaResponse[]>([]);
 
   protected readonly ajustando = signal(false);
   protected readonly guardandoAjuste = signal(false);
@@ -247,6 +316,41 @@ export class PagoDetalleDialog {
   constructor() {
     this.cargarAjustes();
     this.cargarAjustesPrecio();
+    if (this.data.puedeVerHistorialCalidad) this.cargarAjustesCalidad();
+  }
+
+  /** Entregas del pago con cada cantidad por separado y, para ADMIN, el precio de calidad por entrega. */
+  protected verEntregas(): void {
+    const ref = this.dialog.open<boolean>(EntregasPagoDialog, {
+      ariaLabel: `Entregas del pago de ${this.pago().proveedorNombre}`,
+      data: { pago: this.pago(), esAdmin: this.data.esAdmin }
+    });
+    ref.closed.subscribe((huboCambios) => {
+      if (!huboCambios) return;
+      // Se fijó algún precio de calidad: el total y los ajustes los calcula el servidor, se vuelven a leer (no se recalcula aquí).
+      this.cambiado.set(true);
+      this.pagosApi.obtener(this.pago().id).subscribe({
+        next: (actualizado) => this.pago.set(actualizado),
+        error: (error) => this.toast.error(`El precio se guardó, pero no se pudo actualizar el detalle: ${mapHttpError(error).mensaje}`)
+      });
+      this.cargarAjustes();
+      if (this.data.puedeVerHistorialCalidad) this.cargarAjustesCalidad();
+    });
+  }
+
+  protected cargarAjustesCalidad(): void {
+    this.cargandoCalidad.set(true);
+    this.errorCalidad.set(null);
+    this.pagosApi.ajustesDeCalidad(this.pago().id).subscribe({
+      next: (ajustes) => {
+        this.ajustesCalidad.set(ajustes);
+        this.cargandoCalidad.set(false);
+      },
+      error: (error) => {
+        this.errorCalidad.set(mapHttpError(error));
+        this.cargandoCalidad.set(false);
+      }
+    });
   }
 
   protected absoluto(n: number): number {

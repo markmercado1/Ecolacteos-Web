@@ -1,5 +1,20 @@
 # Registro acumulativo
 
+## Panel de pagos para las Fases B y C — 2026-10-23
+
+Autorizado por el usuario («implementa el panel de las fases B y C»; solo ADMIN aplica el precio de calidad; usa los contratos reales y no recalcules reglas económicas; sin formulario
+de corrección de litros). Worktree nuevo `Ecolacteos-Web-pagos` (rama `feature/panel-pagos-calidad`, desde `integration/7-fases`); `deploy/panel` y las demás copias no se tocaron.
+
+**Archivos:** `features/pagos/data-access/pago.models.ts` y `pagos.api.ts` (contratos reales: `LineaPagoResponse`, `AjusteCalidadEntrega*`, `ajusteCalidad`, `precioLitroAlCrear`/`montoAlCrear`),
+`ui/pago-detalle-dialog` (desglose, historial de calidad, ajustes de litros), nuevos `ui/entregas-pago-dialog` y `ui/precio-calidad-dialog`, `pages/pagos-page` (marca «Con calidad», estado y
+precio vigente de ajustes pendientes, rol para el historial) y sus pruebas; `CONTRATOS.md`, `ENDPOINTS.md`, `DECISIONES.md`.
+
+**Comandos y resultados:** `ng test ecolacteos-web` → 797/797 (36 nuevas); `ng build ecolacteos-web` y `ng build web-publica` sin advertencias; mutaciones de la interfaz 8/8. Backend de pruebas:
+`java -Djdk.net.unixdomain.tmpdir=C:/tmp/eco -jar acopio-backend-0.1.0.jar --server.port=18080` con `CORS_ALLOWED_ORIGINS=http://localhost:4310` sobre una base temporal; panel con
+`ng serve --configuration production --proxy-config` (nunca el :8080 ni la base del usuario). Datos creados por la API real (usuarios de prueba, 6 entregas, análisis, correcciones, pago).
+
+**Limitaciones:** ver ESTADO (sin capturas, CALIDAD sin ruta en el panel). El backend de pruebas y la base temporal no se conservan.
+
 ## Exportar e importar Excel — 2026-10-22
 
 Autorizado por el usuario («implementa todas las fases»; decisiones: importar solo datos maestros, DNI duplicado se omite, solo filas válidas tras

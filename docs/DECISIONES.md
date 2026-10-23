@@ -1,5 +1,17 @@
 # Decisiones de producto y alcance
 
+## 2026-10-23 — Panel de pagos: litros efectivos (Fase B) y precios de calidad por entrega (Fase C)
+
+- **No se recalcula ninguna regla económica en Angular.** Totales, ajuste de calidad, precio aplicado, litros contabilizados y efecto de cada precio los trae el servidor;
+  el panel solo los muestra y, tras una acción, vuelve a leer el pago. (Queda la vista previa del ajuste de precio del pago completo, anterior a esta fase.)
+- **Cada cantidad es un concepto distinto:** recibidos (originales, nunca cambian), efectivos hoy, liquidados y contabilizados. Las entregas corregidas y las que tienen
+  ajuste de litros se marcan con texto, no solo con color. La corrección de litros **no** tiene formulario en el panel (fuera de alcance).
+- **Solo ADMIN fija el precio de calidad** (el servidor devuelve 403 a los demás); el formulario solo ofrece los análisis de esa entrega y exige motivo.
+- **Detalle en dos diálogos:** el detalle del pago (desglose del total, historial de precios de calidad, ajustes de litros con su estado y precio vigente/congelado) y un
+  diálogo ancho de entregas (tabla con desplazamiento controlado en pantallas pequeñas). El filtrado de rol del historial de calidad es ADMIN, RECEPCION y CALIDAD.
+- **Limitación conocida:** CALIDAD puede leer el historial en la API, pero el panel no le da ruta para llegar a un pago. Habilitarlo exigiría un endpoint nuevo en el
+  backend (p. ej. historial por entrega o por análisis); no se hizo por no estar en el alcance.
+
 ## 2026-10-11 — Web pública: una tarjeta por producto con presentaciones elegibles y carrusel en la portada
 
 - **Una tarjeta por producto** (como una tienda real); las presentaciones se eligen dentro de la tarjeta con etiquetas (como las tallas). La elegida decide precio, disponibilidad («Quedan N» con pocas unidades), foto (la de la presentación; si no tiene, la del producto) y a qué presentación se agrega la reserva. Por defecto, la primera no agotada; una agotada se puede ver pero no reservar.

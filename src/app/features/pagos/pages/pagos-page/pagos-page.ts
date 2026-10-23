@@ -15,7 +15,7 @@ import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
 import { ProveedorPublicoResponse } from '../../../proveedores/data-access/proveedor.models';
 import { ProveedoresApi } from '../../../proveedores/data-access/proveedores.api';
-import { AjustePagoResponse, PagoResponse, pagoAjustado } from '../../data-access/pago.models';
+import { AjustePagoResponse, PagoResponse, pagoAjustado, pagoConAjusteDeCalidad, puedeVerHistorialDeCalidad } from '../../data-access/pago.models';
 import { PagosApi } from '../../data-access/pagos.api';
 import { GenerarPagoDialog } from '../../ui/generar-pago-dialog/generar-pago-dialog';
 import { PagoDetalleDialog } from '../../ui/pago-detalle-dialog/pago-detalle-dialog';
@@ -99,6 +99,10 @@ export class PagosPage {
     });
   }
 
+  protected conCalidad(pago: PagoResponse): boolean {
+    return pagoConAjusteDeCalidad(pago);
+  }
+
   protected ajustado(pago: PagoResponse): boolean {
     return pagoAjustado(pago);
   }
@@ -138,7 +142,7 @@ export class PagosPage {
   protected verDetalle(pago: PagoResponse): void {
     const ref = this.dialog.open<boolean>(PagoDetalleDialog, {
       ariaLabel: `Detalle del pago de ${pago.proveedorNombre}`,
-      data: { pago, esAdmin: this.esAdmin() }
+      data: { pago, esAdmin: this.esAdmin(), puedeVerHistorialCalidad: puedeVerHistorialDeCalidad(this.auth.usuario()?.rolNombre) }
     });
     ref.closed.subscribe((cambiado) => { if (cambiado) this.cargar(); });
   }

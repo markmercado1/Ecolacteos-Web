@@ -5,7 +5,8 @@ import { environment } from '../../../../environments/environment';
 import { PaginaResponse } from '../../../shared/models/pagina-response';
 import { FiltroPagina, paramsDePagina } from '../../../shared/util/paginacion';
 import {
-  AjustePagoResponse, AjustePrecioPagoRequest, AjustePrecioPagoResponse, GenerarPagoRequest, PagoResponse
+  AjusteCalidadEntregaRequest, AjusteCalidadEntregaResponse, AjustePagoResponse, AjustePrecioPagoRequest, AjustePrecioPagoResponse,
+  GenerarPagoRequest, LineaPagoResponse, PagoResponse
 } from './pago.models';
 
 /**
@@ -68,6 +69,26 @@ export class PagosApi {
    */
   boleta(id: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/pagos/${id}/boleta`, { responseType: 'blob' });
+  }
+
+  /** ADMIN y RECEPCION. Entregas liquidadas en el pago, con sus cantidades y su precio aplicado (sin datos personales). */
+  lineas(id: string): Observable<LineaPagoResponse[]> {
+    return this.http.get<LineaPagoResponse[]>(`${this.baseUrl}/pagos/${id}/lineas`);
+  }
+
+  /**
+   * Solo ADMIN. Fija el precio por litro de UNA entrega ya liquidada en este pago (a mano, con el análisis de ESA entrega y un motivo).
+   * Manda sobre el ajuste de precio del pago completo. Responde 400 si el análisis es de otra entrega o el precio no cambia, 404 si la
+   * entrega no está en el pago o el análisis no existe.
+   */
+  aplicarPrecioDeCalidad(pagoId: string, registroAcopioId: string, datos: AjusteCalidadEntregaRequest): Observable<AjusteCalidadEntregaResponse> {
+    return this.http.post<AjusteCalidadEntregaResponse>(
+      `${this.baseUrl}/pagos/${pagoId}/lineas/${registroAcopioId}/ajuste-calidad`, datos);
+  }
+
+  /** ADMIN, RECEPCION y CALIDAD. Historial de precios de calidad del pago, más reciente primero (sin datos personales). */
+  ajustesDeCalidad(id: string): Observable<AjusteCalidadEntregaResponse[]> {
+    return this.http.get<AjusteCalidadEntregaResponse[]>(`${this.baseUrl}/pagos/${id}/ajustes-calidad`);
   }
 
   ajustesPendientes(proveedorId: string): Observable<AjustePagoResponse[]> {

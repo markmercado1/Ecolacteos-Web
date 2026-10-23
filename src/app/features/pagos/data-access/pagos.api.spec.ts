@@ -99,4 +99,26 @@ describe('PagosApi', () => {
     expect(req.request.params.get('size')).toBe('10');
     req.flush({ contenido: [], paginaActual: 0, tamanoPagina: 10, totalElementos: 0, totalPaginas: 0 });
   });
+
+  it('lineas() lee las entregas liquidadas del pago por GET', () => {
+    api.lineas('pg-1').subscribe();
+    const req = http.expectOne(`${base}/pagos/pg-1/lineas`);
+    expect(req.request.method).toBe('GET');
+    req.flush([]);
+  });
+
+  it('aplicarPrecioDeCalidad() hace POST del precio, el análisis y el motivo sobre ESA entrega de ESE pago', () => {
+    api.aplicarPrecioDeCalidad('pg-1', 'r-7', { precioLitroNuevo: 0.9, analisisCalidadId: 'a-1', motivo: 'Agua en la leche' }).subscribe();
+    const req = http.expectOne(`${base}/pagos/pg-1/lineas/r-7/ajuste-calidad`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ precioLitroNuevo: 0.9, analisisCalidadId: 'a-1', motivo: 'Agua en la leche' });
+    req.flush({});
+  });
+
+  it('ajustesDeCalidad() lee el historial de precios de calidad del pago', () => {
+    api.ajustesDeCalidad('pg-1').subscribe();
+    const req = http.expectOne(`${base}/pagos/pg-1/ajustes-calidad`);
+    expect(req.request.method).toBe('GET');
+    req.flush([]);
+  });
 });

@@ -608,9 +608,49 @@ public record AjustePagoResponse(
     BigDecimal precioLitro,
     BigDecimal monto,
     String estado,
-    LocalDateTime creadoEn
+    LocalDateTime creadoEn,
+    BigDecimal precioLitroAlCrear,   // Fase B (aditivo): precio y monto del momento de la creación
+    BigDecimal montoAlCrear
 ) {}
 ```
+
+`precioLitro` y `monto` son los **vigentes**: mientras el ajuste está PENDIENTE siguen al precio de su entrega (su precio de calidad o, si no tiene, el del pago); al
+LIQUIDARLO quedan congelados. El panel solo los muestra.
+
+### LineaPagoResponse.java (Fases B y C)
+
+```java
+public record LineaPagoResponse(
+    UUID registroAcopioId, LocalDateTime fechaHora,
+    BigDecimal litrosOriginales,        // lo recibido; nunca cambia
+    BigDecimal litrosLiquidados,        // lo pagado al generar el pago
+    BigDecimal litrosContabilizados,    // liquidados + ajustes de litros posteriores
+    BigDecimal litrosEfectivosActuales, // original o última corrección válida de hoy
+    BigDecimal precioBase,              // precio normal con el que se generó el pago
+    BigDecimal precioAplicado,          // precio de ESTA entrega hoy (su precio de calidad o el del pago)
+    UUID correccionAplicadaId,
+    boolean precioPropioDeCalidad, UUID analisisCalidadId, String motivoAjusteCalidad
+) {}
+```
+
+### AjusteCalidadEntregaRequest.java / AjusteCalidadEntregaResponse.java (Fase C)
+
+```java
+public record AjusteCalidadEntregaRequest(
+    BigDecimal precioLitroNuevo,   // 0.001–999.999, ≤3 decimales
+    UUID analisisCalidadId,        // obligatorio y de ESA entrega
+    String motivo                  // obligatorio, ≤500
+) {}
+public record AjusteCalidadEntregaResponse(
+    UUID id, UUID pagoId, UUID registroAcopioId, UUID analisisCalidadId, String analisisFolio, String analisisResultado,
+    BigDecimal litrosLiquidados, BigDecimal precioNormal, BigDecimal precioAnterior, BigDecimal precioLitroNuevo,
+    BigDecimal efectoEnElTotal,    // litros × (precio nuevo − precio normal), negativo = se paga menos (informativo)
+    String motivo, String usuarioNombre, LocalDateTime creadoEn
+) {}
+```
+
+`PagoResponse` gana `ajusteCalidad` (al final): `totalAPagar` es el **total reconocido** (suma entrega por entrega de litros liquidados × precio aplicado,
+redondeada una vez) y `ajusteCalidad` = `totalAPagar` − litros × `precioLitroEfectivo`.
 
 ### AlertaAnomaliaResponse.java
 

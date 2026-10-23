@@ -53,6 +53,7 @@
         @case ('total') {
           <strong>S/ {{ fila.totalAPagar | number: '1.2-2' }}</strong>
           @if (ajustado(fila)) { <span class="badge amber" title="El precio por litro de este pago fue ajustado">Ajustado</span> }
+          @if (conCalidad(fila)) { <span class="badge blue" title="Alguna entrega tiene un precio de calidad propio">Con calidad</span> }
         }
         @case ('comprobante') {
           <span class="badge" [class.amber]="!fila.comprobanteGenerado">
@@ -94,7 +95,13 @@
             <strong>{{ ajuste.litrosDiferencia > 0 ? '+' : '' }}{{ ajuste.litrosDiferencia }} L</strong>
             <small>Registro {{ ajuste.registroAcopioId }} · {{ ajuste.creadoEn }}</small>
           </div>
-          <div class="ajuste-monto">S/ {{ ajuste.monto }}</div>
+          <div class="ajuste-monto" data-testid="ajuste-pendiente-monto">
+            S/ {{ ajuste.monto | number: '1.2-2' }}
+            <small class="estado">
+              <span class="badge amber">{{ ajuste.estado }}</span>
+              Precio vigente S/ {{ ajuste.precioLitro | number: '1.2-3' }}
+            </small>
+          </div>
           <button type="button" class="btn small" (click)="liquidarAjuste(ajuste)">Liquidar</button>
         </div>
       }
