@@ -640,6 +640,25 @@ Fuente: `C:\EcoLacteosProyect\acopio-backend-fase2\ecolacteos-backend\src\main\j
 - Respuesta: `application/pdf` en línea (`Content-Disposition: inline`, `Cache-Control: no-store`). Boleta de pago a proveedor: comprobante **interno**, no es boleta ni factura electrónica (sin serie/RUC/SUNAT). Lleva proveedor, semana, litros, precio y total originales, cada ajuste de precio con motivo y usuario, y el total a pagar.
 - Un enlace directo no puede enviar el token: el panel la pide como `blob` con la sesión y la abre en otra pestaña.
 
+### GET /api/pagos/{id}/lineas (Fases B y C)
+
+- Permiso: `hasAnyRole('ADMIN','RECEPCION')`.
+- Respuesta: `List<LineaPagoResponse>`: por entrega liquidada, litros originales / liquidados / contabilizados / efectivos de hoy, precio normal y precio aplicado, con el precio de calidad propio si lo tiene. Sin datos personales.
+- Panel: «Ver entregas y precios de calidad» en el detalle del pago.
+
+### POST /api/pagos/{id}/lineas/{registroAcopioId}/ajuste-calidad (Fase C)
+
+- Permiso: `hasRole('ADMIN')` (CALIDAD y RECEPCION reciben 403).
+- Entrada: `AjusteCalidadEntregaRequest { precioLitroNuevo, analisisCalidadId, motivo }`.
+- Respuesta: 201 `AjusteCalidadEntregaResponse`. 400 si el análisis es de otra entrega, el precio es igual al actual o el motivo está vacío; 404 si el pago, la entrega dentro del pago o el análisis no existen.
+- Fija a mano el precio de UNA entrega (append-only); manda sobre el ajuste de precio del pago completo. El panel solo ofrece los análisis de esa entrega (`GET /api/analisis-calidad/registro/{id}`).
+
+### GET /api/pagos/{id}/ajustes-calidad (Fase C)
+
+- Permiso: `hasAnyRole('ADMIN','RECEPCION','CALIDAD')`.
+- Respuesta: `List<AjusteCalidadEntregaResponse>` (más reciente primero).
+- El panel lo muestra en el detalle del pago (ADMIN y RECEPCION). CALIDAD tiene permiso en la API pero **no hay ruta del panel** que lo alcance (su único acceso es «Calidad»; `/pagos` es ADMIN/RECEPCION).
+
 ### GET /api/pagos/ajustes/pendientes
 
 - Permiso: `hasRole('ADMIN')`.

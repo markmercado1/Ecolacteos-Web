@@ -1,5 +1,26 @@
 # Estado vigente
 
+## 2026-10-23 — Panel de pagos para las Fases B y C (litros efectivos y precios de calidad): IMPLEMENTADO, sin commit
+
+Rama `feature/panel-pagos-calidad` (worktree `Ecolacteos-Web-pagos`, desde `integration/7-fases`); sin push. Backend de referencia: `integration/7-fases` con las Fases B (V28) y C (V29).
+
+- **Detalle del pago:** desglose del total tal como lo devuelve el servidor (total original · ajuste por precios de calidad · total a pagar; nunca se recalcula en Angular),
+  historial de precios de calidad (ADMIN, RECEPCION y CALIDAD según el rol) y ajustes de litros con su estado (PENDIENTE/LIQUIDADO), el precio vigente mientras están
+  pendientes, el congelado cuando están liquidados y el que valían al crearse.
+- **Entregas del pago** (diálogo nuevo): recibidos · efectivos hoy · liquidados · contabilizados con una leyenda de cada concepto, marcas con texto (Corregida, Con ajuste, Calidad)
+  y, solo para ADMIN, «Precio de calidad» por entrega: elige el análisis **de esa entrega** (`GET /api/analisis-calidad/registro/{id}`), precio y motivo obligatorio; el aviso
+  trae el efecto que calculó el servidor y la pantalla vuelve a leer el pago. Lista de pagos: marca «Con calidad». Ajustes pendientes: estado y precio vigente.
+- **Fuera de alcance (a propósito):** formulario para corregir litros; pagos efectivos; Fases D–G.
+- **Verificado (ejecutado):** panel **797/797** (36 nuevas) y `ng build` del panel y de la web pública sin advertencias; 8/8 mutaciones de la interfaz detectadas.
+  **Flujo real en el navegador** contra el backend de la integración (jar de `dbedf36`, Tomcat real en el puerto 18080, base PostgreSQL temporal sembrada por su API):
+  ADMIN fija 0.90 y 0.80 a dos entregas → total 590,00 → 580,00 → 560,00, ajuste de litros pendiente −5,00 → −4,00 (seguía al precio de su entrega); RECEPCION ve todo sin
+  acciones; el servidor devolvió 403 a RECEPCION/CALIDAD al aplicar, 400 al análisis de otra entrega y al precio igual, 404 a la entrega fuera del pago. Anchos 360, 768 y 1366 px
+  sin desbordar la página (la tabla se desplaza dentro de una región enfocable).
+- **No verificado:** revisión visual con capturas (el navegador integrado estaba oculto: se verificó por texto, estructura y medidas del DOM); lectores de pantalla; contra el
+  backend y la base reales del usuario.
+- **Limitación:** CALIDAD puede leer el historial de precios de calidad en la API, pero el panel no le da ruta para llegar a un pago (`/pagos` es ADMIN/RECEPCION); darle acceso
+  exige un endpoint nuevo en el backend.
+
 ## 2026-10-22 — Exportar e importar Excel (5 fases): IMPLEMENTADO, commiteado sin push
 
 Ramas `feature/excel-import-export` (backend y panel), base `main` (backend, 74a2865) y `deploy/panel` (panel, be88f45); sin push ni merge.

@@ -2,11 +2,14 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
+import { Dialog } from '@angular/cdk/dialog';
+import { of } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { TokenStoreService } from '../../../../core/auth/token-store.service';
 import { UsuarioMeResponse } from '../../../../core/auth/auth.models';
 import { PaginaResponse } from '../../../../shared/models/pagina-response';
 import { PagoResponse } from '../../data-access/pago.models';
+import { PagoDetalleDialog } from '../../ui/pago-detalle-dialog/pago-detalle-dialog';
 import { PagosPage } from './pagos-page';
 
 const base = environment.apiBaseUrl;
@@ -17,7 +20,7 @@ function pago(id: string): PagoResponse {
   return {
     id, proveedorId: 'p-1', proveedorNombre: 'Juan', semanaInicio: '2026-09-07', semanaFin: '2026-09-13',
     litrosTotales: 100, precioLitro: 1.5, total: 150, comprobanteGenerado: false, registroAcopioIds: [],
-    precioLitroEfectivo: 1.5, totalAPagar: 150
+    precioLitroEfectivo: 1.5, totalAPagar: 150, ajusteCalidad: 0
   };
 }
 
@@ -71,10 +74,70 @@ describe('PagosPage', () => {
     page['consultarAjustes']();
     const req = http.expectOne((r) => r.url === `${base}/pagos/ajustes/pendientes`);
     expect(req.request.params.get('proveedorId')).toBe('p-1');
-    req.flush([{ id: 'aj-1', pagoId: 'pg-1', registroAcopioId: 'r-1', correccionRegistroId: 'c-1', litrosDiferencia: 2, precioLitro: 2.3, monto: 4.6, estado: 'PENDIENTE', creadoEn: '2026-09-16' }]);
+    req.flush([{ id: 'aj-1', pagoId: 'pg-1', registroAcopioId: 'r-1', correccionRegistroId: 'c-1', litrosDiferencia: 2, precioLitro: 2.3, monto: 4.6, estado: 'PENDIENTE', creadoEn: '2026-09-16', precioLitroAlCrear: 2.3, montoAlCrear: 4.6 }]);
 
     expect(page['ajustesPendientes']().length).toBe(1);
     expect(page['consultado']()).toBe(true);
+  });
+
+  it('el detalle recibe si el rol puede ver el historial de precios de calidad (ADMIN y RECEPCION sí)', () => {
+    for (const rol of ['ADMIN', 'RECEPCION'] as const) {
+      TestBed.resetTestingModule();
+      const abrir = vi.fn(() => ({ closed: of(false) }));
+      TestBed.configureTestingModule({
+        providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), { provide: Dialog, useValue: { open: abrir } }]
+      });
+      http = TestBed.inject(HttpTestingController);
+      tokenStore = TestBed.inject(TokenStoreService);
+      tokenStore.establecer({ token: 't', refreshToken: 'r', expiraEn: 0, refreshExpiraEn: Date.now() + 100000, usuario: usuarioCon(rol) });
+      const page = TestBed.createComponent(PagosPage).componentInstance;
+      http.expectOne(`${base}/proveedores/operativo`).flush([]);
+      http.expectOne((r) => r.url === `${base}/pagos`).flush(paginaVacia);
+
+      page['verDetalle'](pago('pg-1'));
+
+      expect(abrir).toHaveBeenCalledWith(PagoDetalleDialog, expect.objectContaining({
+        data: { pago: pago('pg-1'), esAdmin: rol === 'ADMIN', puedeVerHistorialCalidad: true }
+      }));
+      http.verify();
+    }
+  });
+
+  it('la lista marca con texto los pagos con precios de calidad y no los demás', () => {
+    tokenStore.establecer({ token: 't', refreshToken: 'r', expiraEn: 0, refreshExpiraEn: Date.now() + 100000, usuario: usuarioCon('ADMIN') });
+    const f = TestBed.createComponent(PagosPage);
+    http.expectOne(`${base}/proveedores/operativo`).flush([]);
+    http.expectOne((r) => r.url === `${base}/pagos`).flush({
+      contenido: [{ ...pago('pg-1'), ajusteCalidad: -10, totalAPagar: 140 }, pago('pg-2')],
+      paginaActual: 0, tamanoPagina: 20, totalElementos: 2, totalPaginas: 1
+    });
+    f.detectChanges();
+
+    const filas = Array.from((f.nativeElement as HTMLElement).querySelectorAll('tbody tr')) as HTMLElement[];
+    expect(filas.length).toBe(2);
+    expect(filas[0].textContent).toContain('Con calidad');
+    expect(filas[0].textContent).toContain('S/ 140.00');
+    expect(filas[1].textContent).not.toContain('Con calidad');
+  });
+
+  it('los ajustes pendientes muestran su estado y el precio vigente que informa el servidor', () => {
+    tokenStore.establecer({ token: 't', refreshToken: 'r', expiraEn: 0, refreshExpiraEn: Date.now() + 100000, usuario: usuarioCon('ADMIN') });
+    const f = TestBed.createComponent(PagosPage);
+    http.expectOne(`${base}/proveedores/operativo`).flush([]);
+    http.expectOne((r) => r.url === `${base}/pagos`).flush(paginaVacia);
+    f.componentInstance['pestana'].set('ajustes');
+    f.componentInstance['proveedorAjustes'].set('p-1');
+    f.componentInstance['consultarAjustes']();
+    http.expectOne((r) => r.url === `${base}/pagos/ajustes/pendientes`).flush([
+      { id: 'aj-1', pagoId: 'pg-1', registroAcopioId: 'r-1', correccionRegistroId: 'c-1', litrosDiferencia: -5, precioLitro: 0.9, monto: -4.5, estado: 'PENDIENTE',
+        creadoEn: '2026-09-16', precioLitroAlCrear: 1, montoAlCrear: -5 }
+    ]);
+    f.detectChanges();
+
+    const monto = (f.nativeElement as HTMLElement).querySelector('[data-testid="ajuste-pendiente-monto"]')!;
+    expect(monto.textContent).toContain('-4.50');
+    expect(monto.textContent).toContain('PENDIENTE');
+    expect(monto.textContent).toContain('Precio vigente S/ 0.90');
   });
 
   describe('paginación', () => {

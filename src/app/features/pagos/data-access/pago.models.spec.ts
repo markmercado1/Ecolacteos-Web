@@ -1,4 +1,4 @@
-import { pagoAjustado, totalDePago } from './pago.models';
+import { pagoAjustado, pagoConAjusteDeCalidad, puedeVerHistorialDeCalidad, totalDePago } from './pago.models';
 
 describe('totalDePago (vista previa del ajuste de precio)', () => {
   it('100 L: S/ 1.00 → S/ 100.00 y S/ 1.20 → S/ 120.00 (el ejemplo del negocio)', () => {
@@ -24,5 +24,24 @@ describe('pagoAjustado', () => {
   it('es true solo si el precio efectivo difiere del original', () => {
     expect(pagoAjustado({ precioLitro: 1, precioLitroEfectivo: 1 })).toBe(false);
     expect(pagoAjustado({ precioLitro: 1, precioLitroEfectivo: 1.2 })).toBe(true);
+  });
+});
+
+describe('pagoConAjusteDeCalidad', () => {
+  it('es true solo si el servidor informa un ajuste de calidad distinto de cero (en cualquier sentido)', () => {
+    expect(pagoConAjusteDeCalidad({ ajusteCalidad: 0 })).toBe(false);
+    expect(pagoConAjusteDeCalidad({ ajusteCalidad: -10 })).toBe(true);
+    expect(pagoConAjusteDeCalidad({ ajusteCalidad: 2.5 })).toBe(true);
+  });
+});
+
+describe('puedeVerHistorialDeCalidad', () => {
+  it('ADMIN, RECEPCION y CALIDAD consultan el historial de precios de calidad; los demás roles no', () => {
+    for (const rol of ['ADMIN', 'RECEPCION', 'CALIDAD']) {
+      expect(puedeVerHistorialDeCalidad(rol), rol).toBe(true);
+    }
+    for (const rol of ['VENTAS', 'PRODUCCION', 'ACOPIADOR', '', null, undefined]) {
+      expect(puedeVerHistorialDeCalidad(rol), String(rol)).toBe(false);
+    }
   });
 });
