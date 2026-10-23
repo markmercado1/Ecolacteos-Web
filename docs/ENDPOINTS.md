@@ -1,5 +1,20 @@
 # Inventario de endpoints comprobados
 
+## Ampliación vigente 2026-10-22: exportar e importar Excel (ver `EXCEL.md`)
+
+Exportación (solo lectura; mismos roles y filtros que el listado de cada tabla; devuelve `.xlsx` con TODAS las filas del filtro):
+`GET /api/exportaciones/{proveedores, acopios, pagos, ventas, reservas, recepciones, lotes, informes-produccion, stock, inventario-insumos, calidad-analizados, alertas-anomalia, jornadas, usuarios, precios-litro, precios-presentacion, zonas, motivos-observacion, familias, productos, insumos, recetas, configuracion, unidades}`
+(`ExportacionController`, `ExportacionAdminController`; tabla de roles y filtros en `EXCEL.md`). Cabecera `Content-Disposition` expuesta por CORS.
+
+Importación (solo ADMIN, `ImportacionController`, `/api/admin/importaciones`):
+
+- `GET /{tipo}/plantilla` (`proveedores` | `insumos`) → `.xlsx` oficial.
+- `POST /{tipo}/previsualizar` (multipart `archivo`) → `VistaPreviaImportacionResponse {id, tipo, titulo, version, nombreArchivo, totalFilas, validas, invalidas, duplicadas, omitidas, expiraEn, puedeConfirmar, columnas[], filas[]}`. No crea datos de negocio.
+- `POST /{id}/confirmar` → `ResultadoImportacionResponse {creadas, invalidas, duplicadas, omitidas, yaConfirmada, filasNoCreadas[]}`; una transacción, idempotente.
+- `GET /{id}/reporte` → `.xlsx` con las filas no importadas (fila, resultado, motivo, valores).
+- `DELETE /{id}` → 204; descarta una vista previa.
+- Migración V26 `importacion_excel`. Errores: 400 (archivo/plantilla inválidos), 403 (otro usuario/rol), 404 (tipo o importación), 409 (`No se creó ningún registro…`, vista previa vencida o cancelada).
+
 ## Ampliación vigente 2026-10-11: web pública (Fase 6)
 
 - `GET /api/catalogo/reservas/reglas` — **público**, solo lectura. 200 `{fechasDisponibles: [yyyy-MM-dd…], maxUnidades, horasPendiente}`. Cualquier otro método sobre esa ruta sigue exigiendo autenticación (401).

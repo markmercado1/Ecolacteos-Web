@@ -35,6 +35,9 @@
           }
         }
       </ng-template>
+      <div toolbar>
+        <ui-exportar-excel recurso="zonas" [filtro]="{ busqueda: listaZonas.busqueda() }" />
+      </div>
     </ui-data-table>
     <div class="module-note">{{ avisoLimitacion }}</div>
   }
@@ -56,6 +59,9 @@
           }
         }
       </ng-template>
+      <div toolbar>
+        <ui-exportar-excel recurso="motivos-observacion" [filtro]="{ busqueda: listaMotivos.busqueda() }" />
+      </div>
     </ui-data-table>
     <div class="module-note">{{ avisoLimitacion }}</div>
   }
@@ -77,6 +83,9 @@
           }
         }
       </ng-template>
+      <div toolbar>
+        <ui-exportar-excel recurso="familias" [filtro]="{ busqueda: listaFamilias.busqueda() }" />
+      </div>
     </ui-data-table>
     <div class="module-note">{{ avisoLimitacion }}</div>
   }
@@ -109,6 +118,9 @@
           }
         }
       </ng-template>
+      <div toolbar>
+        <ui-exportar-excel recurso="productos" [filtro]="{ busqueda: listaProductos.busqueda() }" />
+      </div>
     </ui-data-table>
     <div class="module-note">{{ avisoLimitacion }}</div>
   }
@@ -118,7 +130,10 @@
       mensajeVacio="No hay insumos activos." titulo="Insumos" subtitulo="Cuajo, sal, etc. El stock cambia solo por movimientos (ingresos, producción, ajustes): gestiónalo en Inventario → Insumos."
       (reintentar)="cargarInsumos()"
     >
-      <div toolbar><button type="button" class="btn primary small" (click)="nuevoInsumo()">Nuevo insumo</button></div>
+      <div toolbar>
+        <button type="button" class="btn small" (click)="importarInsumos()">Importar desde Excel</button>
+        <button type="button" class="btn primary small" (click)="nuevoInsumo()">Nuevo insumo</button>
+      </div>
       <ng-template #celda let-fila let-columna="columna">
         @switch (columna) {
           @case ('nombre') { <strong>{{ fila.nombre }}</strong> }
@@ -132,6 +147,9 @@
           }
         }
       </ng-template>
+      <div toolbar>
+        <ui-exportar-excel recurso="insumos" [filtro]="{ busqueda: listaInsumos.busqueda() }" />
+      </div>
     </ui-data-table>
     <div class="module-note">{{ avisoLimitacion }}</div>
   }
@@ -164,6 +182,9 @@
           }
         }
       </ng-template>
+      <div toolbar>
+        <ui-exportar-excel recurso="recetas" [filtro]="{ busqueda: listaRecetas.busqueda() }" />
+      </div>
     </ui-data-table>
     <div class="module-note">La leche es la base de cada receta (no se registra como insumo). Las producciones ya planificadas conservan su plan aunque la receta cambie.</div>
   }
@@ -181,6 +202,9 @@
           }
         }
       </ng-template>
+      <div toolbar>
+        <ui-exportar-excel recurso="configuracion" [filtro]="{ busqueda: listaConfig.busqueda() }" />
+      </div>
     </ui-data-table>
   }
 }

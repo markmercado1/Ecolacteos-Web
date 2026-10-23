@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Subscription } from 'rxjs';
 import { TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
@@ -10,11 +10,12 @@ import { UnidadesApi } from '../../../unidades/data-access/unidades.api';
 import { RecepcionPlanta } from '../../data-access/recepcion.models';
 import { RecepcionApi } from '../../data-access/recepcion.api';
 import { RecepcionDetalleDialog } from '../../ui/recepcion-detalle-dialog/recepcion-detalle-dialog';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 
 @Component({
   selector: 'app-recepcion-page',
-  imports: [DataTableComponent],
+  imports: [ExportarExcelComponent, DataTableComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './recepcion-page.html',
   styleUrl: './recepcion-page.css',
@@ -51,6 +52,9 @@ export class RecepcionPage {
     { clave: 'estado', etiqueta: 'Estado' },
     { clave: 'acciones', etiqueta: '' },
   ];
+
+  /** Filtros y búsqueda vigentes: el Excel trae todas las recepciones que los cumplen, no solo la página visible. */
+  protected readonly filtroExportacion = computed(() => ({ unidadId: this.filtroUnidad() || undefined, fecha: this.filtroFecha() || undefined, busqueda: this.busquedaAplicada() || undefined }));
 
   constructor() {
     this.cargar();

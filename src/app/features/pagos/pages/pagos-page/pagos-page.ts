@@ -9,6 +9,7 @@ import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-tab
 import { ConfirmDialog } from '../../../../shared/ui/dialog/confirm-dialog';
 import { EmptyStateComponent } from '../../../../shared/ui/state/empty-state';
 import { ErrorStateComponent } from '../../../../shared/ui/state/error-state';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 import { LoadingStateComponent } from '../../../../shared/ui/state/loading-state';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
@@ -23,7 +24,7 @@ type Pestana = 'liquidaciones' | 'ajustes';
 
 @Component({
   selector: 'app-pagos-page',
-  imports: [DecimalPipe, DataTableComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
+  imports: [DecimalPipe, DataTableComponent, ExportarExcelComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './pagos-page.html',
   styleUrl: './pagos-page.css'
@@ -46,6 +47,8 @@ export class PagosPage {
   protected readonly tamanos = TAMANOS_PAGINA;
   /** Texto del buscador estándar (proveedor o DNI): se envía al servidor y busca entre todos los pagos. */
   private readonly busquedaAplicada = signal('');
+  /** Búsqueda vigente: el Excel trae todos los pagos que la cumplen, no solo la página visible. */
+  protected readonly filtroExportacion = computed(() => ({ busqueda: this.busquedaAplicada() || undefined }));
   protected readonly totalElementos = signal(0);
   protected readonly totalPaginas = signal(0);
   private peticion?: Subscription;

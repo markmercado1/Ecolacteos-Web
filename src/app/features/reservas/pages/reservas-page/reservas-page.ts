@@ -9,6 +9,7 @@ import { COLOR_ESTADO, ESTADOS_FILTRABLES, ETIQUETAS_ESTADO } from '../../data-a
 import { EstadoReserva, ReservaResumenResponse } from '../../data-access/reserva.models';
 import { ReservasApi } from '../../data-access/reservas.api';
 import { ReservaDetalleDialog } from '../../ui/reserva-detalle-dialog/reserva-detalle-dialog';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 
 /** Estados que se resumen arriba como contadores de atajo (el total lo informa el servidor, no se suma aquí). */
@@ -20,7 +21,7 @@ const ESTADOS_RESUMEN: EstadoReserva[] = ['PENDIENTE', 'CONFIRMADA', 'VENCIDA'];
  */
 @Component({
   selector: 'app-reservas-page',
-  imports: [DataTableComponent, DatePipe, DecimalPipe],
+  imports: [ExportarExcelComponent, DataTableComponent, DatePipe, DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './reservas-page.html',
   styleUrl: './reservas-page.css'
@@ -66,6 +67,9 @@ export class ReservasPage {
     { clave: 'acciones', etiqueta: '' }
   ];
   protected readonly identificarFila = (fila: ReservaResumenResponse) => fila.id;
+
+  /** Filtros y búsqueda vigentes: el Excel trae todas las reservas que los cumplen, no solo la página visible. */
+  protected readonly filtroExportacion = computed(() => ({ estado: this.filtroEstado() || undefined, fechaRetiro: this.filtroFecha() || undefined, telefono: this.filtroTelefono(), codigo: this.filtroCodigo(), busqueda: this.busqueda() || undefined }));
 
   constructor() {
     inject(DestroyRef).onDestroy(() => {

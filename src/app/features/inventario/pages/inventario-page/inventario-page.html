@@ -48,6 +48,9 @@
         }
       }
     </ng-template>
+    <div toolbar>
+      <ui-exportar-excel recurso="inventario-insumos" [filtro]="filtroExportacionInsumos()" />
+    </div>
   </ui-data-table>
 }
 @case ('leche') {
@@ -156,6 +159,9 @@
       }
     }
   </ng-template>
+  <div toolbar>
+    <ui-exportar-excel recurso="stock" [filtro]="filtroExportacionStock()" />
+  </div>
 </ui-data-table>
 }
 }

@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Dialog } from '@angular/cdk/dialog';
 import { Subscription } from 'rxjs';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../../../../shared/util/paginacion';
 import { TipoClienteVenta, VentaResumenResponse } from '../../data-access/venta.models';
@@ -12,7 +13,7 @@ import { VentaFormDialog, VentaFormDialogResultado } from '../../ui/venta-form-d
 
 @Component({
   selector: 'app-ventas-page',
-  imports: [DataTableComponent],
+  imports: [DataTableComponent, ExportarExcelComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './ventas-page.html',
   styleUrl: './ventas-page.css'
@@ -36,6 +37,12 @@ export class VentasPage {
   private peticion?: Subscription;
   protected readonly filtroFecha = signal('');
   protected readonly filtroTipoCliente = signal<TipoClienteVenta | ''>('');
+  /** Filtros y búsqueda vigentes: el Excel trae todas las ventas que cumplen esto (una fila por línea), no solo la página. */
+  protected readonly filtroExportacion = computed(() => ({
+    fecha: this.filtroFecha() || undefined,
+    tipoCliente: this.filtroTipoCliente() || undefined,
+    busqueda: this.busquedaAplicada() || undefined
+  }));
 
   protected readonly columnas: ColumnaTabla[] = [
     { clave: 'fecha', etiqueta: 'Fecha' },

@@ -5,6 +5,7 @@
     <p>Padrón de productores, con los más recientes primero. Busca por nombre o DNI entre todos los proveedores y filtra por zona o estado.</p>
   </div>
   <div class="heading-actions">
+    <button type="button" class="btn" (click)="importarExcel()">Importar desde Excel</button>
     <button type="button" class="btn primary" (click)="nuevoProveedor()">Nuevo proveedor</button>
   </div>
 </div>
@@ -58,6 +59,7 @@
       <option value="ACTIVOS">Activos</option>
       <option value="INACTIVOS">Inactivos</option>
     </select>
+    <ui-exportar-excel recurso="proveedores" [filtro]="filtroExportacion()" />
   </div>
 
   <ng-template #celda let-fila let-columna="columna">

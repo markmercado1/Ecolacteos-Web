@@ -20,6 +20,7 @@ import { ZonaResponse } from '../catalogos/data-access/zona.models';
 import { AppError, mapHttpError } from '../../core/http/app-error';
 import { BarChartComponent, BarraChart } from '../../shared/ui/chart/bar-chart';
 import { ColumnaTabla, DataTableComponent } from '../../shared/ui/data-table/data-table';
+import { ExportarExcelComponent } from '../../shared/ui/exportar-excel/exportar-excel';
 import { fechaHoyLima } from '../../shared/util/fecha';
 import { PaginaResponse } from '../../shared/models/pagina-response';
 import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../../shared/util/paginacion';
@@ -27,7 +28,7 @@ import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../.
 @Component({
   selector: 'app-acopios-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DataTableComponent, DatePipe, DecimalPipe, BarChartComponent],
+  imports: [DataTableComponent, DatePipe, DecimalPipe, BarChartComponent, ExportarExcelComponent],
   template: `
     <div class="page-heading">
       <div>
@@ -123,6 +124,9 @@ import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../.
         (cambiarPagina)="cambiarPagina($event)"
         (cambiarTamano)="cambiarTamano($event)"
       >
+        <div toolbar>
+          <ui-exportar-excel recurso="acopios" [filtro]="filtroExportacion()" />
+        </div>
         <ng-template #celda let-fila let-columna="columna">
           @switch (columna) {
             @case ('acopiador') {
@@ -172,6 +176,9 @@ import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../.
         (cambiarPagina)="cambiarPagina($event)"
         (cambiarTamano)="cambiarTamano($event)"
       >
+        <div toolbar>
+          <ui-exportar-excel recurso="acopios" [filtro]="filtroExportacion()" />
+        </div>
         <ng-template #celda let-r let-columna="columna">
           @switch (columna) {
             @case ('fechaHora') {
@@ -259,6 +266,13 @@ export class AcopiosPage {
   protected readonly soloSinAnalisis = signal(false);
   /** Texto del buscador estándar (proveedor o placa) que se envía al servidor: busca entre TODOS los acopios del día. */
   protected readonly busquedaAplicada = signal('');
+  /** Filtros y búsqueda vigentes: el Excel trae una fila por entrega de todo el filtro, no solo la página visible. */
+  protected readonly filtroExportacion = computed(() => ({
+    fecha: this.fecha(),
+    zonaId: this.filtroZona() || undefined,
+    sinAnalisis: this.soloSinAnalisis() || undefined,
+    busqueda: this.busquedaAplicada() || undefined,
+  }));
   protected readonly filasEntrega = signal<Acopio[]>([]);
   protected readonly filasJornada = signal<AcopioPorJornada[]>([]);
   protected readonly pagina = signal(0);

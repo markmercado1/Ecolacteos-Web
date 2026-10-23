@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { Dialog } from '@angular/cdk/dialog';
@@ -9,10 +9,11 @@ import { JornadasApi } from '../../data-access/jornadas.api';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { ListaLocal } from '../../../../shared/util/lista-local';
 import { JornadaDetalleDialog } from '../../ui/jornada-detalle-dialog/jornada-detalle-dialog';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 @Component({
   selector: 'app-jornadas-page',
-  imports: [DataTableComponent, DatePipe],
+  imports: [ExportarExcelComponent, DataTableComponent, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './jornadas-page.html',
   styleUrl: './jornadas-page.css',
@@ -45,6 +46,9 @@ export class JornadasPage {
     { clave: 'litrosEsperados', etiqueta: 'Litros esperados', alinearFin: true },
     { clave: 'acciones', etiqueta: '' },
   ];
+
+  /** Búsqueda vigente de la tabla. */
+  protected readonly filtroExportacion = computed(() => ({ busqueda: this.lista.busqueda() || undefined }));
 
   constructor() {
     this.cargar();

@@ -51,6 +51,7 @@
       <option value="PROVEEDOR">Proveedor</option>
       <option value="PUBLICO">Público</option>
     </select>
+    <ui-exportar-excel recurso="ventas" [filtro]="filtroExportacion()" />
   </div>
 
   <ng-template #celda let-fila let-columna="columna">

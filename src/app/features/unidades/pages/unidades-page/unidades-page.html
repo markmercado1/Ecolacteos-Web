@@ -33,4 +33,7 @@
       @default { {{ fila[columna] }} }
     }
   </ng-template>
+  <div toolbar>
+    <ui-exportar-excel recurso="unidades" [filtro]="filtroExportacion()" />
+  </div>
 </ui-data-table>

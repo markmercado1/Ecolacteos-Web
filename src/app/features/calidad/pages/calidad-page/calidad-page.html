@@ -54,6 +54,9 @@
         }
       }
     </ng-template>
+    <div toolbar>
+      <ui-exportar-excel recurso="acopios" [filtro]="{ fecha: fechaPendientes(), zonaId: zonaPendientes(), sinAnalisis: true }" />
+    </div>
   </ui-data-table>
 }
 
@@ -91,6 +94,9 @@
         }
       }
     </ng-template>
+    <div toolbar>
+      <ui-exportar-excel recurso="calidad-analizados" [filtro]="{ fecha: fechaBandeja() }" />
+    </div>
   </ui-data-table>
 }
 
@@ -194,6 +200,9 @@
                 }
               }
             </ng-template>
+            <div toolbar>
+              <ui-exportar-excel recurso="alertas-anomalia" [filtro]="{ zonaId: zonaAlertas() }" />
+            </div>
           </ui-data-table>
         }
       } @else {

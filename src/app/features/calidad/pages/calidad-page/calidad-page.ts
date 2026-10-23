@@ -22,13 +22,14 @@ import {
   ScoreConfianza,
 } from '../../data-access/calidad.models';
 import { CalidadApi } from '../../data-access/calidad.api';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 type Pestana = 'pendientes' | 'bandeja' | 'consulta' | 'alertas';
 type TipoBusqueda = 'folio' | 'registro';
 
 @Component({
   selector: 'app-calidad-page',
-  imports: [DataTableComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, DatePipe, DecimalPipe],
+  imports: [ExportarExcelComponent, DataTableComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, DatePipe, DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './calidad-page.html',
   styleUrl: './calidad-page.css',
