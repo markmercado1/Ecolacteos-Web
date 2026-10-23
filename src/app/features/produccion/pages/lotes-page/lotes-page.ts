@@ -179,14 +179,44 @@ export class LotesPage {
 
   /** Flujo principal (V18): producción desde receta, planificada y luego iniciada/finalizada. */
   protected nuevaProduccion(): void {
-    const ref = this.dialog.open<ProduccionMultipleResultado>(ProduccionMultipleDialog, {
-      ariaLabel: 'Nueva producción', disableClose: true
+    const ref = this.dialog.open<ProduccionMultipleResultado | undefined>(ProduccionMultipleDialog, {
+      ariaLabel: 'Nueva producción',
+      disableClose: true
     });
-    ref.closed.subscribe(() => {
+    ref.closed.subscribe((resultado) => {
+      // Cancelado sin guardar nada: no hay nada que recargar.
+      if (!resultado) return;
+      this.avisarProduccion(resultado);
       this.pagina.set(0);
       this.cargar();
       this.cargarSaldoLeche();
+      // Con una sola receta se conserva el flujo anterior: se abre el detalle del lote para finalizarlo, etc.
+      if (resultado.completo && resultado.lotes.length === 1) this.abrirDetalle(resultado.lotes[0]);
     });
+  }
+
+  private avisarProduccion({ lotes, iniciar, completo }: ProduccionMultipleResultado): void {
+    if (!completo) {
+      this.toast.error(
+        `Quedaron guardados ${lotes.length} ${lotes.length === 1 ? 'lote' : 'lotes'}, pero el proceso no terminó. ` +
+          'Revisa el historial antes de volver a registrar esas recetas.'
+      );
+      return;
+    }
+    if (lotes.length === 1) {
+      const producto = lotes[0].productoNombre;
+      this.toast.exito(
+        iniciar
+          ? `Producción de "${producto}" iniciada: se descontaron leche e insumos.`
+          : `Producción de "${producto}" guardada como planificada.`
+      );
+      return;
+    }
+    this.toast.exito(
+      iniciar
+        ? `${lotes.length} producciones iniciadas: se descontaron leche e insumos.`
+        : `${lotes.length} producciones guardadas como planificadas.`
+    );
   }
 
   /** Registro directo de una producción ya realizada (sin receta), en un solo paso. Mismo contrato que móvil. */

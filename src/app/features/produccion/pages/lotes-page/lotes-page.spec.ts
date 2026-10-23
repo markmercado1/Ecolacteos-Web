@@ -9,7 +9,8 @@ import { UsuarioMeResponse } from '../../../../core/auth/auth.models';
 import { LotesPage } from './lotes-page';
 import { LoteDetalleDialog } from '../../ui/lote-detalle-dialog/lote-detalle-dialog';
 import { RegistrarLoteDialog } from '../../ui/registrar-lote-dialog/registrar-lote-dialog';
-import { ProduccionMultipleDialog } from '../../ui/produccion-multiple-dialog/produccion-multiple-dialog';
+import { ProduccionMultipleDialog, ProduccionMultipleResultado } from '../../ui/produccion-multiple-dialog/produccion-multiple-dialog';
+import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { PaginaResponse } from '../../../../shared/models/pagina-response';
 import { LoteProduccion } from '../../data-access/lote-produccion.models';
 
@@ -251,22 +252,83 @@ describe('LotesPage', () => {
     req.flush(pagina0);
   });
 
-  it('"Nueva producción" abre varias recetas y al cerrar actualiza el historial y la leche', () => {
-    const f = paginaInicialAdmin();
-    const dialog = TestBed.inject(Dialog);
-    let cerrado!: (valor: unknown) => void;
-    const abrirSpy = vi
-      .spyOn(dialog, 'open')
-      .mockReturnValueOnce({ closed: { subscribe: (fn: typeof cerrado) => (cerrado = fn) } } as never)
-      .mockReturnValue({ closed: { subscribe: () => undefined } } as never);
+  describe('"Nueva producción" (varias recetas)', () => {
+    /** Abre el diálogo y devuelve una función para cerrarlo con el resultado que se indique. */
+    function abrirNuevaProduccion() {
+      const f = paginaInicialAdmin();
+      const dialog = TestBed.inject(Dialog);
+      const toast = TestBed.inject(ToastService);
+      const exito = vi.spyOn(toast, 'exito');
+      const error = vi.spyOn(toast, 'error');
+      let cerrado!: (valor: ProduccionMultipleResultado | undefined) => void;
+      const abrirSpy = vi
+        .spyOn(dialog, 'open')
+        .mockReturnValueOnce({ closed: { subscribe: (fn: typeof cerrado) => (cerrado = fn) } } as never)
+        .mockReturnValue({ closed: { subscribe: () => undefined } } as never);
 
-    f.componentInstance['nuevaProduccion']();
-    expect(abrirSpy.mock.calls[0][0]).toBe(ProduccionMultipleDialog);
-    cerrado({ lotes: [{ ...lote1, id: 'l9', estado: 'PLANIFICADA' }] });
+      f.componentInstance['nuevaProduccion']();
+      expect(abrirSpy.mock.calls[0][0]).toBe(ProduccionMultipleDialog);
+      return { f, cerrar: (r: ProduccionMultipleResultado | undefined) => cerrado(r), abrirSpy, exito, error };
+    }
 
-    http.expectOne((r) => r.url === `${base}/lotes-produccion`).flush(pagina0);
-    flushSaldoLeche(http);
-    expect(abrirSpy).toHaveBeenCalledTimes(1);
+    const planificada = { ...lote1, id: 'l9', estado: 'PLANIFICADA' as const };
+
+    it('si se cancela sin guardar nada, no avisa ni recarga el historial ni la leche', () => {
+      const { cerrar, abrirSpy, exito, error } = abrirNuevaProduccion();
+
+      cerrar(undefined);
+
+      http.expectNone((r) => r.url === `${base}/lotes-produccion`);
+      expect(exito).not.toHaveBeenCalled();
+      expect(error).not.toHaveBeenCalled();
+      expect(abrirSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('con una receta iniciada avisa, recarga historial y leche, y abre el detalle del lote', () => {
+      const { cerrar, abrirSpy, exito } = abrirNuevaProduccion();
+
+      cerrar({ lotes: [planificada], iniciar: true, completo: true });
+
+      expect(exito).toHaveBeenCalledWith(`Producción de "${planificada.productoNombre}" iniciada: se descontaron leche e insumos.`);
+      http.expectOne((r) => r.url === `${base}/lotes-produccion`).flush(pagina0);
+      flushSaldoLeche(http);
+      expect(abrirSpy).toHaveBeenCalledTimes(2);
+      expect(abrirSpy.mock.calls[1][0]).toBe(LoteDetalleDialog);
+      expect((abrirSpy.mock.calls[1][1] as { data: { id: string } }).data).toEqual({ id: 'l9' });
+    });
+
+    it('con una receta solo planificada lo dice así', () => {
+      const { cerrar, exito } = abrirNuevaProduccion();
+
+      cerrar({ lotes: [planificada], iniciar: false, completo: true });
+
+      expect(exito).toHaveBeenCalledWith(`Producción de "${planificada.productoNombre}" guardada como planificada.`);
+      http.expectOne((r) => r.url === `${base}/lotes-produccion`).flush(pagina0);
+      flushSaldoLeche(http);
+    });
+
+    it('con varias recetas avisa con el total y no abre ningún detalle', () => {
+      const { cerrar, abrirSpy, exito } = abrirNuevaProduccion();
+
+      cerrar({ lotes: [planificada, { ...planificada, id: 'l10' }], iniciar: true, completo: true });
+
+      expect(exito).toHaveBeenCalledWith('2 producciones iniciadas: se descontaron leche e insumos.');
+      http.expectOne((r) => r.url === `${base}/lotes-produccion`).flush(pagina0);
+      flushSaldoLeche(http);
+      expect(abrirSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('si el proceso quedó incompleto avisa del error, actualiza lo guardado y no abre el detalle', () => {
+      const { cerrar, abrirSpy, exito, error } = abrirNuevaProduccion();
+
+      cerrar({ lotes: [planificada], iniciar: true, completo: false });
+
+      expect(exito).not.toHaveBeenCalled();
+      expect(error).toHaveBeenCalledWith(expect.stringContaining('Quedaron guardados 1 lote, pero el proceso no terminó'));
+      http.expectOne((r) => r.url === `${base}/lotes-produccion`).flush(pagina0);
+      flushSaldoLeche(http);
+      expect(abrirSpy).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('si el detalle cambió el estado del lote (iniciar/finalizar/cancelar), recarga la lista y la leche', () => {

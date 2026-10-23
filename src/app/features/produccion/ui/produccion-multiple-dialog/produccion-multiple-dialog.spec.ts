@@ -1,89 +1,308 @@
-import { TestBed } from '@angular/core/testing';
-import { DialogRef } from '@angular/cdk/dialog';
-import { of, throwError, Subject } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
+import { TestBed } from '@angular/core/testing';
+import { Dialog, DialogRef } from '@angular/cdk/dialog';
+import type { Mock } from 'vitest';
+import { Observable, Subject, of, throwError } from 'rxjs';
 import { RecetasApi } from '../../../catalogos/data-access/recetas.api';
-import { DisponibilidadProduccion } from '../../../catalogos/data-access/receta.models';
+import { DisponibilidadProduccion, RecetaResponse } from '../../../catalogos/data-access/receta.models';
+import { EstadoLote, LoteProduccion, PlanificarLoteRequest } from '../../data-access/lote-produccion.models';
 import { LotesProduccionApi } from '../../data-access/lotes-produccion.api';
-import { ProduccionMultipleDialog, sumarDisponibilidad } from './produccion-multiple-dialog';
+import { sumarDisponibilidad } from '../../domain/disponibilidad-multiple';
+import { ProduccionMultipleDialog, ProduccionMultipleResultado } from './produccion-multiple-dialog';
 
-function calculo(litros = 100, stock = 500): DisponibilidadProduccion {
-  return { litrosSolicitados: litros, factor: 1, leche: { insumoId: null, nombre: 'Leche', unidadMedida: 'L', requerido: litros, disponible: stock, suficiente: stock >= litros, faltante: Math.max(0, litros - stock) },
-    insumos: [{ insumoId: 'sal', nombre: 'Sal', unidadMedida: 'kg', requerido: 1, disponible: 1.5, suficiente: true, faltante: 0 }],
-    todoDisponible: stock >= litros, cantidadEsperada: 10, unidadConteo: 'unidad', presentacionNombre: 'Pieza', litrosMaximos: null, cantidadEsperadaMaxima: null };
-}
-function setup(stockSal = 10) {
-  const recetas = { listar: vi.fn(() => of([{ id: 'r1', nombre: 'Yogurt', activo: true }, { id: 'r2', nombre: 'Queso', activo: true }])),
-    calcular: vi.fn((_id: string, litros: number) => { const c = calculo(litros); c.insumos[0].disponible = stockSal; return of(c); }) };
-  const lotes = { planificar: vi.fn((r: any) => of({ id: r.recetaId, estado: 'PLANIFICADA' })), iniciar: vi.fn((id: string) => of({ id, estado: 'EN_PRODUCCION' })) };
-  const close = vi.fn();
-  TestBed.configureTestingModule({ providers: [{ provide: RecetasApi, useValue: recetas }, { provide: LotesProduccionApi, useValue: lotes }, { provide: DialogRef, useValue: { close } }] });
-  const f = TestBed.createComponent(ProduccionMultipleDialog);
-  return { f, c: f.componentInstance, recetas, lotes, close };
-}
-async function seleccionar(c: ProduccionMultipleDialog) {
-  c['agregar']();
-  c['filas']().forEach((f, i) => { c['cambiar'](f.uuid, 'recetaId', 'r' + (i + 1)); c['cambiar'](f.uuid, 'litros', 100); });
-  await new Promise(r => setTimeout(r, 350));
+const ERROR_RED = () => throwError(() => new HttpErrorResponse({ status: 0 }));
+
+function calculo(litros = 100, stockLeche = 500): DisponibilidadProduccion {
+  return {
+    litrosSolicitados: litros,
+    factor: 1,
+    leche: {
+      insumoId: null,
+      nombre: 'Leche',
+      unidadMedida: 'L',
+      requerido: litros,
+      disponible: stockLeche,
+      suficiente: stockLeche >= litros,
+      faltante: Math.max(0, litros - stockLeche)
+    },
+    insumos: [
+      { insumoId: 'sal', nombre: 'Sal', unidadMedida: 'kg', requerido: 1, disponible: 1.5, suficiente: true, faltante: 0 }
+    ],
+    todoDisponible: stockLeche >= litros,
+    cantidadEsperada: 10,
+    unidadConteo: 'unidad',
+    presentacionNombre: 'Pieza',
+    litrosMaximos: null,
+    cantidadEsperadaMaxima: null
+  };
 }
 
-describe('Producción con varias recetas', () => {
-  it('suma consumos compartidos sin duplicar disponible ni convertir unidades', () => {
-    const r = sumarDisponibilidad([calculo(), calculo()]);
-    expect(r.leche.requerido).toBe(200); expect(r.leche.disponible).toBe(500);
-    expect(r.insumos[0].requerido).toBe(2); expect(r.insumos[0].disponible).toBe(1.5);
-    expect(r.insumos[0].faltante).toBe(0.5); expect(r.todoDisponible).toBe(false);
+function receta(id: string, nombre: string): RecetaResponse {
+  return {
+    id,
+    nombre,
+    productoId: `p-${id}`,
+    productoNombre: `Producto ${nombre}`,
+    presentacionId: `pr-${id}`,
+    presentacionNombre: 'Pieza',
+    unidadConteo: 'unidad',
+    litrosBase: 100,
+    rendimientoBase: 10,
+    activo: true,
+    insumos: []
+  };
+}
+
+function lote(id: string, estado: EstadoLote): LoteProduccion {
+  return { id, estado } as LoteProduccion;
+}
+
+type Listar = () => Observable<RecetaResponse[]>;
+type Calcular = (recetaId: string, litros: number) => Observable<DisponibilidadProduccion>;
+type Planificar = (solicitud: PlanificarLoteRequest) => Observable<LoteProduccion>;
+type Iniciar = (id: string) => Observable<LoteProduccion>;
+
+interface ApisFalsas {
+  recetas: { listar: Mock<Listar>; calcular: Mock<Calcular> };
+  lotes: { planificar: Mock<Planificar>; iniciar: Mock<Iniciar> };
+}
+
+/** `stockSal`: lo que el servidor informa como disponible de sal en cada cálculo (compartido entre recetas). */
+function preparar(stockSal = 10) {
+  const apis: ApisFalsas = {
+    recetas: {
+      listar: vi.fn<Listar>(() => of([receta('r1', 'Yogurt'), receta('r2', 'Queso')])),
+      calcular: vi.fn<Calcular>((_id, litros) => {
+        const c = calculo(litros);
+        c.insumos[0].disponible = stockSal;
+        return of(c);
+      })
+    },
+    lotes: {
+      planificar: vi.fn<Planificar>((solicitud) => of(lote(solicitud.recetaId, 'PLANIFICADA'))),
+      iniciar: vi.fn<Iniciar>((id) => of(lote(id, 'EN_PRODUCCION')))
+    }
+  };
+  const cerrar = vi.fn();
+  const confirmacion = new Subject<boolean>();
+  const abrirConfirmacion = vi.fn(() => ({ closed: confirmacion.asObservable() }));
+
+  TestBed.configureTestingModule({
+    providers: [
+      { provide: RecetasApi, useValue: apis.recetas },
+      { provide: LotesProduccionApi, useValue: apis.lotes },
+      { provide: DialogRef, useValue: { close: cerrar } },
+      { provide: Dialog, useValue: { open: abrirConfirmacion } }
+    ]
   });
-  it('bloquea iniciar si las recetas por separado caben pero juntas no', async () => {
-    const { c, lotes } = setup(1.5); await seleccionar(c);
-    await c['enviar'](true); expect(lotes.planificar).not.toHaveBeenCalled();
-    await c['enviar'](false); expect(lotes.planificar).toHaveBeenCalledTimes(2);
-    expect(lotes.iniciar).not.toHaveBeenCalled();
+  const fixture = TestBed.createComponent(ProduccionMultipleDialog);
+  return { fixture, dialogo: fixture.componentInstance, apis, cerrar, confirmacion, abrirConfirmacion };
+}
+
+/** Agrega una segunda fila y elige receta y 100 L en cada una; espera a que se calcule el resumen. */
+async function seleccionarDosRecetas(dialogo: ProduccionMultipleDialog): Promise<void> {
+  dialogo['agregar']();
+  dialogo['filas']().forEach((fila, i) => {
+    dialogo['cambiar'](fila.uuid, 'recetaId', `r${i + 1}`);
+    dialogo['cambiar'](fila.uuid, 'litros', 100);
   });
-  it('inicia dos lotes distintos con las cantidades de cada fila', async () => {
-    const { c, lotes, f } = setup(); await seleccionar(c);
-    await c['enviar'](true);
-    expect(lotes.planificar).toHaveBeenCalledTimes(2); expect(lotes.iniciar.mock.calls).toEqual([['r1'], ['r2']]);
-    const requests = lotes.planificar.mock.calls.map(x => x[0]);
-    expect(requests[0].litros).toBe(100); expect(requests[1].litros).toBe(100);
-    expect(requests[0].uuidCliente).not.toBe(requests[1].uuidCliente);
-    expect(c['terminado']()).toBe(true); f.detectChanges();
-    expect(f.nativeElement.textContent).toContain('Iniciada · leche e insumos descontados');
+  await new Promise((resolver) => setTimeout(resolver, 350));
+}
+
+describe('sumarDisponibilidad', () => {
+  it('suma los consumos compartidos sin duplicar el disponible ni convertir unidades', () => {
+    const total = sumarDisponibilidad([calculo(), calculo()]);
+
+    expect(total.leche.requerido).toBe(200);
+    expect(total.leche.disponible).toBe(500);
+    expect(total.insumos[0].requerido).toBe(2);
+    expect(total.insumos[0].disponible).toBe(1.5);
+    expect(total.insumos[0].faltante).toBe(0.5);
+    expect(total.todoDisponible).toBe(false);
   });
-  it('un fallo parcial conserva los éxitos y reintenta solo el inicio pendiente', async () => {
-    const { c, lotes } = setup(); await seleccionar(c);
-    lotes.iniciar.mockImplementationOnce(id => of({ id, estado: 'EN_PRODUCCION' })).mockImplementationOnce(() => throwError(() => new HttpErrorResponse({ status: 0 })));
-    await c['enviar'](true);
-    expect(c['filas']()[0].completada).toBe(true); expect(c['filas']()[1].completada).toBeUndefined();
-    expect(c['filas']()[1].estado).toContain('inicio no confirmado');
-    await c['enviar'](true);
-    expect(lotes.planificar).toHaveBeenCalledTimes(2);
-    expect(lotes.iniciar.mock.calls).toEqual([['r1'], ['r2'], ['r2']]);
-    expect(c['terminado']()).toBe(true);
+});
+
+describe('ProduccionMultipleDialog', () => {
+  it('bloquea iniciar si las recetas por separado caben pero juntas no, y permite solo planificar', async () => {
+    const { dialogo, apis } = preparar(1.5);
+    await seleccionarDosRecetas(dialogo);
+
+    await dialogo['enviar'](true);
+    expect(apis.lotes.planificar).not.toHaveBeenCalled();
+
+    await dialogo['enviar'](false);
+    expect(apis.lotes.planificar).toHaveBeenCalledTimes(2);
+    expect(apis.lotes.iniciar).not.toHaveBeenCalled();
   });
-  it('conserva solicitud, UUID y modo tras perder la respuesta de planificar', async () => {
-    const { c, lotes } = setup(); await seleccionar(c);
-    lotes.planificar.mockImplementationOnce(() => throwError(() => new HttpErrorResponse({ status: 500 })));
-    await c['enviar'](false);
-    const request = lotes.planificar.mock.calls[0][0];
-    c['cambiar'](c['filas']()[0].uuid, 'litros', 999);
-    c['fecha'] = '2027-01-01';
-    await c['enviar'](true);
-    expect(lotes.planificar.mock.calls[1][0]).toEqual(request);
-    expect(lotes.iniciar).not.toHaveBeenCalled();
+
+  it('planifica e inicia un lote distinto por fila, con sus propios litros y un uuidCliente propio', async () => {
+    const { fixture, dialogo, apis } = preparar();
+    await seleccionarDosRecetas(dialogo);
+
+    await dialogo['enviar'](true);
+
+    const solicitudes = apis.lotes.planificar.mock.calls.map(([solicitud]) => solicitud);
+    expect(solicitudes.map((s) => s.recetaId)).toEqual(['r1', 'r2']);
+    expect(solicitudes.map((s) => s.litros)).toEqual([100, 100]);
+    expect(solicitudes[0].uuidCliente).not.toBe(solicitudes[1].uuidCliente);
+    expect(apis.lotes.iniciar.mock.calls).toEqual([['r1'], ['r2']]);
+    expect(dialogo['terminado']()).toBe(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Iniciada · leche e insumos descontados');
   });
-  it('invalida el resumen inmediatamente al editar y permite quitar filas', async () => {
-    const { c } = setup(); await seleccionar(c); expect(c['resumen']()).not.toBeNull();
-    c['cambiar'](c['filas']()[1].uuid, 'litros', -1); expect(c['resumen']()).toBeNull();
-    c['quitar'](c['filas']()[1].uuid); await new Promise(r => setTimeout(r, 350));
-    expect(c['resumen']()?.leche.requerido).toBe(100);
+
+  it('un fallo parcial conserva los éxitos, rotula las filas no enviadas y reintenta solo lo pendiente', async () => {
+    const { dialogo, apis } = preparar();
+    await seleccionarDosRecetas(dialogo);
+    apis.lotes.iniciar.mockImplementationOnce((id) => of(lote(id, 'EN_PRODUCCION')));
+    apis.lotes.iniciar.mockImplementationOnce(ERROR_RED);
+
+    await dialogo['enviar'](true);
+
+    const [primera, segunda] = dialogo['filas']();
+    expect(primera.completada).toBe(true);
+    expect(segunda.completada).toBe(false);
+    expect(segunda.estado).toContain('inicio no confirmado');
+    expect(dialogo['errorEnvio']()).toContain('Se detuvo el proceso');
+
+    await dialogo['enviar'](true);
+
+    expect(apis.lotes.planificar).toHaveBeenCalledTimes(2);
+    expect(apis.lotes.iniciar.mock.calls).toEqual([['r1'], ['r2'], ['r2']]);
+    expect(dialogo['terminado']()).toBe(true);
   });
-  it('impide doble envío y cierre mientras se confirma', async () => {
-    const { c, lotes, close } = setup(); await seleccionar(c);
-    const pendiente = new Subject<any>(); lotes.planificar.mockImplementationOnce(() => pendiente);
-    const envio = c['enviar'](true); await c['enviar'](true); c['cerrar']();
-    expect(lotes.planificar).toHaveBeenCalledTimes(1); expect(close).not.toHaveBeenCalled();
-    pendiente.next({ id: 'r1', estado: 'PLANIFICADA' }); pendiente.complete(); await envio;
-    expect(c['terminado']()).toBe(true);
+
+  it('si falla la primera fila, la siguiente queda rotulada como pendiente y no se envía', async () => {
+    const { dialogo, apis } = preparar();
+    await seleccionarDosRecetas(dialogo);
+    apis.lotes.planificar.mockImplementationOnce(ERROR_RED);
+
+    await dialogo['enviar'](false);
+
+    const [primera, segunda] = dialogo['filas']();
+    expect(primera.estado).toBe('Registro no confirmado');
+    expect(segunda.estado).toContain('Pendiente');
+    expect(apis.lotes.planificar).toHaveBeenCalledTimes(1);
+  });
+
+  it('conserva la solicitud, el uuidCliente y el modo tras perder la respuesta de planificar', async () => {
+    const { dialogo, apis } = preparar();
+    await seleccionarDosRecetas(dialogo);
+    apis.lotes.planificar.mockImplementationOnce(ERROR_RED);
+
+    await dialogo['enviar'](false);
+    const original = apis.lotes.planificar.mock.calls[0][0];
+
+    // Intentar cambiar el formulario o el modo después del primer envío no tiene efecto.
+    dialogo['cambiar'](dialogo['filas']()[0].uuid, 'litros', 999);
+    dialogo['fecha'] = '2027-01-01';
+    await dialogo['enviar'](true);
+
+    expect(apis.lotes.planificar.mock.calls[1][0]).toEqual(original);
+    expect(apis.lotes.iniciar).not.toHaveBeenCalled();
+  });
+
+  it('invalida el resumen al editar una fila y permite quitar filas', async () => {
+    const { dialogo } = preparar();
+    await seleccionarDosRecetas(dialogo);
+    expect(dialogo['resumen']()).not.toBeNull();
+
+    dialogo['cambiar'](dialogo['filas']()[1].uuid, 'litros', -1);
+    expect(dialogo['resumen']()).toBeNull();
+
+    dialogo['quitar'](dialogo['filas']()[1].uuid);
+    await new Promise((resolver) => setTimeout(resolver, 350));
+    expect(dialogo['resumen']()?.leche.requerido).toBe(100);
+  });
+
+  it('rechaza litros con más de dos decimales o fuera de rango', async () => {
+    const { dialogo, apis } = preparar();
+    const [fila] = dialogo['filas']();
+    dialogo['cambiar'](fila.uuid, 'recetaId', 'r1');
+
+    dialogo['cambiar'](fila.uuid, 'litros', 10.123);
+    await new Promise((resolver) => setTimeout(resolver, 350));
+    expect(apis.recetas.calcular).not.toHaveBeenCalled();
+    expect(dialogo['resumen']()).toBeNull();
+
+    dialogo['cambiar'](fila.uuid, 'litros', 10.12);
+    await new Promise((resolver) => setTimeout(resolver, 350));
+    expect(apis.recetas.calcular).toHaveBeenCalledWith('r1', 10.12);
+  });
+
+  it('impide el doble envío y el cierre mientras se confirma', async () => {
+    const { dialogo, apis, cerrar, abrirConfirmacion } = preparar();
+    await seleccionarDosRecetas(dialogo);
+    const pendiente = new Subject<LoteProduccion>();
+    apis.lotes.planificar.mockImplementationOnce(() => pendiente);
+
+    const envio = dialogo['enviar'](true);
+    await dialogo['enviar'](true);
+    dialogo['cerrar']();
+
+    expect(apis.lotes.planificar).toHaveBeenCalledTimes(1);
+    expect(cerrar).not.toHaveBeenCalled();
+    expect(abrirConfirmacion).not.toHaveBeenCalled();
+
+    pendiente.next(lote('r1', 'PLANIFICADA'));
+    pendiente.complete();
+    await envio;
+    expect(dialogo['terminado']()).toBe(true);
+  });
+
+  describe('al cerrar', () => {
+    it('sin nada elegido cierra sin preguntar y sin resultado', () => {
+      const { dialogo, cerrar, abrirConfirmacion } = preparar();
+
+      dialogo['cerrar']();
+
+      expect(abrirConfirmacion).not.toHaveBeenCalled();
+      expect(cerrar).toHaveBeenCalledWith(undefined);
+    });
+
+    it('con una selección sin enviar pide confirmación con ConfirmDialog y solo cierra si se confirma', async () => {
+      const { dialogo, cerrar, abrirConfirmacion, confirmacion } = preparar();
+      await seleccionarDosRecetas(dialogo);
+
+      dialogo['cerrar']();
+      expect(abrirConfirmacion).toHaveBeenCalledTimes(1);
+      expect(cerrar).not.toHaveBeenCalled();
+
+      confirmacion.next(false);
+      expect(cerrar).not.toHaveBeenCalled();
+
+      confirmacion.next(true);
+      expect(cerrar).toHaveBeenCalledWith(undefined);
+    });
+
+    it('termina con todo completado: cierra sin preguntar y devuelve los lotes, el modo y completo=true', async () => {
+      const { dialogo, cerrar, abrirConfirmacion } = preparar();
+      await seleccionarDosRecetas(dialogo);
+      await dialogo['enviar'](true);
+
+      dialogo['cerrar']();
+
+      expect(abrirConfirmacion).not.toHaveBeenCalled();
+      const resultado: ProduccionMultipleResultado = cerrar.mock.calls[0][0];
+      expect(resultado.lotes.map((l) => l.id)).toEqual(['r1', 'r2']);
+      expect(resultado.iniciar).toBe(true);
+      expect(resultado.completo).toBe(true);
+    });
+
+    it('con operaciones pendientes pregunta y, al confirmar, devuelve lo guardado con completo=false', async () => {
+      const { dialogo, apis, cerrar, abrirConfirmacion, confirmacion } = preparar();
+      await seleccionarDosRecetas(dialogo);
+      apis.lotes.iniciar.mockImplementationOnce((id) => of(lote(id, 'EN_PRODUCCION')));
+      apis.lotes.iniciar.mockImplementationOnce(ERROR_RED);
+      await dialogo['enviar'](true);
+
+      dialogo['cerrar']();
+      expect(abrirConfirmacion).toHaveBeenCalledTimes(1);
+      confirmacion.next(true);
+
+      const resultado: ProduccionMultipleResultado = cerrar.mock.calls[0][0];
+      expect(resultado.lotes.map((l) => l.id)).toEqual(['r1', 'r2']);
+      expect(resultado.completo).toBe(false);
+    });
   });
 });
