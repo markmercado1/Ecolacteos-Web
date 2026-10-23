@@ -1,0 +1,78 @@
+:host {
+  display: block;
+}
+
+form {
+  border-block: 1px solid var(--color-border);
+  padding-block: 1rem;
+}
+
+h3 {
+  margin-top: 0;
+}
+
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+input,
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.65rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input, 6px);
+  font: inherit;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.aviso {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.turnos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.turnos legend {
+  margin-bottom: 0.5rem;
+}
+
+.turno {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input, 6px);
+  cursor: pointer;
+}
+
+.turno input {
+  width: auto;
+}
+
+.turno:has(input:checked) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.turno.realizado {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.turno small {
+  font-weight: 700;
+}

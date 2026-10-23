@@ -6,6 +6,7 @@ import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
 import { JornadaBandeja } from '../../data-access/jornada.models';
 import { JornadasApi } from '../../data-access/jornadas.api';
+import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { ListaLocal } from '../../../../shared/util/lista-local';
 import { JornadaDetalleDialog } from '../../ui/jornada-detalle-dialog/jornada-detalle-dialog';
 
@@ -20,8 +21,8 @@ export class JornadasPage {
   private readonly api = inject(JornadasApi);
   private readonly dialog = inject(Dialog);
   private readonly destroy = inject(DestroyRef);
+  private readonly toast = inject(ToastService);
 
-  protected readonly confirmacion = signal<string | null>(null);
   protected readonly cargando = signal(true);
   protected readonly error = signal<AppError | null>(null);
   protected readonly jornadas = signal<JornadaBandeja[]>([]);
@@ -68,13 +69,14 @@ export class JornadasPage {
   }
 
   protected recepcionar(jornada: JornadaBandeja): void {
-    this.confirmacion.set(null);
-    this.dialog.open<boolean>(JornadaDetalleDialog, {
+    const ref = this.dialog.open<boolean>(JornadaDetalleDialog, {
       ariaLabel: `Recepcionar jornada de ${jornada.acopiadorNombre}`,
       disableClose: true,
       data: { id: jornada.id, recepcionar: true },
-    }).closed.pipe(takeUntilDestroyed(this.destroy)).subscribe(confirmada => {
-      if (confirmada) this.confirmacion.set(`Recepción de ${jornada.acopiadorNombre} confirmada por el servidor.`);
+    });
+    // Se recarga la bandeja aunque no se haya confirmado: tras una respuesta perdida la jornada pudo haberse recibido.
+    ref.closed.pipe(takeUntilDestroyed(this.destroy)).subscribe((confirmada) => {
+      if (confirmada) this.toast.exito(`Recepción de ${jornada.acopiadorNombre} confirmada por el servidor.`);
       this.cargar();
     });
   }

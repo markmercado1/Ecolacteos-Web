@@ -1,10 +1,13 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { TestBed } from '@angular/core/testing';
-import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { DIALOG_DATA, Dialog, DialogRef } from '@angular/cdk/dialog';
+import { Subject } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { JornadaDetalleDialog } from './jornada-detalle-dialog';
 import { JornadaDetalle } from '../../../acopios/acopios.api';
+import { RecepcionJornadaForm } from '../recepcion-jornada-form/recepcion-jornada-form';
 
 const base = environment.apiBaseUrl;
 
@@ -64,119 +67,94 @@ describe('JornadaDetalleDialog', () => {
 });
 
 
-describe('Recepción de jornada', () => {
-  function iniciar(estado = 'REGRESANDO_A_PLANTA') {
-    const http = setup(true);
-    const f = TestBed.createComponent(JornadaDetalleDialog);
-    http.expectOne(`${base}/jornadas/j1`).flush({ id: 'j1', unidadId: 'u1', estado, litrosEsperados: 100, acopios: [], proveedoresVisitados: [] });
-    f.componentInstance['form'].setValue({ litrosReales: 98, horaLlegada: '2026-10-21T10:30', observacion: 'Medido', turno: 'UNICO' }, { emitEvent: false });
-    http.expectOne(r => r.url === `${base}/recepcion-planta`).flush({ contenido: [], totalPaginas: 0 });
-    f.detectChanges();
-    return { http, f, c: f.componentInstance, ref: TestBed.inject(DialogRef) };
+describe('JornadaDetalleDialog · recepción', () => {
+  const jornadaDetalle = (estado: string) => ({
+    id: 'j1',
+    unidadId: 'u1',
+    estado,
+    litrosEsperados: 100,
+    acopios: [],
+    proveedoresVisitados: [],
+  });
+
+  function abrir(estado = 'REGRESANDO_A_PLANTA') {
+    const confirmacion = new Subject<boolean>();
+    const abrirConfirmacion = vi.fn(() => ({ closed: confirmacion.asObservable() }));
+    const cerrar = vi.fn();
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: DIALOG_DATA, useValue: { id: 'j1', recepcionar: true } },
+        { provide: DialogRef, useValue: { close: cerrar } },
+        { provide: Dialog, useValue: { open: abrirConfirmacion } },
+      ],
+    });
+    const http = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(JornadaDetalleDialog);
+    http.expectOne(`${base}/jornadas/j1`).flush(jornadaDetalle(estado));
+    fixture.detectChanges();
+    if (estado === 'REGRESANDO_A_PLANTA') {
+      http.expectOne((r) => r.url === `${base}/recepcion-planta`).flush({ contenido: [], totalPaginas: 0 });
+    }
+    return { http, fixture, cerrar, abrirConfirmacion, confirmacion };
   }
 
-  it('consulta todas las páginas y envía el turno seleccionado aunque tenga marca', () => {
-    const { http, c, f } = iniciar();
-    c['form'].controls.horaLlegada.setValue('2026-10-22T09:00');
-    const req = http.expectOne(r => r.url === `${base}/recepcion-planta`);
-    expect(req.request.params.get('fecha')).toBe('2026-10-22');
-    expect(req.request.params.get('unidadId')).toBe('u1');
-    req.flush({ contenido: [{ turno: 'MAÑANA' }], totalPaginas: 2 });
-    const segunda = http.expectOne(r => r.url === `${base}/recepcion-planta`);
-    expect(segunda.request.params.get('page')).toBe('1');
-    segunda.flush({ contenido: [{ turno: 'TARDE' }], totalPaginas: 2 });
-    f.detectChanges();
-    expect(f.nativeElement.querySelectorAll('.realizado').length).toBe(2);
-    expect(f.nativeElement.textContent).toContain('Ya recepcionado');
-    c['form'].controls.turno.setValue('MAÑANA');
-    c['recibir']();
-    const envio = http.expectOne(`${base}/sync/recepciones-jornada`);
-    expect(envio.request.body[0].turno).toBe('MAÑANA');
-    envio.flush({ confirmados: [], errores: [] });
+  const formulario = (fixture: ComponentFixture<JornadaDetalleDialog>): RecepcionJornadaForm =>
+    fixture.debugElement.query(By.directive(RecepcionJornadaForm)).componentInstance;
+
+  it('muestra el formulario de recepción solo si la jornada está en REGRESANDO_A_PLANTA', () => {
+    const { fixture, http } = abrir();
+    expect(fixture.nativeElement.textContent).toContain('Recepcionar jornada');
+    expect(fixture.nativeElement.querySelector('app-recepcion-jornada-form')).not.toBeNull();
     http.verify();
   });
 
-  it('cancela consultas anteriores y no conserva marcas al cambiar de fecha o fallar', () => {
-    const { http, c, f } = iniciar();
-    c['consultarTurnos']();
-    const anterior = http.expectOne(r => r.url === `${base}/recepcion-planta`);
-    c['form'].controls.horaLlegada.setValue('2026-10-23T09:00');
-    expect(anterior.cancelled).toBe(true);
-    http.expectOne(r => r.url === `${base}/recepcion-planta`).flush({ contenido: [{ turno: 'UNICO' }], totalPaginas: 1 });
-    expect(c['turnosRegistrados']()).toEqual(['UNICO']);
-    c['form'].controls.horaLlegada.setValue('2026-10-24T09:00');
-    expect(c['turnosRegistrados']()).toEqual([]);
-    http.expectOne(r => r.url === `${base}/recepcion-planta`).flush({}, { status: 403, statusText: 'Forbidden' });
-    f.detectChanges();
-    expect(f.nativeElement.textContent).toContain('No se pudo comprobar');
-    expect(c['turnosRegistrados']()).toEqual([]);
+  it('no ofrece recibir una jornada cuyo estado cambió', () => {
+    const { fixture, http } = abrir('RECIBIDA');
+    expect(fixture.nativeElement.querySelector('app-recepcion-jornada-form')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('ya no se puede recibir');
     http.verify();
   });
 
-  it('envía el contrato exacto y cierra solo cuando se confirma el UUID enviado', () => {
-    const { http, c, ref } = iniciar();
-    c['recibir']();
-    const req = http.expectOne(`${base}/sync/recepciones-jornada`);
-    expect(req.request.method).toBe('POST');
-    const body = req.request.body[0];
-    expect(body).toEqual({ uuidCliente: expect.any(String), jornadaId: 'j1', litrosReales: 98, horaLlegada: '2026-10-21T10:30:00', observacion: 'Medido', turno: 'UNICO' });
-    req.flush({ confirmados: [body.uuidCliente], errores: [] });
-    expect(ref.close).toHaveBeenCalledWith(true);
-    http.verify();
+  it('se cierra con true cuando el servidor confirma la recepción', () => {
+    const { fixture, cerrar } = abrir();
+    formulario(fixture).recibida.emit();
+    expect(cerrar).toHaveBeenCalledWith(true);
   });
 
-  it('evita doble envío y conserva UUID y datos tras respuesta perdida', () => {
-    const { http, c, ref } = iniciar();
-    c['recibir'](); c['recibir']();
-    const req = http.expectOne(`${base}/sync/recepciones-jornada`);
-    const original = req.request.body;
-    req.error(new ProgressEvent('error'));
-    c['form'].controls.litrosReales.setValue(200);
-    c['recibir']();
-    const retry = http.expectOne(`${base}/sync/recepciones-jornada`);
-    expect(retry.request.body).toEqual(original);
-    retry.flush({ confirmados: [original[0].uuidCliente], errores: [] });
-    expect(ref.close).toHaveBeenCalledWith(true);
-    http.verify();
+  it('cierra sin preguntar si no hay nada escrito', () => {
+    const { fixture, cerrar, abrirConfirmacion } = abrir();
+    fixture.componentInstance['cerrar']();
+    expect(abrirConfirmacion).not.toHaveBeenCalled();
+    expect(cerrar).toHaveBeenCalledTimes(1);
   });
 
-  it('un HTTP 200 con rechazo individual no se anuncia como éxito', () => {
-    const { http, c, ref } = iniciar();
-    c['recibir']();
-    const req = http.expectOne(`${base}/sync/recepciones-jornada`);
-    req.flush({ confirmados: [], errores: [{ uuidCliente: req.request.body[0].uuidCliente, motivo: 'La jornada ya tiene una recepción' }] });
-    expect(ref.close).not.toHaveBeenCalled();
-    expect(c['errorRecepcion']()).toContain('ya tiene');
-    http.verify();
+  it('con datos escritos pide confirmación con ConfirmDialog y solo cierra si se acepta', () => {
+    const { fixture, cerrar, abrirConfirmacion, confirmacion } = abrir();
+    formulario(fixture)['form'].markAsDirty();
+
+    fixture.componentInstance['cerrar']();
+    expect(abrirConfirmacion).toHaveBeenCalledTimes(1);
+    expect(cerrar).not.toHaveBeenCalled();
+
+    confirmacion.next(false);
+    expect(cerrar).not.toHaveBeenCalled();
+
+    confirmacion.next(true);
+    expect(cerrar).toHaveBeenCalledTimes(1);
   });
 
-  it('una respuesta sin confirmación propia conserva la operación para reintentar', () => {
-    const { http, c, ref } = iniciar();
-    c['recibir']();
-    http.expectOne(`${base}/sync/recepciones-jornada`).flush({ confirmados: ['otro'], errores: [] });
-    expect(ref.close).not.toHaveBeenCalled();
-    expect(c['intento']).not.toBeNull();
-    http.verify();
-  });
+  it('no deja cerrar mientras se confirma la recepción', () => {
+    const { fixture, http, cerrar, abrirConfirmacion } = abrir();
+    const form = formulario(fixture);
+    form['form'].patchValue({ litrosReales: 98 });
+    form['recibir']();
+    http.expectOne(`${base}/sync/recepciones-jornada`);
 
-  it('bloquea litros negativos y permite cero conforme al backend', () => {
-    const { http, c } = iniciar();
-    c['form'].controls.litrosReales.setValue(-1);
-    c['recibir']();
-    http.expectNone(`${base}/sync/recepciones-jornada`);
-    c['form'].controls.litrosReales.setValue(0);
-    c['recibir']();
-    const req = http.expectOne(`${base}/sync/recepciones-jornada`);
-    expect(req.request.body[0].litrosReales).toBe(0);
-    req.flush({ confirmados: [], errores: [] });
-    http.verify();
-  });
+    fixture.componentInstance['cerrar']();
 
-  it('no recibe una jornada cuyo estado cambió al abrirla', () => {
-    const { http, c, f } = iniciar('RECIBIDA');
-    c['recibir']();
-    expect(f.nativeElement.textContent).toContain('ya no se puede recibir');
-    http.expectNone(`${base}/sync/recepciones-jornada`);
-    http.verify();
+    expect(abrirConfirmacion).not.toHaveBeenCalled();
+    expect(cerrar).not.toHaveBeenCalled();
   });
 });

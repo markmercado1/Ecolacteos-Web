@@ -8,6 +8,7 @@ import { environment } from '../../../../../environments/environment';
 import { JornadasPage } from './jornadas-page';
 import { JornadaDetalleDialog } from '../../ui/jornada-detalle-dialog/jornada-detalle-dialog';
 import { JornadaBandeja } from '../../data-access/jornada.models';
+import { ToastService } from '../../../../shared/ui/toast/toast.service';
 
 const base = environment.apiBaseUrl;
 
@@ -65,6 +66,43 @@ describe('JornadasPage', () => {
     http.verify();
   });
 
+  describe('"Recepcionar jornada"', () => {
+    function abrirRecepcion() {
+      TestBed.configureTestingModule({ providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] });
+      const http = TestBed.inject(HttpTestingController);
+      const f = TestBed.createComponent(JornadasPage);
+      http.expectOne(`${base}/jornadas`).flush([jornada]);
+
+      const cierre = new Subject<boolean | undefined>();
+      const abrirSpy = vi.spyOn(TestBed.inject(Dialog), 'open').mockReturnValue({ closed: cierre.asObservable() } as never);
+      const exito = vi.spyOn(TestBed.inject(ToastService), 'exito');
+      f.componentInstance['recepcionar'](jornada);
+      return { http, cierre, abrirSpy, exito };
+    }
+
+    it('abre el diálogo en modo recepción y, al confirmarse, avisa con un toast y recarga la bandeja', () => {
+      const { http, cierre, abrirSpy, exito } = abrirRecepcion();
+      expect(abrirSpy.mock.calls[0][0]).toBe(JornadaDetalleDialog);
+      expect((abrirSpy.mock.calls[0][1] as { data: unknown }).data).toEqual({ id: 'j1', recepcionar: true });
+
+      cierre.next(true);
+
+      expect(exito).toHaveBeenCalledWith('Recepción de Acopiador Uno confirmada por el servidor.');
+      http.expectOne(`${base}/jornadas`).flush([]);
+      http.verify();
+    });
+
+    it('si se cierra sin confirmar no avisa de éxito, pero recarga por si la recepción llegó a registrarse', () => {
+      const { http, cierre, exito } = abrirRecepcion();
+
+      cierre.next(undefined);
+
+      expect(exito).not.toHaveBeenCalled();
+      http.expectOne(`${base}/jornadas`).flush([jornada]);
+      http.verify();
+    });
+  });
+
   it('"Ver detalle" abre JornadaDetalleDialog con el id de la fila', () => {
     TestBed.configureTestingModule({ providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] });
     const http = TestBed.inject(HttpTestingController);
@@ -79,21 +117,4 @@ describe('JornadasPage', () => {
     expect((abrirSpy.mock.calls[0][1] as { data: { id: string } }).data).toEqual({ id: 'j1' });
     http.verify();
   });
-});
-
-
-it('actualiza la bandeja tras recepción confirmada', () => {
-  TestBed.configureTestingModule({ providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] });
-  const http = TestBed.inject(HttpTestingController);
-  const f = TestBed.createComponent(JornadasPage);
-  http.expectOne(`${base}/jornadas`).flush([jornada]);
-  const closed = new Subject<boolean>();
-  const abrir = vi.spyOn(TestBed.inject(Dialog), 'open').mockReturnValue({ closed } as never);
-  f.componentInstance['recepcionar'](jornada);
-  expect((abrir.mock.calls[0][1] as { data: unknown }).data).toEqual({ id: 'j1', recepcionar: true });
-  closed.next(true);
-  http.expectOne(`${base}/jornadas`).flush([]);
-  expect(f.componentInstance['jornadas']()).toEqual([]);
-  expect(f.componentInstance['confirmacion']()).toContain('confirmada por el servidor');
-  http.verify();
 });

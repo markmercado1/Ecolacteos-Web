@@ -1,0 +1,62 @@
+<form [formGroup]="form" (ngSubmit)="recibir()">
+  <h3>Recepción en planta</h3>
+
+  @if (jornada().acopios.length === 0) {
+    <p class="aviso" role="note">
+      Esta jornada no tiene acopios registrados en el servidor. Comprueba que el acopiador haya sincronizado antes de recibirla.
+    </p>
+  }
+
+  <fieldset [disabled]="enviando() || intento() !== null">
+    <label for="litros-reales">Litros reales recibidos</label>
+    <input id="litros-reales" type="number" min="0" step="any" formControlName="litrosReales" required />
+
+    <label for="hora-llegada">Fecha y hora de llegada (hora de Perú)</label>
+    <input id="hora-llegada" type="datetime-local" formControlName="horaLlegada" required />
+
+    <fieldset class="turnos">
+      <legend>Turno</legend>
+      @for (turno of turnos; track turno.valor) {
+        <label class="turno" [class.realizado]="turnosRegistrados().includes(turno.valor)">
+          <input type="radio" formControlName="turno" [value]="turno.valor" />
+          <span>{{ turno.texto }}</span>
+          @if (turnosRegistrados().includes(turno.valor)) {
+            <small>Ya recepcionado</small>
+          }
+        </label>
+      }
+    </fieldset>
+
+    <p role="status">
+      @if (consultandoTurnos()) {
+        Comprobando turnos…
+      } @else if (errorTurnos()) {
+        No se pudo comprobar. {{ errorTurnos() }}
+      } @else {
+        Marcas para este vehículo y la fecha de llegada elegida. Son informativas; el servidor valida la recepción.
+      }
+    </p>
+    <button type="button" class="row-link" (click)="consultarTurnos()" [disabled]="consultandoTurnos()">
+      Actualizar turnos
+    </button>
+
+    <label for="observacion-recepcion">Observación (opcional)</label>
+    <textarea id="observacion-recepcion" formControlName="observacion" rows="2"></textarea>
+  </fieldset>
+
+  <p>Al confirmar se recibirá toda la jornada con sus acopios. El servidor calculará la diferencia entre litros de campo y planta.</p>
+
+  @if (form.invalid && form.touched) {
+    <p role="alert">Ingresa litros válidos (cero o más) y la fecha y hora de llegada.</p>
+  }
+  @if (errorRecepcion()) {
+    <p role="alert" class="aviso">{{ errorRecepcion() }}</p>
+  }
+  @if (intento() && !enviando()) {
+    <p>La confirmación está pendiente. Reintenta con los mismos datos para comprobar el resultado sin duplicar la recepción.</p>
+  }
+
+  <button type="submit" class="btn btn-primary" [disabled]="enviando()">
+    {{ enviando() ? 'Confirmando…' : intento() ? 'Reintentar confirmación' : 'Confirmar recepción' }}
+  </button>
+</form>
