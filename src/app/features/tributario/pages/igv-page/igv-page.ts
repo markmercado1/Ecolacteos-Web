@@ -62,9 +62,9 @@ import { TasaIgvDialog } from '../../ui/tasa-igv-dialog/tasa-igv-dialog';
             <strong>las ventas se siguen registrando como hasta ahora, sin desglose</strong>, hasta que se active el cálculo en el servidor.
           </p>
         }
-        @if (e.avisos.length) {
+        @if (avisosExtra(e).length) {
           <ul class="avisos">
-            @for (a of e.avisos; track a) { <li data-testid="aviso-igv">{{ a }}</li> }
+            @for (a of avisosExtra(e); track a) { <li data-testid="aviso-igv">{{ a }}</li> }
           </ul>
         }
       </div>
@@ -201,6 +201,11 @@ export class IgvPage {
     this.cargarFilas();
   }
 
+  /** Avisos del servidor sin repetir el de «configuración pendiente», que ya explica el recuadro. */
+  protected avisosExtra(e: EstadoIgvResponse): string[] {
+    return e.estado === 'PENDIENTE' ? e.avisos.filter((a) => !a.includes('pendiente de la confirmación del contador')) : e.avisos;
+  }
+
   protected etiqueta(a: string | null): string {
     return etiquetaAfectacion(a);
   }
@@ -283,7 +288,7 @@ export class IgvPage {
 
   protected abrirAfectacion(fila: FilaAfectacionIgvResponse): void {
     const ref = this.dialog.open<boolean | undefined>(AfectacionIgvDialog, {
-      ariaLabel: `Afectación al IGV de ${fila.presentacionNombre}`,
+      ariaLabel: `Afectación al IGV de ${fila.productoNombre}, ${fila.presentacionNombre}`,
       data: { fila }
     });
     ref.closed.subscribe((cambio) => {

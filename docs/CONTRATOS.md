@@ -1,5 +1,24 @@
 # Contratos exactos del backend
 
+## Ampliación vigente 2026-10-24: documentos del proveedor e IGV configurable (Fase G, V31–V32)
+
+- `ProveedorRequest {nombre, dni|null, telefono|null, zonaActualId|null, tipoPersona?: 'NATURAL'|'EMPRESA' (NATURAL por defecto), ruc?|null, razonSocial?|null}`;
+  `ProveedorUpdateRequest {nombre, dni|null, telefono|null, tipoPersona?|null (conserva el actual), ruc?|null, razonSocial?|null}`. Natural: nombre y DNI (8 dígitos) obligatorios, RUC opcional
+  = 10 + DNI + verificador, sin razón social. Empresa: RUC 20… y razón social obligatorios, sin DNI, nombre opcional. 400 por forma, 409 por DNI o RUC repetido.
+- `ProveedorAdminResponse` agrega `tipoPersona`, `ruc|null`, `razonSocial|null`; `dni` es null en una empresa. `ProveedorPublicoResponse` (móvil) **sin cambios**.
+- `GET /api/admin/proveedores/revision-documentos` → `{totalProveedores, proveedoresConObservaciones, observaciones: [{proveedorId, nombre, tipoPersona, dni|null, ruc|null, activo, codigo, detalle}]}`;
+  `codigo` ∈ `DNI_FORMATO | DNI_PARECE_RUC | DNI_DUPLICADO_PROBABLE | RUC_INVALIDO | RUC_NO_COINCIDE_DNI | POSIBLE_MISMA_PERSONA`.
+- `/api/admin/tributario`: `GET /estado` → `{calculoHabilitado, estado: 'PENDIENTE'|'ACTIVO', tasaVigente|null, tasaProgramada|null, presentacionesActivas, sinDefinir, gravadas, exoneradas,
+  inafectas, avisos: string[]}`; `GET|POST /tasas-igv` (`{tasa, vigenteDesde, motivo}` → `{id, tasa, vigenteDesde, motivo, usuarioNombre|null, creadoEn}`); `GET /afectaciones?busqueda&page&size` →
+  `PaginaResponse<{presentacionId, presentacionNombre, productoId, productoNombre, familiaNombre|null, afectacionVigente, vigenteDesde|null, afectacionProgramada|null, programadaDesde|null}>`;
+  `GET|POST /presentaciones/{id}/afectaciones` (`{afectacion: 'GRAVADO'|'EXONERADO'|'INAFECTO'|'SIN_DEFINIR', vigenteDesde, motivo}` → `{id, presentacionId, afectacion, vigenteDesde, motivo,
+  usuarioNombre|null, creadoEn}`). 400 por valores fuera de rango o sin motivo; 409 por fecha repetida; 404 presentación inexistente.
+- `DetalleVentaResponse` agrega `afectacionIgv|null`, `tasaIgv|null`, `valorVenta|null`, `igv|null` (todo null = sin determinar). `VentaResumenResponse` agrega `igv: {estado: 'SIN_DETERMINAR'|
+  'DETERMINADO'|'PARCIAL', incluyeIgv, operacionesGravadas, operacionesExoneradas, operacionesInafectas, igvTotal, montoSinDeterminar}`. `VentaRequest`/`VentaResponse` (móvil) **sin cambios**.
+- `GET /api/catalogo/productos`: cada presentación agrega `incluyeIgv: boolean`.
+- Plantilla de importación de proveedores **v2**: columnas «Tipo de persona», «Nombre completo», «DNI», «RUC», «Razón social», «Teléfono», «Zona» (ninguna con asterisco: lo obligatorio
+  depende del tipo). Una plantilla v1 se rechaza pidiendo descargar la actual.
+
 ## Ampliación vigente 2026-10-11: cantidad disponible con pocas unidades (catálogo público)
 
 `GET /api/catalogo/productos`: cada presentación gana `unidadesDisponibles: int | null`. **Solo es un número cuando `disponibilidad = POCAS_UNIDADES`** (unidades que se pueden reservar para la primera fecha de retiro posible, ya descontadas las reservas vigentes); en `DISPONIBLE` y `AGOTADO` es `null`. Cambio aditivo; el resto del contrato de la Fase 3 no cambia.

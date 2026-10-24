@@ -48,7 +48,9 @@ describe('IgvPage (Fase G)', () => {
     const estado = el(f).querySelector('[data-testid="estado-igv"]') as HTMLElement;
     expect(estado.textContent).toContain('Pendiente');
     expect(estado.textContent).toContain('las ventas se siguen registrando como hasta ahora, sin desglose');
-    expect(el(f).querySelectorAll('[data-testid="aviso-igv"]').length).toBe(2);
+    // el aviso de «pendiente» del servidor no se repite: ya lo explica el recuadro
+    const avisos = Array.from(el(f).querySelectorAll('[data-testid="aviso-igv"]')).map((a) => a.textContent);
+    expect(avisos).toEqual(['No hay una tasa de IGV registrada.']);
     expect(el(f).querySelector('[data-testid="tasa-vigente"]')?.textContent).toContain('sin registrar');
     expect(el(f).querySelector('[data-testid="conteo-afectacion"]')?.textContent).toContain('3 / 3');
     expect(texto(f)).toContain('No hay tasas de IGV registradas');

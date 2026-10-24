@@ -1,5 +1,23 @@
 # Registro acumulativo
 
+## Fase G: RUC opcional e IGV configurable — 2026-10-24
+
+Autorizada por el usuario en modo autónomo (proveedores natural/empresa con RUC opcional; IGV dentro de precios finales, configurable y apagado hasta confirmar con el contador; sin
+recalcular ventas ni reservas; sin tocar pagos a proveedores). Worktrees `ecolacteos-backend-tributario` y `Ecolacteos-Web-tributario` (rama `feature/ruc-igv`, desde `integration/7-fases`).
+
+- **Backend:** `3be5b54` (V31 documentos del proveedor, revisión de documentos, búsquedas, Excel v2, boleta) y `91453d6` (V32 IGV: `tasa_igv`, `afectacion_igv_presentacion`, foto tributaria
+  en `venta_detalle`, `/api/admin/tributario`, `incluyeIgv` en el catálogo, exportación de ventas). Suite completa: **1264 pruebas**; dos fallos del primer intento resueltos (lista de campos
+  públicos del catálogo, que ahora incluye `incluyeIgv`, y una colisión del DNI aleatorio que genera `PagosEfectivosIntegrationTest` —preexistente, pasa al repetir—). Pruebas nuevas:
+  unitarias (DNI/RUC, reglas por tipo, revisión, cálculo y resumen de IGV, configuración, catálogo), migraciones V31/V32 (no tocan datos; restricciones en la base), HTTP con JWT real
+  (documentos, búsquedas, revisión solo ADMIN, IGV apagado por defecto, IGV encendido con fecha de la venta y sin recálculo).
+- **Panel:** `391fa12` (proveedores) y `2520202` (IGV y web pública). **910 pruebas** del panel y **73** de la web pública; builds de `ecolacteos-web` y `web-publica` sin advertencias.
+- **Copia de la base de desarrollo** (`dev_g`, PostgreSQL temporal 55432; la BD real no se tocó): V28–V32 aplicadas sin error; 42 proveedores quedan NATURAL sin cambios; 335 líneas de venta
+  sin foto tributaria; sin tasas ni afectaciones. Hibernate valida el esquema al arrancar.
+- **Flujo real y visual** (backend de la rama sobre `dev_g` + panel de producción, navegador integrado; verificado por DOM porque la ventana estaba minimizada y no admitió capturas):
+  `/igv` en «Pendiente» con 10 presentaciones sin definir; registro de una afectación «Gravado» con motivo (el conteo pasa a 9/10; el estado sigue Pendiente); `/proveedores-revision` con el
+  caso «Prueba1»; alta de una empresa (el panel rechazó antes de enviar un RUC 10 con «El RUC de una empresa empieza con 20.»; con RUC 20 se creó y la tabla la muestra como «Empresa · RUC»).
+- **Ajuste tras la revisión visual:** el aviso «pendiente» del servidor ya no se repite debajo del recuadro, y el diálogo de afectación se anuncia con producto y presentación.
+
 ## Fase E: reportes por zona histórica — 2026-10-23
 
 Autorizada con el cambio de criterio y sus consecuencias («Compara antes y después sobre los mismos datos de prueba y documenta las diferencias y su causa. Esto no autoriza reparar los datos históricos pendientes»).
