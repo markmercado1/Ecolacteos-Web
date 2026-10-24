@@ -1,5 +1,15 @@
 # Decisiones de producto y alcance
 
+## 2026-10-23 — Pagos efectivos
+
+- **Los ajustes de litros entran dentro del saldo de su liquidación** (decisión del usuario): saldo = total a pagar + ajustes de litros − pagos aplicados; negativo = saldo a favor. «Liquidar ajuste» sigue siendo
+  solo la marca que congela el precio.
+- **Un pago sin aplicar es un adelanto** y se aplica después (no hay estado «pagado» guardado: se deriva).
+- **Anular es solo de ADMIN, con motivo, y no borra**: el pago se conserva y sus aplicaciones dejan de contar. ADMIN y RECEPCION registran, aplican y consultan.
+- **El panel no calcula saldos ni topes**: los trae y decide el servidor; el formulario solo valida formato.
+- **Transferencia y depósito exigen banco y N.º de operación** (para detectar duplicados); no se guardan cuentas completas. La misma operación no se registra dos veces entre pagos vigentes.
+- **Constancia de pago (archivo adjunto): pendiente.** Requiere ampliar `ArchivoController` a RECEPCION; no se incluyó en esta etapa.
+
 ## 2026-10-23 — Cierre de A, B y C
 
 - **«Revisión de zonas» es de solo lectura.** Muestra lo que el sistema no pudo decidir; no ofrece asignar, corregir ni resolver. Resolver los casos históricos es decisión del usuario y se hace fuera del panel.

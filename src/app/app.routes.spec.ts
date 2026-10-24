@@ -18,4 +18,11 @@ describe('rutas', () => {
     expect(ruta!.canActivate).toContain(roleGuard);
     expect(ruta!.data?.['roles']).toEqual(['ADMIN']);
   });
+
+  it('«Pagos a proveedores» es solo para ADMIN y RECEPCION y pasa por el guard de roles', () => {
+    const ruta = buscar(routes, 'pagos-efectivos');
+    expect(ruta).toBeDefined();
+    expect(ruta!.canActivate).toContain(roleGuard);
+    expect(ruta!.data?.['roles']).toEqual(['ADMIN', 'RECEPCION']);
+  });
 });

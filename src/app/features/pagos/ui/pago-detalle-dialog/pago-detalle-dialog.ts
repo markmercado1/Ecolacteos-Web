@@ -13,6 +13,7 @@ import {
   AjusteCalidadEntregaResponse, AjustePagoResponse, AjustePrecioPagoResponse, PagoResponse, pagoAjustado, pagoConAjusteDeCalidad, totalDePago
 } from '../../data-access/pago.models';
 import { PagosApi } from '../../data-access/pagos.api';
+import { SaldoPagoComponent } from '../../../pagos-efectivos/ui/saldo-pago/saldo-pago';
 import { EntregasPagoDialog } from '../entregas-pago-dialog/entregas-pago-dialog';
 
 export interface PagoDetalleDialogData {
@@ -29,7 +30,7 @@ function motivoConTexto(control: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-pago-detalle-dialog',
-  imports: [ReactiveFormsModule, DecimalPipe, DatePipe, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
+  imports: [ReactiveFormsModule, DecimalPipe, DatePipe, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, SaldoPagoComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="dialog-head">
@@ -144,6 +145,8 @@ function motivoConTexto(control: AbstractControl): ValidationErrors | null {
           </form>
         }
       }
+
+      <app-saldo-pago [pago]="pago()" />
 
       <div class="section-head">
         <h2>Historial de ajustes de precio</h2>

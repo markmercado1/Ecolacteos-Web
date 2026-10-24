@@ -6,10 +6,14 @@ import { of } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { AjusteCalidadEntregaResponse, AjustePagoResponse, AjustePrecioPagoResponse, PagoResponse } from '../../data-access/pago.models';
+import { PagosProveedorApi } from '../../../pagos-efectivos/data-access/pagos-proveedor.api';
 import { EntregasPagoDialog } from '../entregas-pago-dialog/entregas-pago-dialog';
 import { PagoDetalleDialog } from './pago-detalle-dialog';
 
 const base = environment.apiBaseUrl;
+
+/** El saldo de pagos efectivos lo cubre saldo-pago.spec; aquí se aísla para no mezclar sus peticiones con las del detalle. */
+const saldoApiStub = { saldos: () => of([]) };
 
 /** 100 L a S/ 1.00 = S/ 100 (el ejemplo del negocio). */
 const pagoBase: PagoResponse = {
@@ -29,7 +33,7 @@ function setup(pago: PagoResponse, esAdmin = true) {
   const close = vi.fn();
   TestBed.configureTestingModule({
     providers: [
-      provideHttpClient(), provideHttpClientTesting(),
+      provideHttpClient(), provideHttpClientTesting(), { provide: PagosProveedorApi, useValue: saldoApiStub },
       { provide: DIALOG_DATA, useValue: { pago, esAdmin } },
       { provide: DialogRef, useValue: { close } }
     ]
@@ -51,6 +55,14 @@ const comp = (f: ComponentFixture<PagoDetalleDialog>) => f.componentInstance as 
 
 describe('PagoDetalleDialog · ajuste de precio y boleta', () => {
   afterEach(() => vi.restoreAllMocks());
+
+  it('el detalle incluye el saldo de pagos efectivos de esta liquidación', () => {
+    const { f, http } = setup(pagoBase);
+    cargarHistorial(http);
+    f.detectChanges();
+    expect((f.nativeElement as HTMLElement).querySelector('app-saldo-pago')).not.toBeNull();
+    http.verify();
+  });
 
   it('un pago sin ajustes muestra precio y total y no muestra «Total a pagar»', () => {
     const { f, http } = setup(pagoBase);
@@ -280,7 +292,7 @@ function setupConDatos(pago: PagoResponse, extra: Record<string, unknown>, ajust
   const close = vi.fn();
   TestBed.configureTestingModule({
     providers: [
-      provideHttpClient(), provideHttpClientTesting(),
+      provideHttpClient(), provideHttpClientTesting(), { provide: PagosProveedorApi, useValue: saldoApiStub },
       { provide: DIALOG_DATA, useValue: { pago, ...extra } },
       { provide: DialogRef, useValue: { close } },
       { provide: Dialog, useValue: { open: dialogOpen } }
@@ -356,7 +368,7 @@ describe('PagoDetalleDialog · desglose del total y precios de calidad', () => {
     const close = vi.fn();
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(), provideHttpClientTesting(),
+        provideHttpClient(), provideHttpClientTesting(), { provide: PagosProveedorApi, useValue: saldoApiStub },
         { provide: DIALOG_DATA, useValue: { pago: pagoConCalidad, esAdmin: false, puedeVerHistorialCalidad: true } },
         { provide: DialogRef, useValue: { close } }
       ]
@@ -382,7 +394,7 @@ describe('PagoDetalleDialog · desglose del total y precios de calidad', () => {
     const close = vi.fn();
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(), provideHttpClientTesting(),
+        provideHttpClient(), provideHttpClientTesting(), { provide: PagosProveedorApi, useValue: saldoApiStub },
         { provide: DIALOG_DATA, useValue: { pago: pagoBase, esAdmin: true, puedeVerHistorialCalidad: true } },
         { provide: DialogRef, useValue: { close } }
       ]
@@ -400,7 +412,7 @@ describe('PagoDetalleDialog · desglose del total y precios de calidad', () => {
   it('un error al leer el historial de calidad se muestra y permite reintentar sin ocultar el resto del detalle', () => {
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(), provideHttpClientTesting(),
+        provideHttpClient(), provideHttpClientTesting(), { provide: PagosProveedorApi, useValue: saldoApiStub },
         { provide: DIALOG_DATA, useValue: { pago: pagoConCalidad, esAdmin: true, puedeVerHistorialCalidad: true } },
         { provide: DialogRef, useValue: { close: vi.fn() } }
       ]
@@ -424,7 +436,7 @@ describe('PagoDetalleDialog · desglose del total y precios de calidad', () => {
     const close = vi.fn();
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(), provideHttpClientTesting(),
+        provideHttpClient(), provideHttpClientTesting(), { provide: PagosProveedorApi, useValue: saldoApiStub },
         { provide: DIALOG_DATA, useValue: { pago: pagoBase, esAdmin: true, puedeVerHistorialCalidad: true } },
         { provide: DialogRef, useValue: { close } },
         { provide: Dialog, useValue: { open: abrir } }
@@ -465,7 +477,7 @@ describe('PagoDetalleDialog · vista previa del ajuste con precios por entrega',
   function crearConHistorialCalidad(pago: PagoResponse, historialAjustes: AjustePrecioPagoResponse[] = []) {
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(), provideHttpClientTesting(),
+        provideHttpClient(), provideHttpClientTesting(), { provide: PagosProveedorApi, useValue: saldoApiStub },
         { provide: DIALOG_DATA, useValue: { pago, esAdmin: true, puedeVerHistorialCalidad: true } },
         { provide: DialogRef, useValue: { close: vi.fn() } }
       ]

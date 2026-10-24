@@ -1,0 +1,76 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">CONTROL FINANCIERO</div>
+    <h1>Pagos a proveedores</h1>
+    <p>
+      El dinero realmente entregado a cada proveedor. Un pago puede aplicarse a una o varias liquidaciones, o quedar como adelanto y aplicarse después.
+      Anular conserva el registro y devuelve el saldo.
+    </p>
+  </div>
+  <div class="heading-actions">
+    <button type="button" class="btn primary" (click)="registrar()">Registrar pago</button>
+  </div>
+</div>
+
+<ui-data-table
+  [columnas]="columnas"
+  [filas]="pagos()"
+  [cargando]="cargando()"
+  [error]="error()"
+  mensajeVacio="Todavía no se registró ningún pago a proveedores."
+  titulo="Pagos registrados"
+  subtitulo="Más recientes primero."
+  [buscable]="true"
+  placeholderBusqueda="Buscar por proveedor, DNI, operación o recibo"
+  etiquetaBusqueda="Buscar pagos a proveedores"
+  [pagina]="pagina()"
+  [totalPaginas]="totalPaginas()"
+  [totalElementos]="totalElementos()"
+  [tamano]="tamano()"
+  [tamanos]="tamanos"
+  unidad="pagos"
+  (buscar)="buscar($event)"
+  (cambiarPagina)="cambiarPagina($event)"
+  (cambiarTamano)="cambiarTamano($event)"
+  (reintentar)="cargar()"
+>
+  <div toolbar>
+    <select class="filtro-estado" [value]="estado()" (change)="cambiarEstado($any($event.target).value)" aria-label="Filtrar por estado">
+      <option value="">Todos</option>
+      <option value="REGISTRADO">Vigentes</option>
+      <option value="ANULADO">Anulados</option>
+    </select>
+  </div>
+
+  <ng-template #celda let-fila let-columna="columna">
+    @switch (columna) {
+      @case ('fecha') { {{ fila.fechaHora | date: 'dd/MM/yyyy HH:mm' }} }
+      @case ('proveedorNombre') { <strong>{{ fila.proveedorNombre }}</strong> }
+      @case ('modalidad') {
+        {{ modalidad(fila.modalidad) }}
+        @if (fila.nroOperacion) { <small class="sub">{{ fila.banco }} · {{ fila.nroOperacion }}</small> }
+      }
+      @case ('monto') { <strong>S/ {{ fila.monto | number: '1.2-2' }}</strong> }
+      @case ('aplicado') {
+        S/ {{ fila.aplicado | number: '1.2-2' }}
+        @if (fila.estado === 'REGISTRADO' && fila.sinAplicar > 0) {
+          <small class="sub" data-testid="sin-aplicar">Adelanto: S/ {{ fila.sinAplicar | number: '1.2-2' }} sin aplicar</small>
+        }
+      }
+      @case ('estado') {
+        <span class="badge" [class.gray]="fila.estado === 'ANULADO'">{{ fila.estado === 'ANULADO' ? 'Anulado' : 'Vigente' }}</span>
+      }
+      @case ('acciones') {
+        <div class="acciones">
+          <button type="button" class="row-link" (click)="verDetalle(fila)">Ver detalle</button>
+          @if (fila.estado === 'REGISTRADO' && fila.sinAplicar > 0) {
+            <button type="button" class="row-link" (click)="aplicar(fila)">Aplicar</button>
+          }
+          @if (esAdmin() && fila.estado === 'REGISTRADO') {
+            <button type="button" class="row-link" (click)="anular(fila)">Anular</button>
+          }
+        </div>
+      }
+    }
+  </ng-template>
+</ui-data-table>

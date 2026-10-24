@@ -1,0 +1,13 @@
+.filtro-estado {
+  min-width: 10rem;
+}
+.sub {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+}
+.acciones {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}

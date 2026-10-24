@@ -1,5 +1,18 @@
 # Estado vigente
 
+## 2026-10-23 — Pagos efectivos a proveedores: IMPLEMENTADO (rama `feature/pagos-efectivos`)
+
+Sin push. Backend de referencia: `integration/7-fases` + `feature/pagos-efectivos` (V30, `/api/pagos-proveedor`).
+
+- **Pantalla «Pagos a proveedores»** (`/pagos-efectivos`, ADMIN y RECEPCION): lista paginada en el servidor (búsqueda por proveedor, DNI, operación o recibo; filtro Todos/Vigentes/Anulados),
+  «Registrar pago», «Ver detalle», «Aplicar» (solo pagos vigentes con saldo sin aplicar: adelantos) y «Anular» (solo ADMIN, con motivo; conserva el registro).
+- **Registrar pago:** efectivo, transferencia o depósito; transferencia y depósito exigen banco y N.º de operación; opcionalmente se aplica a una liquidación en el mismo registro. El `uuidCliente` se
+  genera al abrir el diálogo y se conserva en los reintentos (reenviar no crea otro pago).
+- **Detalle del pago (liquidación):** nueva sección «Pagos efectivos de esta liquidación» con el saldo que calcula el servidor (total a pagar, ajustes de litros, aplicado, saldo/saldo a favor, estado) y
+  el atajo «Registrar pago».
+- **No hace el panel:** recalcular saldos, topes ni estados; subir constancias (pendiente: `ArchivoController` no admite RECEPCION).
+- **Verificado:** ver REGISTRO. **Pendiente:** Fase D (historial consolidado con estos saldos) y Fase E; F y G no autorizadas.
+
 ## 2026-10-23 — Cierre de las Fases A, B y C en el panel (rama `feature/cierre-fases-abc`)
 
 Sin push. Backend de referencia: `integration/7-fases` + `feature/cierre-fases-abc` (409 al reasignar a la misma zona; `GET /api/analisis-calidad/registro/{id}/precios-calidad`).

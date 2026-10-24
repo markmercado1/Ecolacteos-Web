@@ -880,6 +880,34 @@ public record GenerarPagoRequest(
 ) {}
 ```
 
+### Pagos efectivos (V30) — PagoProveedorController
+
+```java
+public record PagoProveedorRequest(
+    String uuidCliente, UUID proveedorId, ModalidadPagoProveedor modalidad /* EFECTIVO|TRANSFERENCIA|DEPOSITO */, BigDecimal monto,
+    String concepto, String banco, String nroOperacion, String nroRecibo, String observacion,
+    List<AplicacionPagoRequest> aplicaciones   // opcional: {pagoId, monto}
+) {}
+public record AplicarPagoProveedorRequest(List<AplicacionPagoRequest> aplicaciones) {}
+public record AnularPagoProveedorRequest(String motivo) {}
+public record PagoProveedorResponse(
+    UUID id, String uuidCliente, UUID proveedorId, String proveedorNombre, LocalDateTime fechaHora, String modalidad, BigDecimal monto,
+    String concepto, String banco, String nroOperacion, String nroRecibo, String observacion, String usuarioNombre,
+    String estado /* REGISTRADO|ANULADO */, String anuladoMotivo, String anuladoPorNombre, LocalDateTime anuladoEn,
+    BigDecimal aplicado, BigDecimal sinAplicar, List<AplicacionPagoResponse> aplicaciones
+) {}
+public record AplicacionPagoResponse(UUID id, UUID pagoId, LocalDate semanaInicio, LocalDate semanaFin, BigDecimal monto, String usuarioNombre, LocalDateTime creadoEn) {}
+public record SaldoPagoResponse(
+    UUID pagoId, UUID proveedorId, LocalDate semanaInicio, LocalDate semanaFin,
+    BigDecimal totalAPagar, BigDecimal ajustesLitros, BigDecimal totalConAjustes, BigDecimal aplicado,
+    BigDecimal saldo /* negativo = a favor del proveedor */, String estado /* PENDIENTE|PARCIAL|PAGADO|SALDO_A_FAVOR */
+) {}
+public record SaldoProveedorResponse(UUID proveedorId, String proveedorNombre, List<SaldoPagoResponse> liquidaciones,
+    BigDecimal saldoLiquidaciones, BigDecimal adelantosSinAplicar, BigDecimal saldoNeto) {}
+```
+
+Ninguna respuesta trae DNI ni teléfono. `POST /api/pagos-proveedor` responde 201 al crear y 200 en un reenvío (mismo `uuidCliente`, o misma operación bancaria con los mismos datos).
+
 ### HistorialZonaResponse.java
 
 ```java

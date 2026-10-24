@@ -69,6 +69,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/pagos/pages/pagos-page/pagos-page').then((m) => m.PagosPage)
       },
       {
+        path: 'pagos-efectivos',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'RECEPCION'] },
+        loadComponent: () =>
+          import('./features/pagos-efectivos/pages/pagos-efectivos-page/pagos-efectivos-page').then((m) => m.PagosEfectivosPage)
+      },
+      {
         path: 'rutas',
         canActivate: [roleGuard],
         data: { roles: ['ADMIN', 'ACOPIADOR'] },
