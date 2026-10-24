@@ -1,5 +1,27 @@
 # Decisiones de producto y alcance
 
+## 2026-10-24 — Fase G, RUC opcional e IGV configurable
+
+**Del usuario:**
+- Persona natural: DNI obligatorio, RUC opcional, ambos en la **misma ficha**. Empresa: RUC y razón social obligatorios, sin DNI. Quien no tiene RUC sigue trabajando igual.
+- **Conservar los registros actuales y reportar** las inconsistencias, sin corregirlas automáticamente.
+- **Precios finales:** lo publicado es lo que paga el cliente; no se suben los precios un 18 %. El IGV se desglosa dentro del precio. «Incluye IGV» solo en operaciones gravadas.
+- La configuración (afectación y tasa con vigencia) se **prepara**, pero **no se clasifica ningún producto ni se activa el cálculo** sin el contador; mientras tanto, comportamiento actual.
+- No se recalculan ventas antiguas ni importes de reservas. No cambia el cálculo de pagos a proveedores ni se supone exoneración.
+- Fuera: clientes identificados, facturación electrónica, detracciones, retenciones.
+
+**Técnicas (tomadas en esta fase, a confirmar con el contador donde se indica):**
+- El cálculo se enciende con una **propiedad del servidor** (`app.tributario.igv.calculo-habilitado`, `TRIBUTARIO_IGV_CALCULO_HABILITADO`), no con un botón del panel: activarlo exige un
+  cambio deliberado de configuración, igual que el control de vencimiento. El panel solo informa el estado.
+- Validación de forma del RUC: 11 dígitos, dígito verificador módulo 11, prefijo **10** para persona natural (debe contener su DNI) y **20** para empresa. No se consulta a SUNAT.
+- Un DNI/RUC anterior fuera de formato **se conserva al editar** si no se cambia (no bloquea corregir el resto de la ficha).
+- Una empresa no lleva DNI (la base lo exige). Su `nombre` es opcional y, si falta, es la razón social.
+- La afectación es por **presentación** (cada presentación tiene su precio) y con **vigencia**; sin registro = «sin definir». Se puede volver a «sin definir» desde una fecha.
+- Cada línea de venta guarda su **foto tributaria** a la fecha de la venta y no se recalcula. **Redondeo por línea** (valor = subtotal / (1 + tasa), 2 decimales; IGV = subtotal − valor):
+  **pendiente de confirmar con el contador**.
+- Gravada sin tasa vigente, o sin clasificar ⇒ «sin determinar» (no se bloquea la venta: las ventas del móvil se sincronizan después).
+- Las reservas no cambian: el desglose aparece en la venta que se crea al retirarla.
+
 ## 2026-10-23 — Fase E, reportes por zona histórica
 
 - **Los reportes por zona usan la zona de cada entrega**, no la actual del proveedor (autorizado por el usuario, sabiendo que cambia cifras históricas). Documentado con comparación antes/después sobre los mismos datos.

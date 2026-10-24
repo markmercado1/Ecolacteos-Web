@@ -19,6 +19,20 @@ describe('rutas', () => {
     expect(ruta!.data?.['roles']).toEqual(['ADMIN']);
   });
 
+  it('«Revisión de documentos» es solo para ADMIN y pasa por el guard de roles', () => {
+    const ruta = buscar(routes, 'proveedores-revision');
+    expect(ruta).toBeDefined();
+    expect(ruta!.canActivate).toContain(roleGuard);
+    expect(ruta!.data?.['roles']).toEqual(['ADMIN']);
+  });
+
+  it('«IGV de las ventas» es solo para ADMIN y pasa por el guard de roles', () => {
+    const ruta = buscar(routes, 'igv');
+    expect(ruta).toBeDefined();
+    expect(ruta!.canActivate).toContain(roleGuard);
+    expect(ruta!.data?.['roles']).toEqual(['ADMIN']);
+  });
+
   it('«Pagos a proveedores» es solo para ADMIN y RECEPCION y pasa por el guard de roles', () => {
     const ruta = buscar(routes, 'pagos-efectivos');
     expect(ruta).toBeDefined();

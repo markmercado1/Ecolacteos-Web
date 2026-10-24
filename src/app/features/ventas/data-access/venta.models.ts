@@ -30,6 +30,25 @@ export interface DetalleVentaResponse {
   cantidad: number;
   precioUnitario: number;
   subtotal: number;
+  /**
+   * Fase G: foto tributaria de la línea al venderse (todo null = sin determinar: ventas anteriores o cálculo del IGV apagado).
+   * El precio ya incluye el IGV: valorVenta + igv = subtotal.
+   */
+  afectacionIgv?: 'GRAVADO' | 'EXONERADO' | 'INAFECTO' | null;
+  tasaIgv?: number | null;
+  valorVenta?: number | null;
+  igv?: number | null;
+}
+
+/** Fase G: resumen del IGV contenido en el total de una venta (VentaResumenResponse.ResumenIgvVenta). */
+export interface ResumenIgvVenta {
+  estado: 'SIN_DETERMINAR' | 'DETERMINADO' | 'PARCIAL';
+  incluyeIgv: boolean;
+  operacionesGravadas: number;
+  operacionesExoneradas: number;
+  operacionesInafectas: number;
+  igvTotal: number;
+  montoSinDeterminar: number | null;
 }
 
 /**
@@ -43,4 +62,6 @@ export interface VentaResumenResponse {
   tipoCliente: TipoClienteVenta;
   detalles: DetalleVentaResponse[];
   total: number;
+  /** Fase G: puede faltar si el backend es anterior a esta fase. */
+  igv?: ResumenIgvVenta | null;
 }

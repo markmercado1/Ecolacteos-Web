@@ -91,4 +91,40 @@ describe('VentaDetalleDialog', () => {
     http.expectOne(`${base}/ventas/id%20con%20espacio`).flush({ ...ventaDeUnaLinea, id: 'id con espacio' });
     http.verify();
   });
+
+  describe('Fase G: IGV', () => {
+    it('una venta sin foto tributaria (anterior o con el cálculo apagado) se ve igual que antes, sin «Incluye IGV»', () => {
+      const { fixture, http } = crear({ id: 'v-1' });
+      http.expectOne(`${base}/ventas/v-1`).flush({ ...ventaDeUnaLinea, igv: { estado: 'SIN_DETERMINAR', incluyeIgv: false, operacionesGravadas: 0,
+        operacionesExoneradas: 0, operacionesInafectas: 0, igvTotal: 0, montoSinDeterminar: 34 } });
+      fixture.detectChanges();
+      const raiz = fixture.nativeElement as HTMLElement;
+      expect(raiz.querySelector('[data-testid="desglose-igv"]')).toBeNull();
+      expect(raiz.querySelectorAll('[data-testid="igv-linea"]').length).toBe(0);
+      expect(raiz.textContent).not.toContain('IGV');
+      http.verify();
+    });
+
+    it('una venta gravada muestra el IGV incluido por línea y en total; la parte sin clasificar queda «sin determinar»', () => {
+      const { fixture, http } = crear({ id: 'v-2' });
+      http.expectOne(`${base}/ventas/v-2`).flush({
+        ...ventaDeVariasLineas,
+        detalles: [
+          { ...ventaDeVariasLineas.detalles[0], afectacionIgv: 'GRAVADO', tasaIgv: 18, valorVenta: 25.42, igv: 4.58 },
+          { ...ventaDeVariasLineas.detalles[1], afectacionIgv: null, tasaIgv: null, valorVenta: null, igv: null }
+        ],
+        igv: { estado: 'PARCIAL', incluyeIgv: true, operacionesGravadas: 25.42, operacionesExoneradas: 0, operacionesInafectas: 0, igvTotal: 4.58, montoSinDeterminar: 12 }
+      });
+      fixture.detectChanges();
+      const raiz = fixture.nativeElement as HTMLElement;
+      const lineas = Array.from(raiz.querySelectorAll('[data-testid="igv-linea"]')).map((e) => e.textContent?.replace(/\s+/g, ' ').trim());
+      expect(lineas[0]).toContain('Incluye S/ 4.58 (18 %)');
+      expect(lineas[1]).toContain('Sin determinar');
+      const desglose = raiz.querySelector('[data-testid="desglose-igv"]')?.textContent ?? '';
+      expect(desglose).toContain('Incluye IGV: S/ 4.58');
+      expect(desglose).toContain('Sin determinar: S/ 12.00');
+      expect(raiz.textContent).toContain('S/ 42.00'); // el total cobrado no cambia
+      http.verify();
+    });
+  });
 });

@@ -56,6 +56,13 @@ export const routes: Routes = [
           import('./features/proveedores/pages/proveedores-page/proveedores-page').then((m) => m.ProveedoresPage)
       },
       {
+        path: 'proveedores-revision',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] },
+        loadComponent: () =>
+          import('./features/proveedores/pages/revision-documentos-page/revision-documentos-page').then((m) => m.RevisionDocumentosPage)
+      },
+      {
         path: 'zonas-revision',
         canActivate: [roleGuard],
         data: { roles: ['ADMIN'] },
@@ -124,6 +131,12 @@ export const routes: Routes = [
         canActivate: [roleGuard],
         data: { roles: ['ADMIN'] },
         loadComponent: () => import('./features/catalogos/pages/catalogos-page/catalogos-page').then((m) => m.CatalogosPage)
+      },
+      {
+        path: 'igv',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] },
+        loadComponent: () => import('./features/tributario/pages/igv-page/igv-page').then((m) => m.IgvPage)
       },
       {
         path: 'precios',

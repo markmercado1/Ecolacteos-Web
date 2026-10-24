@@ -44,6 +44,7 @@ import { contenidoAparte, etiquetaDePresentacion, formatearPrecio, textoQuedan }
                           @if (pr.precio !== null) { {{ precioTexto(pr.precio) }} }
                           @else { <span class="a-confirmar">Precio a confirmar</span> }
                         </p>
+                        @if (pr.precio !== null && pr.incluyeIgv) { <p class="muted small" data-testid="incluye-igv">Incluye IGV</p> }
                         <span class="badge" [class.badge-warn]="pr.disponibilidad === 'POCAS_UNIDADES'" [class.badge-off]="pr.disponibilidad === 'AGOTADO'">
                           {{ etiqueta(pr) }}
                         </span>

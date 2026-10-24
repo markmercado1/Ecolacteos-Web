@@ -1,5 +1,14 @@
 # Inventario de endpoints comprobados
 
+## Ampliación vigente 2026-10-24: Fase G (documentos del proveedor e IGV configurable)
+
+- `GET /api/admin/proveedores/revision-documentos` — ADMIN, solo lectura (`RevisionDocumentosController`).
+- `GET /api/admin/tributario/estado`, `GET|POST /api/admin/tributario/tasas-igv`, `GET /api/admin/tributario/afectaciones`, `GET|POST /api/admin/tributario/presentaciones/{id}/afectaciones` —
+  ADMIN (`ConfiguracionIgvController`).
+- Cambian sin romper: `POST|PUT /api/proveedores` (campos de documentos), `GET /api/proveedores`, `/api/pagos`, `/api/pagos-proveedor` y sus exportaciones (búsqueda por RUC y razón social),
+  `GET /api/ventas`, `/api/ventas/{id}`, `POST /api/ventas/carrito` (foto tributaria y resumen de IGV), `GET /api/catalogo/productos` (`incluyeIgv`), plantilla de importación de proveedores (v2).
+- Migraciones `V31__documentos_proveedor.sql` y `V32__igv_configurable.sql` (aditivas; V32 no inserta tasas ni afectaciones).
+
 ## Ampliación vigente 2026-10-22: exportar e importar Excel (ver `EXCEL.md`)
 
 Exportación (solo lectura; mismos roles y filtros que el listado de cada tabla; devuelve `.xlsx` con TODAS las filas del filtro):

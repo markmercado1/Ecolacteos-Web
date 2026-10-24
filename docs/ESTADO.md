@@ -1,5 +1,22 @@
 # Estado vigente
 
+## 2026-10-24 — Fase G, RUC opcional e IGV configurable: IMPLEMENTADO (rama `feature/ruc-igv`)
+
+Sin push. Backend de referencia: `integration/7-fases` + `feature/ruc-igv` (V31 documentos del proveedor, V32 IGV configurable). Detalle de contratos en `CONTRATOS.md` y
+`API_DOCUMENTATION.md` §15–16 del backend.
+
+- **Proveedores:** persona natural (nombre y DNI de 8 dígitos obligatorios, **RUC opcional** en la misma ficha: 10 + DNI + verificador) o **empresa** (RUC 20… y razón social obligatorios, sin
+  DNI; nombre comercial opcional). Formulario con «Tipo de proveedor», tabla con «DNI / RUC» y etiqueta «Empresa», búsqueda por RUC y razón social (también en Pagos y Pagos a proveedores),
+  detalle con tipo, razón social, DNI y RUC. Excel: exportación con tipo, RUC y razón social; plantilla de importación **v2** con las mismas reglas. Boleta PDF con DNI/RUC/razón social.
+- **«Revisión de documentos»** (`/proveedores-revision`, solo ADMIN, solo lectura): lista lo que no cumple las reglas actuales; **no corrige nada**. En la copia de la base de desarrollo
+  (42 proveedores) informa **un caso**: «Prueba1», DNI de 9 dígitos.
+- **IGV de las ventas** (`/igv`, solo ADMIN): **configuración preparada, cálculo APAGADO** (estado «Pendiente») hasta que el contador confirme. Se puede registrar la tasa con vigencia y la
+  afectación por presentación (con fecha y motivo); **ninguna presentación viene clasificada** y no hay tasa registrada. Mientras el cálculo esté apagado **las ventas se registran exactamente
+  como antes** y el catálogo no dice «Incluye IGV».
+- **Detalle de venta:** si el servidor registró la foto tributaria, muestra el IGV incluido por línea y en total, lo exonerado/inafecto y lo «sin determinar». El total no cambia.
+- **Web pública:** «Incluye IGV» bajo el precio solo si el servidor marca la presentación como gravada (cálculo encendido y tasa vigente).
+- **Fuera de alcance:** clientes identificados en ventas, facturación electrónica, detracciones, retenciones y cualquier cambio en pagos a proveedores.
+
 ## 2026-10-23 — Fase E, reportes por zona histórica: IMPLEMENTADO (rama `feature/reportes-zona-historica`)
 
 Sin push. Backend de referencia: `integration/7-fases` + `feature/reportes-zona-historica` (solo consultas; sin migración ni cambios de contrato). **Cambia las cifras por zona**: ver `docs/fase-e-comparacion.md`.

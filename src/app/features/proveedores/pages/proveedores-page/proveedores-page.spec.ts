@@ -13,8 +13,8 @@ const base = environment.apiBaseUrl;
 
 const pagina0: PaginaResponse<ProveedorAdminResponse> = {
   contenido: [
-    { id: 'p-1', nombre: 'Máximo Quispe', dni: '111', telefono: '987654321', zonaActualId: 'z-1', zonaActualNombre: 'Huancayo Norte', codigoQr: 'QR-1', activo: true },
-    { id: 'p-2', nombre: 'Rosa Huamán', dni: '222', telefono: null, zonaActualId: 'z-2', zonaActualNombre: 'El Tambo', codigoQr: 'QR-2', activo: false }
+    { id: 'p-1', nombre: 'Máximo Quispe', dni: '111', telefono: '987654321', zonaActualId: 'z-1', zonaActualNombre: 'Huancayo Norte', codigoQr: 'QR-1', activo: true, tipoPersona: 'NATURAL', ruc: null, razonSocial: null },
+    { id: 'p-2', nombre: 'Rosa Huamán', dni: '222', telefono: null, zonaActualId: 'z-2', zonaActualNombre: 'El Tambo', codigoQr: 'QR-2', activo: false, tipoPersona: 'NATURAL', ruc: null, razonSocial: null }
   ],
   paginaActual: 0,
   tamanoPagina: 20,
@@ -135,9 +135,9 @@ describe('ProveedoresPage (regresión: contenido real de cada columna en el DOM)
     const celdas = (fila: Element) => Array.from(fila.querySelectorAll('td')).map((td) => td.textContent?.trim());
 
     const [c1, c2] = [celdas(filas[0]), celdas(filas[1])];
-    // columnas: Proveedor, DNI, Zona actual, Teléfono, Estado, Acciones
+    // columnas: Proveedor, DNI / RUC, Zona actual, Teléfono, Estado, Acciones
     expect(c1[0]).toBe('Máximo Quispe');
-    expect(c1[1]).toBe('111');
+    expect(c1[1]).toBe('DNI 111');
     expect(c1[2]).toBe('Huancayo Norte');
     expect(c1[3]).toBe('987654321');
     expect(c1[4]).toBe('Activo');
@@ -146,6 +146,23 @@ describe('ProveedoresPage (regresión: contenido real de cada columna en el DOM)
     expect(c2[2]).toBe('El Tambo');
     expect(c2[3]).toBe('No registrado');
     expect(c2[4]).toBe('Inactivo');
+  });
+
+  it('Fase G: una empresa muestra su RUC, la etiqueta «Empresa» y su razón social; una persona con RUC muestra ambos documentos', () => {
+    const raiz = fixture.nativeElement as HTMLElement;
+    const componente = fixture.componentInstance as unknown as { proveedores: { set(v: ProveedorAdminResponse[]): void } };
+    componente.proveedores.set([
+      { ...pagina0.contenido[0], dni: '04567890', ruc: '10045678909' },
+      { ...pagina0.contenido[1], tipoPersona: 'EMPRESA', dni: null, ruc: '20601234565', nombre: 'Fundo El Valle', razonSocial: 'Agropecuaria El Valle S.R.L.' }
+    ]);
+    fixture.detectChanges();
+    const filas = raiz.querySelectorAll('tbody tr');
+    expect(filas[0].textContent).toContain('DNI 04567890 · RUC 10045678909');
+    expect(filas[0].querySelector('[data-testid="badge-empresa"]')).toBeNull();
+    expect(filas[1].textContent).toContain('RUC 20601234565');
+    expect(filas[1].textContent).not.toContain('DNI');
+    expect(filas[1].querySelector('[data-testid="badge-empresa"]')?.textContent).toContain('Empresa');
+    expect(filas[1].textContent).toContain('Agropecuaria El Valle S.R.L.');
   });
 
   it('el botón "Editar" de una fila abre el diálogo con el proveedor correcto, no el de otra fila', () => {

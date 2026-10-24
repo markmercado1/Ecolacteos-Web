@@ -78,7 +78,7 @@ Flujo (`ImportarExcelDialog`):
 
 | Tipo | Columnas | Reglas |
 |---|---|---|
-| Proveedores | Nombre completo *, DNI *, Teléfono, Zona | Nombre ≤ 150. **DNI exactamente 8 dígitos**: si Excel lo guardó como número se completa con ceros a la izquierda; como texto debe traer los 8. Teléfono opcional: celular peruano (9 dígitos que empiezan con 9, con o sin +51), se guarda como `+519XXXXXXXX`. Zona opcional: una zona **activa** existente (sin mayúsculas ni acentos), nunca se crea. DNI existente (activo o inactivo) o repetido en el archivo → duplicada. |
+| Proveedores (plantilla **v2**, Fase G) | Tipo de persona, Nombre completo, DNI, RUC, Razón social, Teléfono, Zona | **Tipo** «Persona natural» (por defecto) o «Empresa». Persona natural: nombre (≤ 150) y **DNI de 8 dígitos** obligatorios (si Excel lo guardó como número se completa con ceros a la izquierda), RUC opcional = 10 + DNI + verificador, sin razón social. Empresa: **RUC 20…** (11 dígitos con verificador) y razón social obligatorios, sin DNI; nombre opcional (por defecto, la razón social). Mismas reglas que la pantalla. Teléfono opcional: celular peruano, se guarda como `+519XXXXXXXX`. Zona opcional: una zona **activa** existente, nunca se crea. DNI **o RUC** existente (activo o inactivo) o repetido en el archivo → duplicada. Una plantilla v1 se rechaza. |
 | Insumos | Nombre del insumo *, Unidad de medida *, Stock inicial | Nombre ≤ 60, único sin mayúsculas ni acentos (también contra desactivados). Unidad ≤ 20 (la lista solo sugiere). Stock ≥ 0, hasta 2 decimales, coma o punto; vacío = 0. |
 
 Cualquier celda con **fórmula** o **error de Excel** invalida la fila (nunca se evalúa ni se importa su resultado).

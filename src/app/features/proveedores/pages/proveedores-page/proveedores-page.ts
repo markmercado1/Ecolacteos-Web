@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Dialog } from '@angular/cdk/dialog';
 import { Observable, Subscription } from 'rxjs';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
@@ -10,6 +11,7 @@ import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO, paginaCorregida } from '../../../../shared/util/paginacion';
 import { ZonaResponse } from '../../../catalogos/data-access/zona.models';
 import { ZonasApi } from '../../../catalogos/data-access/zonas.api';
+import { documentoResumen } from '../../data-access/documentos';
 import { ProveedorAdminResponse } from '../../data-access/proveedor.models';
 import { ProveedoresApi } from '../../data-access/proveedores.api';
 import { CambiarZonaDialog } from '../../ui/cambiar-zona-dialog/cambiar-zona-dialog';
@@ -20,7 +22,7 @@ type FiltroEstado = 'TODOS' | 'ACTIVOS' | 'INACTIVOS';
 
 @Component({
   selector: 'app-proveedores-page',
-  imports: [DataTableComponent, ExportarExcelComponent],
+  imports: [DataTableComponent, ExportarExcelComponent, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './proveedores-page.html',
   styleUrl: './proveedores-page.css'
@@ -43,7 +45,7 @@ export class ProveedoresPage {
   protected readonly tamanos = TAMANOS_PAGINA;
   protected readonly filtroZona = signal('');
   protected readonly filtroEstado = signal<FiltroEstado>('TODOS');
-  /** Texto del buscador estándar (nombre o DNI): se envía al servidor y busca en todo el padrón, no en la página. */
+  /** Texto del buscador estándar (nombre, DNI, RUC o razón social): se envía al servidor y busca en todo el padrón, no en la página. */
   private readonly busquedaAplicada = signal('');
   private peticion?: Subscription;
   protected readonly codigoQrBuscado = signal('');
@@ -56,12 +58,17 @@ export class ProveedoresPage {
 
   protected readonly columnas: ColumnaTabla[] = [
     { clave: 'nombre', etiqueta: 'Proveedor' },
-    { clave: 'dni', etiqueta: 'DNI' },
+    { clave: 'documento', etiqueta: 'DNI / RUC' },
     { clave: 'zonaActualNombre', etiqueta: 'Zona actual' },
     { clave: 'telefono', etiqueta: 'Teléfono' },
     { clave: 'estado', etiqueta: 'Estado' },
     { clave: 'acciones', etiqueta: '' }
   ];
+
+  /** Fase G: una persona natural puede tener DNI y RUC; una empresa solo RUC. */
+  protected documento(proveedor: ProveedorAdminResponse): string {
+    return documentoResumen(proveedor);
+  }
 
   constructor() {
     this.zonasApi.listarAdmin().subscribe({ next: (z) => this.zonas.set(z), error: () => undefined });

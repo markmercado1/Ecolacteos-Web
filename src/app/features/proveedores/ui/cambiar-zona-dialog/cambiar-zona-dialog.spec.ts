@@ -9,7 +9,7 @@ import { CambiarZonaDialog } from './cambiar-zona-dialog';
 const base = environment.apiBaseUrl;
 
 const proveedor = {
-  id: 'p-1', nombre: 'Alejandro Terrones', dni: '45454545', telefono: null, zonaActualId: 'z-1', zonaActualNombre: 'Chugur', codigoQr: 'QR', activo: true
+  id: 'p-1', nombre: 'Alejandro Terrones', dni: '45454545', telefono: null, zonaActualId: 'z-1', zonaActualNombre: 'Chugur', codigoQr: 'QR', activo: true, tipoPersona: 'NATURAL', ruc: null, razonSocial: null
 } as ProveedorAdminResponse;
 const zonas = [{ id: 'z-1', nombre: 'Chugur', activa: true }, { id: 'z-2', nombre: 'Bambamarca', activa: true }];
 

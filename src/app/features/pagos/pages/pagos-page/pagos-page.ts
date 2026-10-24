@@ -46,7 +46,7 @@ export class PagosPage {
   protected readonly pagina = signal(0);
   protected readonly tamano = signal(TAMANO_PAGINA_POR_DEFECTO);
   protected readonly tamanos = TAMANOS_PAGINA;
-  /** Texto del buscador estándar (proveedor o DNI): se envía al servidor y busca entre todos los pagos. */
+  /** Texto del buscador estándar (proveedor, DNI, RUC o razón social): se envía al servidor y busca entre todos los pagos. */
   private readonly busquedaAplicada = signal('');
   /** Búsqueda vigente: el Excel trae todos los pagos que la cumplen, no solo la página visible. */
   protected readonly filtroExportacion = computed(() => ({ busqueda: this.busquedaAplicada() || undefined }));

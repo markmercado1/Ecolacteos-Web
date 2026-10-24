@@ -47,6 +47,7 @@ const ETIQUETAS_CANAL: Record<TipoClienteVenta, string> = {
               <th class="align-end">Cantidad</th>
               <th class="align-end">P. unitario</th>
               <th class="align-end">Subtotal</th>
+              @if (conDesglose(v)) { <th>IGV</th> }
             </tr>
           </thead>
           <tbody>
@@ -57,11 +58,26 @@ const ETIQUETAS_CANAL: Record<TipoClienteVenta, string> = {
                 <td class="align-end">{{ linea.cantidad }}</td>
                 <td class="align-end">S/ {{ linea.precioUnitario | number: '1.2-2' }}</td>
                 <td class="align-end">S/ {{ linea.subtotal | number: '1.2-2' }}</td>
+                @if (conDesglose(v)) {
+                  <td data-testid="igv-linea">
+                    @if (linea.afectacionIgv === 'GRAVADO') { Incluye S/ {{ linea.igv | number: '1.2-2' }} ({{ linea.tasaIgv | number: '1.0-2' }} %) }
+                    @else if (linea.afectacionIgv) { {{ linea.afectacionIgv === 'EXONERADO' ? 'Exonerado' : 'Inafecto' }} }
+                    @else { <span class="muted">Sin determinar</span> }
+                  </td>
+                }
               </tr>
             }
           </tbody>
         </table>
         <p class="total">Total confirmado por el servidor: S/ {{ v.total | number: '1.2-2' }}</p>
+        @if (conDesglose(v) && v.igv; as igv) {
+          <div class="desglose" data-testid="desglose-igv">
+            @if (igv.incluyeIgv) { <p><strong>Incluye IGV: S/ {{ igv.igvTotal | number: '1.2-2' }}</strong> · Op. gravadas S/ {{ igv.operacionesGravadas | number: '1.2-2' }}</p> }
+            @if (igv.operacionesExoneradas > 0) { <p>Op. exoneradas: S/ {{ igv.operacionesExoneradas | number: '1.2-2' }}</p> }
+            @if (igv.operacionesInafectas > 0) { <p>Op. inafectas: S/ {{ igv.operacionesInafectas | number: '1.2-2' }}</p> }
+            @if (igv.estado === 'PARCIAL') { <p class="muted">Sin determinar: S/ {{ igv.montoSinDeterminar | number: '1.2-2' }} (presentaciones sin afectación definida).</p> }
+          </div>
+        }
       }
     </div>
     <div class="dialog-foot">
@@ -85,6 +101,9 @@ const ETIQUETAS_CANAL: Record<TipoClienteVenta, string> = {
     .tabla-lineas th, .tabla-lineas td { text-align: left; padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--color-border); }
     .tabla-lineas th.align-end, .tabla-lineas td.align-end { text-align: right; }
     .total { font-weight: 700; margin-top: var(--space-4); text-align: right; }
+    .desglose { text-align: right; font-size: var(--font-size-sm); }
+    .desglose p { margin: 0.2rem 0; }
+    .muted { color: var(--color-text-muted); }
     .dialog-foot { display: flex; justify-content: flex-end; padding: 0 var(--space-6) var(--space-6); }
     @media (max-width: 480px) { dl { grid-template-columns: 1fr; } }
   `
@@ -100,6 +119,14 @@ export class VentaDetalleDialog {
 
   constructor() {
     this.cargar();
+  }
+
+  /**
+   * Fase G: el desglose solo se muestra si el servidor registró la foto tributaria de alguna línea. Una venta anterior o registrada con
+   * el cálculo apagado se ve exactamente como antes (sin «Incluye IGV»).
+   */
+  protected conDesglose(v: VentaResumenResponse): boolean {
+    return !!v.igv && v.igv.estado !== 'SIN_DETERMINAR';
   }
 
   protected etiquetaCanal(canal: TipoClienteVenta): string {

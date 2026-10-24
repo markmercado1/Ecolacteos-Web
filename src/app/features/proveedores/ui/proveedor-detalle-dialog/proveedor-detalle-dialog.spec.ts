@@ -20,6 +20,9 @@ const proveedor: ProveedorAdminResponse = {
   zonaActualNombre: 'Huancayo Norte',
   codigoQr: 'QR-1',
   activo: true,
+  tipoPersona: 'NATURAL',
+  ruc: null,
+  razonSocial: null,
 };
 
 function crear() {

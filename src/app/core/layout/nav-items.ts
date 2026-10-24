@@ -65,7 +65,8 @@ export const GRUPOS_NAVEGACION: GrupoNavegacion[] = [
     items: [
       { ruta: '/ventas', etiqueta: 'Ventas', icono: 'ventas', roles: ['ADMIN', 'VENTAS'] },
       { ruta: '/reservas', etiqueta: 'Reservas', icono: 'reservas', roles: ['ADMIN', 'VENTAS'] },
-      { ruta: '/precios', etiqueta: 'Precios', icono: 'precios', roles: ['ADMIN'] }
+      { ruta: '/precios', etiqueta: 'Precios', icono: 'precios', roles: ['ADMIN'] },
+      { ruta: '/igv', etiqueta: 'IGV de las ventas', icono: 'precios', roles: ['ADMIN'] }
     ]
   },
   {
@@ -74,6 +75,7 @@ export const GRUPOS_NAVEGACION: GrupoNavegacion[] = [
     icono: 'proveedores',
     items: [
       { ruta: '/proveedores', etiqueta: 'Proveedores', icono: 'proveedores', roles: ['ADMIN'] },
+      { ruta: '/proveedores-revision', etiqueta: 'Revisión de documentos', icono: 'alerta', roles: ['ADMIN'] },
       { ruta: '/zonas-revision', etiqueta: 'Revisión de zonas', icono: 'alerta', roles: ['ADMIN'] },
       { ruta: '/pagos', etiqueta: 'Pagos', icono: 'pagos', roles: ['ADMIN', 'RECEPCION'] },
       { ruta: '/pagos-efectivos', etiqueta: 'Pagos a proveedores', icono: 'pagos', roles: ['ADMIN', 'RECEPCION'] },
