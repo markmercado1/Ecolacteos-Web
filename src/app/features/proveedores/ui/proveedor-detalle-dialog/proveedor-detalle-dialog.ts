@@ -19,6 +19,7 @@ import { PagosApi } from '../../../pagos/data-access/pagos.api';
 import { PagoDetalleDialog } from '../../../pagos/ui/pago-detalle-dialog/pago-detalle-dialog';
 import { HistorialProveedorDialog } from '../../../acopios/historial-proveedor-dialog';
 import { HistorialConsolidadoDialog } from '../../../historial-proveedor/ui/historial-consolidado-dialog/historial-consolidado-dialog';
+import { etiquetaTipoPersona } from '../../data-access/proveedor.models';
 
 /** El diálogo es angosto: páginas más cortas que en las tablas de pantalla completa. */
 const TAMANO_PAGINA_PAGOS = 10;
@@ -54,7 +55,10 @@ type Pestana = 'general' | 'zonas' | 'pagos';
 
     <div class="dialog-body" aria-labelledby="proveedor-detalle-titulo">
       @if (pestana() === 'general') {
-        <div class="detail-row"><span>DNI</span><b>{{ data.proveedor.dni }}</b></div>
+        <div class="detail-row"><span>Tipo</span><b>{{ tipo() }}</b></div>
+        @if (data.proveedor.razonSocial) { <div class="detail-row"><span>Razón social</span><b>{{ data.proveedor.razonSocial }}</b></div> }
+        @if (data.proveedor.dni) { <div class="detail-row"><span>DNI</span><b>{{ data.proveedor.dni }}</b></div> }
+        <div class="detail-row"><span>RUC</span><b>{{ data.proveedor.ruc ?? 'No registrado' }}</b></div>
         <div class="detail-row"><span>Teléfono</span><b>{{ data.proveedor.telefono ?? 'No registrado' }}</b></div>
         <div class="detail-row"><span>Zona actual</span><b>{{ data.proveedor.zonaActualNombre ?? 'Sin zona' }}</b></div>
         <div class="detail-row"><span>Estado</span><b>{{ data.proveedor.activo ? 'Activo' : 'Inactivo' }}</b></div>
@@ -203,6 +207,11 @@ type Pestana = 'general' | 'zonas' | 'pagos';
   `
 })
 export class ProveedorDetalleDialog {
+  /** Fase G: persona natural o empresa. */
+  protected tipo(): string {
+    return etiquetaTipoPersona(this.data.proveedor.tipoPersona);
+  }
+
   protected readonly tamanoPagos = TAMANO_PAGINA_PAGOS;
   protected readonly dialogRef = inject(DialogRef<void>);
   protected readonly data = inject<ProveedorDetalleDialogData>(DIALOG_DATA);

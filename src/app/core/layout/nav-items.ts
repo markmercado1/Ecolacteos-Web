@@ -74,6 +74,7 @@ export const GRUPOS_NAVEGACION: GrupoNavegacion[] = [
     icono: 'proveedores',
     items: [
       { ruta: '/proveedores', etiqueta: 'Proveedores', icono: 'proveedores', roles: ['ADMIN'] },
+      { ruta: '/proveedores-revision', etiqueta: 'Revisión de documentos', icono: 'alerta', roles: ['ADMIN'] },
       { ruta: '/zonas-revision', etiqueta: 'Revisión de zonas', icono: 'alerta', roles: ['ADMIN'] },
       { ruta: '/pagos', etiqueta: 'Pagos', icono: 'pagos', roles: ['ADMIN', 'RECEPCION'] },
       { ruta: '/pagos-efectivos', etiqueta: 'Pagos a proveedores', icono: 'pagos', roles: ['ADMIN', 'RECEPCION'] },

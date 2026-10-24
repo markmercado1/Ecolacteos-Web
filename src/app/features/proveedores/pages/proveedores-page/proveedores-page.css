@@ -23,3 +23,8 @@
   padding: var(--space-2) var(--space-3);
   font-size: var(--font-size-sm);
 }
+
+/* Fase G: empresa y documentos */
+.badge.tipo { margin-left: var(--space-2); }
+.razon { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 0.15rem; }
+.documento { font-variant-numeric: tabular-nums; white-space: nowrap; }

@@ -6,6 +6,7 @@ import { PaginaResponse } from '../../../shared/models/pagina-response';
 import {
   HistorialZonaResponse,
   ProveedorAdminResponse,
+  RevisionDocumentosResponse,
   ProveedorPublicoResponse,
   ProveedorRequest,
   ProveedorUpdateRequest
@@ -14,7 +15,7 @@ import {
 export interface FiltroProveedores {
   zonaId?: string;
   activo?: boolean;
-  /** Nombre o DNI; se busca en todo el padrón en el servidor, antes de paginar. */
+  /** Nombre, DNI, RUC o razón social; se busca en todo el padrón en el servidor, antes de paginar. */
   busqueda?: string;
   page: number;
   size: number;
@@ -33,6 +34,11 @@ export class ProveedoresApi {
     const busqueda = filtro.busqueda?.trim();
     if (busqueda) params = params.set('busqueda', busqueda);
     return this.http.get<PaginaResponse<ProveedorAdminResponse>>(`${this.baseUrl}/proveedores`, { params });
+  }
+
+  /** Fase G: documentos que no cumplen las reglas actuales (solo ADMIN, solo lectura; no corrige nada). */
+  revisionDocumentos(): Observable<RevisionDocumentosResponse> {
+    return this.http.get<RevisionDocumentosResponse>(`${this.baseUrl}/admin/proveedores/revision-documentos`);
   }
 
   obtener(id: string): Observable<ProveedorAdminResponse> {
