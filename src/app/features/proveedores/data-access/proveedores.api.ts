@@ -68,8 +68,10 @@ export class ProveedoresApi {
     return this.http.get<HistorialZonaResponse[]>(`${this.baseUrl}/proveedores/${id}/historial-zona`);
   }
 
-  reasignarZona(id: string, zonaId: string): Observable<ProveedorAdminResponse> {
-    const params = new HttpParams().set('zonaId', zonaId);
+  /** `motivo` es opcional (hasta 200 caracteres); el servidor rechaza con 409 reasignar a la zona en la que el proveedor ya está. */
+  reasignarZona(id: string, zonaId: string, motivo?: string): Observable<ProveedorAdminResponse> {
+    let params = new HttpParams().set('zonaId', zonaId);
+    if (motivo?.trim()) params = params.set('motivo', motivo.trim());
     return this.http.put<ProveedorAdminResponse>(`${this.baseUrl}/proveedores/${id}/zona`, null, { params });
   }
 }

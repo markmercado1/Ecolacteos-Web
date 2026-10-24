@@ -92,6 +92,12 @@ function motivoConTexto(control: AbstractControl): ValidationErrors | null {
               Cambia el precio solo de <b>este pago</b>; el precio general de la leche y los demás pagos no se tocan.
               El pago original se conserva y el cambio queda registrado con su motivo.
             </p>
+            @if (conPreciosPropios()) {
+              <p class="hint" data-testid="aviso-precios-propios">
+                Algunas entregas de este pago tienen un <b>precio de calidad propio</b>, que manda sobre este ajuste: el nuevo precio solo
+                alcanzará a las demás entregas.
+              </p>
+            }
             <div class="field" [class.has-error]="invalido('precioLitroNuevo')">
               <label for="precioLitroNuevo">Nuevo precio por litro (S/)</label>
               <input id="precioLitroNuevo" type="number" step="0.001" min="0.001" max="999.999" inputmode="decimal"
@@ -108,6 +114,14 @@ function motivoConTexto(control: AbstractControl): ValidationErrors | null {
                 <small class="field-error" role="alert">El motivo es obligatorio.</small>
               }
             </div>
+            @if (precioIngresado() !== null && conPreciosPropios()) {
+              <div class="vista-previa" data-testid="vista-previa-no-disponible">
+                <small>
+                  No se muestra una vista previa del total porque hay entregas con precio de calidad propio: el servidor calcula el total
+                  resultante al aplicar el ajuste (puedes verlo después en «Total a pagar»).
+                </small>
+              </div>
+            }
             @if (vista(); as v) {
               <div class="vista-previa" data-testid="vista-previa" [class.baja]="v.diferencia < 0" [class.sube]="v.diferencia > 0">
                 <div>{{ pago().litrosTotales }} L × S/ {{ v.precio | number: '1.2-3' }} = <b>S/ {{ v.total | number: '1.2-2' }}</b></div>
@@ -145,7 +159,7 @@ function motivoConTexto(control: AbstractControl): ValidationErrors | null {
           <div class="ajuste-precio" data-testid="ajuste-precio">
             <div class="detail-row">
               <span>S/ {{ a.precioLitroAnterior | number: '1.2-3' }} → S/ {{ a.precioLitroNuevo | number: '1.2-3' }}</span>
-              <b>S/ {{ a.totalNuevo | number: '1.2-2' }}</b>
+              @if (!conPreciosPropios()) { <b>S/ {{ a.totalNuevo | number: '1.2-2' }}</b> }
             </div>
             <small class="meta">{{ a.motivo }} · {{ a.usuarioNombre }} · {{ a.creadoEn | date: 'dd/MM/yyyy HH:mm' }}</small>
           </div>
@@ -266,6 +280,13 @@ export class PagoDetalleDialog {
   protected readonly pago = signal(this.data.pago);
   protected readonly ajustado = computed(() => pagoAjustado(this.pago()));
   protected readonly conCalidad = computed(() => pagoConAjusteDeCalidad(this.pago()));
+  /**
+   * ¿Alguna entrega tiene precio de calidad propio? Se sabe por el ajuste de calidad que informa el servidor o por el historial de precios de
+   * calidad. Mientras ese historial carga no se sabe: se trata como «sí» para no mostrar una vista previa que pueda ser incorrecta.
+   */
+  protected readonly conPreciosPropios = computed(
+    () => this.conCalidad() || this.ajustesCalidad().length > 0 || this.cargandoCalidad()
+  );
   protected readonly cambiado = signal(false);
   protected readonly marcando = signal(false);
   protected readonly abriendoBoleta = signal(false);
@@ -294,7 +315,7 @@ export class PagoDetalleDialog {
   private readonly valores = toSignal(this.form.valueChanges, { initialValue: this.form.value });
 
   /** Precio tecleado, solo si es válido; si no, no hay vista previa. */
-  private readonly precioIngresado = computed(() => {
+  protected readonly precioIngresado = computed(() => {
     const v = this.valores().precioLitroNuevo;
     return this.form.controls.precioLitroNuevo.valid && typeof v === 'number' ? v : null;
   });
@@ -302,7 +323,7 @@ export class PagoDetalleDialog {
   /** Vista previa del nuevo total (mismo redondeo que el servidor) y su diferencia con el total a pagar actual. */
   protected readonly vista = computed(() => {
     const precio = this.precioIngresado();
-    if (precio === null) return null;
+    if (precio === null || this.conPreciosPropios()) return null;
     const total = totalDePago(this.pago().litrosTotales, precio);
     return { precio, total, diferencia: Math.round((total - this.pago().totalAPagar) * 100) / 100 };
   });

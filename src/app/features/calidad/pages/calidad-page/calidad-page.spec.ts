@@ -2,7 +2,9 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { environment } from '../../../../../environments/environment';
+import { Dialog } from '@angular/cdk/dialog';
 import { CalidadPage } from './calidad-page';
+import { PreciosCalidadEntregaDialog } from '../../ui/precios-calidad-entrega-dialog/precios-calidad-entrega-dialog';
 
 const base = environment.apiBaseUrl;
 
@@ -142,5 +144,45 @@ describe('CalidadPage', () => {
     expect(c['sinScore']()).toBe(false);
     expect(c['errorScore']()?.status).toBe(500);
     http.verify();
+  });
+
+  describe('precios de calidad (acceso de CALIDAD sin pasar por pagos)', () => {
+    function crearConDialogo() {
+      const abrir = vi.fn();
+      TestBed.configureTestingModule({
+        providers: [provideHttpClient(), provideHttpClientTesting(), { provide: Dialog, useValue: { open: abrir } }]
+      });
+      const http = TestBed.inject(HttpTestingController);
+      const f = TestBed.createComponent(CalidadPage);
+      http.expectOne(`${base}/zonas/operativo`).flush([]);
+      http.expectOne(`${base}/proveedores/operativo`).flush([]);
+      http.expectOne((r) => r.url === `${base}/registros-acopio`).flush([]);
+      http.expectOne((r) => r.url === `${base}/analisis-calidad/bandeja`).flush([
+        { registroAcopioId: 'r-9', proveedorId: 'p1', proveedorNombre: 'Productor Uno', fechaHora: '2026-09-17T08:00:00', litros: 10, resultado: 'RECHAZADO' }
+      ]);
+      return { f, http, abrir };
+    }
+
+    it('cada entrega de la bandeja ofrece «Precios de calidad», que abre el historial de esa entrega', () => {
+      const { f, http, abrir } = crearConDialogo();
+      f.componentInstance['pestana'].set('bandeja');
+      f.detectChanges();
+      const boton = Array.from((f.nativeElement as HTMLElement).querySelectorAll('button')).find((b) => b.textContent?.includes('Precios de calidad'))!;
+      expect(boton).toBeDefined();
+      boton.click();
+      expect(abrir).toHaveBeenCalledWith(PreciosCalidadEntregaDialog, expect.objectContaining({
+        data: { registroAcopioId: 'r-9', proveedorNombre: 'Productor Uno' }
+      }));
+      http.verify();
+    });
+
+    it('desde la consulta por registro también se puede ver, con el id del registro', () => {
+      const { f, http, abrir } = crearConDialogo();
+      f.componentInstance['verPreciosDeCalidad']('r-7');
+      expect(abrir).toHaveBeenCalledWith(PreciosCalidadEntregaDialog, expect.objectContaining({
+        data: { registroAcopioId: 'r-7', proveedorNombre: undefined }
+      }));
+      http.verify();
+    });
   });
 });

@@ -1,5 +1,12 @@
 # Decisiones de producto y alcance
 
+## 2026-10-23 — Cierre de A, B y C
+
+- **«Revisión de zonas» es de solo lectura.** Muestra lo que el sistema no pudo decidir; no ofrece asignar, corregir ni resolver. Resolver los casos históricos es decisión del usuario y se hace fuera del panel.
+- **El motivo del cambio de zona es opcional** (≤200 caracteres); la zona en la que el proveedor ya está no se puede elegir (el servidor además responde 409).
+- **CALIDAD consulta los precios de calidad por entrega, no por pago.** Para no darle acceso general a pagos se añadió un único endpoint por entrega, sin más datos personales que el nombre ya visible en Calidad.
+- **Con precios de calidad por entrega no hay vista previa del ajuste de precio del pago completo**, porque «la entrega manda» y el panel no recalcula reglas económicas: se explica y el total lo calcula el servidor.
+
 ## 2026-10-23 — Panel de pagos: litros efectivos (Fase B) y precios de calidad por entrega (Fase C)
 
 - **No se recalcula ninguna regla económica en Angular.** Totales, ajuste de calidad, precio aplicado, litros contabilizados y efecto de cada precio los trae el servidor;

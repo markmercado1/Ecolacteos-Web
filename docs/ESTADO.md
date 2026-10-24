@@ -1,6 +1,19 @@
 # Estado vigente
 
-## 2026-10-23 — Panel de pagos para las Fases B y C (litros efectivos y precios de calidad): IMPLEMENTADO, sin commit
+## 2026-10-23 — Cierre de las Fases A, B y C en el panel (rama `feature/cierre-fases-abc`)
+
+Sin push. Backend de referencia: `integration/7-fases` + `feature/cierre-fases-abc` (409 al reasignar a la misma zona; `GET /api/analisis-calidad/registro/{id}/precios-calidad`).
+
+- **Fase A (zonas):** el diálogo «Cambiar zona» pide un motivo opcional (≤200) y deshabilita la zona actual; el historial de zona del perfil del proveedor muestra hora exacta, zona de origen,
+  motivo, usuario y «Pendiente de revisión» (texto, no solo color); pantalla **«Revisión de zonas»** (`/zonas-revision`, solo ADMIN, solo lectura) con los periodos marcados y las entregas sin zona.
+  No corrige ningún dato histórico.
+- **CALIDAD:** botón «Precios de calidad» en Bandeja y Consulta de la pantalla Calidad; abre un diálogo de solo consulta de UNA entrega. CALIDAD sigue sin acceso a `/pagos`.
+- **Ajuste de precio del pago completo:** con precios de calidad por entrega la vista previa se oculta y se explica (el servidor calcula el total); el historial deja de mostrar un «total nuevo» engañoso.
+- **Verificado:** 826 pruebas del panel, builds `ecolacteos-web` y `web-publica`; backend 1172 pruebas; flujos reales contra BD temporal. Visual (capturas): revisión de zonas, cambiar zona, historial de zona
+  (con periodo marcado) y diálogo de precios de calidad como CALIDAD. Solo por DOM: la vista previa del ajuste de precio con precios propios.
+- **Sigue pendiente:** casos históricos de zona (3 entregas sin zona, 3 periodos de Absalón) a resolver a mano por el usuario; pagos efectivos.
+
+## 2026-10-23 — Panel de pagos para las Fases B y C (litros efectivos y precios de calidad): COMMITEADO (6cedfe6) e integrado
 
 Rama `feature/panel-pagos-calidad` (worktree `Ecolacteos-Web-pagos`, desde `integration/7-fases`); sin push. Backend de referencia: `integration/7-fases` con las Fases B (V28) y C (V29).
 

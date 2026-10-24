@@ -45,6 +45,18 @@ describe('ProveedoresApi', () => {
     req.flush({});
   });
 
+  it('reasignarZona() envía el motivo recortado cuando existe y no lo envía si falta o está en blanco', () => {
+    api.reasignarZona('p-1', 'z-2', '  Cambió su ruta  ').subscribe();
+    const conMotivo = http.expectOne((r) => r.url === `${base}/proveedores/p-1/zona`);
+    expect(conMotivo.request.params.get('motivo')).toBe('Cambió su ruta');
+    conMotivo.flush({});
+
+    api.reasignarZona('p-1', 'z-2', '   ').subscribe();
+    const sinMotivo = http.expectOne((r) => r.url === `${base}/proveedores/p-1/zona`);
+    expect(sinMotivo.request.params.has('motivo')).toBe(false);
+    sinMotivo.flush({});
+  });
+
   it('obtenerPorCodigoQr() codifica el código en la URL', () => {
     api.obtenerPorCodigoQr('PRV 001').subscribe();
     const req = http.expectOne(`${base}/proveedores/qr/PRV%20001`);

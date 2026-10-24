@@ -45,4 +45,13 @@ export interface HistorialZonaResponse {
   zonaNombre: string;
   desde: string;
   hasta: string | null;
+  /** Fase A (aditivos): el periodo exacto [inicioEn, finEn) (finEn nulo = periodo actual), de dónde venía, por qué y quién lo hizo. */
+  inicioEn: string;
+  finEn: string | null;
+  zonaOrigenNombre: string | null;
+  motivo: string | null;
+  usuarioNombre: string | null;
+  /** Periodo con fechas invertidas heredado de una versión anterior: se conserva, pero no decide la zona de ninguna entrega. */
+  requiereRevision: boolean;
+  notaRevision: string | null;
 }

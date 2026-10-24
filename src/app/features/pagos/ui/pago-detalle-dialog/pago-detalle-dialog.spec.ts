@@ -460,3 +460,72 @@ describe('PagoDetalleDialog · desglose del total y precios de calidad', () => {
     http.verify();
   });
 });
+
+describe('PagoDetalleDialog · vista previa del ajuste con precios por entrega', () => {
+  function crearConHistorialCalidad(pago: PagoResponse, historialAjustes: AjustePrecioPagoResponse[] = []) {
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(), provideHttpClientTesting(),
+        { provide: DIALOG_DATA, useValue: { pago, esAdmin: true, puedeVerHistorialCalidad: true } },
+        { provide: DialogRef, useValue: { close: vi.fn() } }
+      ]
+    });
+    const http = TestBed.inject(HttpTestingController);
+    const f = TestBed.createComponent(PagoDetalleDialog);
+    http.expectOne(`${base}/pagos/${pago.id}/ajustes`).flush([]);
+    http.expectOne(`${base}/pagos/${pago.id}/ajustes-precio`).flush(historialAjustes);
+    return { f, http, calidadReq: () => http.expectOne(`${base}/pagos/${pago.id}/ajustes-calidad`) };
+  }
+
+  it('mientras carga el historial de precios de calidad no se muestra vista previa (podría ser incorrecta)', () => {
+    const { f, http, calidadReq } = crearConHistorialCalidad(pagoBase);
+    comp(f)['abrirAjuste']();
+    comp(f)['form'].patchValue({ precioLitroNuevo: 1.2 });
+    f.detectChanges();
+    expect((f.nativeElement as HTMLElement).querySelector('[data-testid="vista-previa"]')).toBeNull();
+    calidadReq().flush([]); // sin precios propios: ahora sí es seguro
+    f.detectChanges();
+    expect(texto(f)).toContain('100 L × S/ 1.20 = S/ 120.00');
+    http.verify();
+  });
+
+  it('con una entrega de precio propio no hay vista previa: explica por qué y avisa que manda el precio de la entrega', () => {
+    const { f, http, calidadReq } = crearConHistorialCalidad(pagoConCalidad);
+    calidadReq().flush([calidad]);
+    comp(f)['abrirAjuste']();
+    comp(f)['form'].patchValue({ precioLitroNuevo: 1.2 });
+    f.detectChanges();
+    const el = f.nativeElement as HTMLElement;
+    expect(el.querySelector('[data-testid="vista-previa"]')).toBeNull();
+    expect(texto(f)).not.toContain('600 L × S/ 1.20'); // no inventa litros × precio
+    expect(el.querySelector('[data-testid="vista-previa-no-disponible"]')?.textContent).toContain('el servidor calcula el total');
+    expect(el.querySelector('[data-testid="aviso-precios-propios"]')?.textContent).toContain('precio de calidad propio');
+    http.verify();
+  });
+
+  it('sin precio tecleado no hay ni vista ni aviso de «no disponible»', () => {
+    const { f, http, calidadReq } = crearConHistorialCalidad(pagoConCalidad);
+    calidadReq().flush([calidad]);
+    comp(f)['abrirAjuste']();
+    f.detectChanges();
+    expect((f.nativeElement as HTMLElement).querySelector('[data-testid="vista-previa-no-disponible"]')).toBeNull();
+    http.verify();
+  });
+
+  it('el historial de ajustes de precio no muestra un «total nuevo» engañoso cuando hay precios propios, y sí lo muestra si no los hay', () => {
+    const con = crearConHistorialCalidad(pagoConCalidad, [ajusteHistorial]);
+    con.calidadReq().flush([calidad]);
+    con.f.detectChanges();
+    const fila = (con.f.nativeElement as HTMLElement).querySelector('[data-testid="ajuste-precio"]')!;
+    expect(fila.textContent).toContain('S/ 1.00 → S/ 1.20');
+    expect(fila.textContent).not.toContain('S/ 120.00');
+    con.http.verify();
+
+    TestBed.resetTestingModule();
+    const sin = crearConHistorialCalidad(pagoAjustado, [ajusteHistorial]);
+    sin.calidadReq().flush([]);
+    sin.f.detectChanges();
+    expect((sin.f.nativeElement as HTMLElement).querySelector('[data-testid="ajuste-precio"]')!.textContent).toContain('S/ 120.00');
+    sin.http.verify();
+  });
+});

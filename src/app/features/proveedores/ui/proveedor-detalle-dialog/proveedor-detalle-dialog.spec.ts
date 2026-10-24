@@ -101,6 +101,40 @@ describe('ProveedorDetalleDialog (perfil integral)', () => {
     http.verify();
   });
 
+  it('el historial de zona muestra la hora, de dónde venía, el motivo y quién lo hizo, y señala los periodos pendientes de revisión', () => {
+    const { f, http, c } = crear();
+    f.detectChanges();
+    http.expectOne(`${base}/innovacion/score/p1`).flush({}, { status: 404, statusText: 'Not Found' });
+    http.expectOne(`${base}/innovacion/prediccion/p1`).flush({}, { status: 404, statusText: 'Not Found' });
+
+    c['activarZonas']();
+    http.expectOne(`${base}/proveedores/p1/historial-zona`).flush([
+      { id: 'h3', zonaId: 'z3', zonaNombre: 'Bambamarca', desde: '2026-10-22', hasta: null, inicioEn: '2026-10-22T14:05:00', finEn: null,
+        zonaOrigenNombre: 'Chugur', motivo: 'Cambió su ruta de recojo', usuarioNombre: 'Administrador', requiereRevision: false, notaRevision: null },
+      { id: 'h2', zonaId: 'z2', zonaNombre: 'Chugur', desde: '2026-09-30', hasta: '2026-09-29', inicioEn: '2026-09-30T00:00:00', finEn: '2026-09-30T00:00:00',
+        zonaOrigenNombre: null, motivo: null, usuarioNombre: null, requiereRevision: true, notaRevision: 'Periodo invertido (hasta anterior a desde)' },
+      { id: 'h1', zonaId: 'z1', zonaNombre: 'Sorochuco', desde: '2024-06-25', hasta: '2026-07-19', inicioEn: '2024-06-25T00:00:00', finEn: '2026-07-20T00:00:00',
+        zonaOrigenNombre: null, motivo: 'Periodo anterior a la historia detallada', usuarioNombre: null, requiereRevision: false, notaRevision: null }
+    ]);
+    f.detectChanges();
+
+    const items = Array.from((f.nativeElement as HTMLElement).querySelectorAll('[data-testid="zona-item"]')) as HTMLElement[];
+    expect(items.length).toBe(3);
+    const actual = items[0].textContent!.replace(/\s+/g, ' ');
+    expect(actual).toContain('Bambamarca');
+    expect(actual).toContain('22/10/2026 14:05 → actual');
+    expect(actual).toContain('Venía de Chugur');
+    expect(actual).toContain('Cambió su ruta de recojo');
+    expect(actual).toContain('Administrador');
+    const marcado = items[1].textContent!.replace(/\s+/g, ' ');
+    expect(marcado).toContain('Pendiente de revisión'); // texto, no solo color
+    expect(marcado).toContain('2026-09-30 → 2026-09-29'); // fechas tal cual vienen: no se reinterpretan
+    expect(marcado).toContain('Periodo invertido');
+    expect(marcado).toContain('Revisión de zonas');
+    expect(items[2].textContent!.replace(/\s+/g, ' ')).toContain('24/06/2024 19:00'.replace('24/06/2024 19:00', '25/06/2024 00:00 → 20/07/2026 00:00'));
+    http.verify();
+  });
+
   it('la pestaña Pagos carga historial y ajustes pendientes solo al activarla; "Ver detalle" abre PagoDetalleDialog', () => {
     const { f, http, c } = crear();
     f.detectChanges();

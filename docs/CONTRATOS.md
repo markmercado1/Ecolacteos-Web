@@ -580,7 +580,7 @@ public record ZonaRequest(@NotBlank String nombre) {}
 
 ## Entradas sin DTO JSON
 
-PUT proveedor/{id}/zona usa zonaId en query; POST archivos usa multipart con campo file; reactivar, desactivar, marcar comprobante y liquidar ajuste no llevan cuerpo. POST auth/refresh requiere token vigente y no cuerpo. POST sync recibe array, no un DTO aislado.
+PUT proveedor/{id}/zona usa zonaId y el motivo opcional (≤200) en query; POST archivos usa multipart con campo file; reactivar, desactivar, marcar comprobante y liquidar ajuste no llevan cuerpo. POST auth/refresh requiere token vigente y no cuerpo. POST sync recibe array, no un DTO aislado.
 
 ## Respuestas
 
@@ -888,7 +888,24 @@ public record HistorialZonaResponse(
     UUID zonaId,
     String zonaNombre,
     LocalDate desde,
-    LocalDate hasta
+    LocalDate hasta,
+    LocalDateTime inicioEn,        // Fase A (aditivos): periodo exacto [inicioEn, finEn); finEn nulo = periodo actual
+    LocalDateTime finEn,
+    String zonaOrigenNombre,
+    String motivo,
+    String usuarioNombre,
+    boolean requiereRevision,      // periodo invertido heredado: se conserva, no decide la zona de ninguna entrega
+    String notaRevision
+) {}
+```
+
+### RevisionZonasResponse.java (Fase A, `GET /api/admin/zonas/revision`)
+
+```java
+public record RevisionZonasResponse(
+    List<PeriodoParaRevisar> periodos,        // id, proveedorId, proveedorNombre, zonaNombre, desde, hasta, nota
+    long totalEntregasSinZona, int limiteEntregas,
+    List<EntregaSinZona> entregasSinZona      // registroId, proveedorId, proveedorNombre, fechaHora, litros, motivo (DIA_DE_CAMBIO|SIN_PERIODO|OTRO)
 ) {}
 ```
 
