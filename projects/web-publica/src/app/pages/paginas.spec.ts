@@ -195,6 +195,22 @@ describe('páginas públicas', () => {
       expect(texto(f)).toContain('quedan 2 unidades; dejamos esa cantidad en tu reserva');
     });
 
+    it('Fase G: «Incluye IGV» solo aparece si el servidor marca la presentación con precio como gravada', () => {
+      const f = TestBed.createComponent(ProductoPage);
+      f.componentRef.setInput('id', 'p-igv');
+      http.expectOne('/api/catalogo/productos').flush({
+        productos: [producto({ id: 'p-igv', presentaciones: [
+          presentacion({ id: 'g', nombre: 'Gravada', precio: 15, incluyeIgv: true }),
+          presentacion({ id: 's', nombre: 'Sin marcar', precio: 15, incluyeIgv: false }),
+          presentacion({ id: 'c', nombre: 'A confirmar', precio: null, precioAConfirmar: true, incluyeIgv: true })
+        ] })]
+      });
+      f.detectChanges();
+      const marcas = (f.nativeElement as HTMLElement).querySelectorAll('[data-testid="incluye-igv"]');
+      expect(marcas.length).toBe(1);
+      expect(marcas[0].closest('li')?.textContent).toContain('Gravada');
+    });
+
     it('un producto inexistente se indica sin romper la página', () => {
       const f = TestBed.createComponent(ProductoPage);
       f.componentRef.setInput('id', 'no-existe');

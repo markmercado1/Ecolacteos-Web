@@ -15,6 +15,11 @@ export interface PresentacionCatalogo {
   disponibilidad: Disponibilidad;
   /** Unidades que se pueden reservar, solo cuando quedan pocas (POCAS_UNIDADES); null en otro caso (no se publica la cantidad). */
   unidadesDisponibles: number | null;
+  /**
+   * Fase G: true solo si la presentación se vende gravada y el cálculo del IGV está activo; el precio publicado ya lo incluye.
+   * Puede faltar si el backend es anterior a esa fase (se trata como false).
+   */
+  incluyeIgv?: boolean;
 }
 
 export interface ProductoCatalogo {

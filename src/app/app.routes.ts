@@ -133,6 +133,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/catalogos/pages/catalogos-page/catalogos-page').then((m) => m.CatalogosPage)
       },
       {
+        path: 'igv',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] },
+        loadComponent: () => import('./features/tributario/pages/igv-page/igv-page').then((m) => m.IgvPage)
+      },
+      {
         path: 'precios',
         canActivate: [roleGuard],
         data: { roles: ['ADMIN'] },

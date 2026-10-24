@@ -44,6 +44,7 @@ import { contenidoDe, etiquetaDePresentacion, formatearPrecio } from './formato'
         <div class="fila">
           <span class="precio">
             @if (seleccionada().precio !== null) { {{ precioTexto() }} } @else { <span class="a-confirmar">Precio a confirmar</span> }
+            @if (seleccionada().precio !== null && seleccionada().incluyeIgv) { <span class="igv" data-testid="incluye-igv">Incluye IGV</span> }
           </span>
           <span class="badge" [class.badge-warn]="seleccionada().disponibilidad === 'POCAS_UNIDADES'" [class.badge-off]="seleccionada().disponibilidad === 'AGOTADO'">
             {{ etiqueta() }}
@@ -80,6 +81,7 @@ import { contenidoDe, etiquetaDePresentacion, formatearPrecio } from './formato'
     .etiqueta.agotada:not(.activa) { color: #6b6f66; text-decoration: line-through; }
     .fila { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin-top: auto; padding-top: 0.5rem; }
     .precio { font-weight: 800; font-size: 1.1rem; color: var(--color-navy); }
+    .igv { display: block; font-weight: 400; font-size: 0.75rem; color: var(--color-muted); }
     .a-confirmar { font-weight: 700; font-size: 0.9rem; color: var(--color-warn-ink); }
     .acciones { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
   `
