@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -36,7 +37,7 @@ type Pestana = 'general' | 'zonas' | 'pagos';
  */
 @Component({
   selector: 'app-proveedor-detalle-dialog',
-  imports: [LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, BarChartComponent, PaginadorComponent],
+  imports: [DatePipe, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, BarChartComponent, PaginadorComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="dialog-head">
@@ -99,9 +100,27 @@ type Pestana = 'general' | 'zonas' | 'pagos';
           <ui-empty-state mensaje="Sin cambios de zona registrados." />
         } @else {
           @for (item of historialZona(); track item.id) {
-            <div class="detail-row">
-              <span>{{ item.zonaNombre }}</span>
-              <b>{{ item.desde }} → {{ item.hasta ?? 'actual' }}</b>
+            <div class="zona-item" data-testid="zona-item">
+              <div class="detail-row">
+                <span>
+                  {{ item.zonaNombre }}
+                  @if (item.requiereRevision) { <span class="badge amber">Pendiente de revisión</span> }
+                </span>
+                @if (item.requiereRevision) {
+                  <b>{{ item.desde }} → {{ item.hasta }}</b>
+                } @else {
+                  <b>{{ item.inicioEn | date: 'dd/MM/yyyy HH:mm' }} → {{ item.finEn ? (item.finEn | date: 'dd/MM/yyyy HH:mm') : 'actual' }}</b>
+                }
+              </div>
+              <small class="meta-zona">
+                @if (item.requiereRevision) {
+                  {{ item.notaRevision ?? 'Periodo con fechas invertidas heredado de una versión anterior.' }}
+                  No decide la zona de ninguna entrega; está en «Revisión de zonas».
+                } @else {
+                  @if (item.zonaOrigenNombre) { Venía de {{ item.zonaOrigenNombre }} · }
+                  {{ item.motivo ?? 'Sin motivo registrado' }}{{ item.usuarioNombre ? ' · ' + item.usuarioNombre : '' }}
+                }
+              </small>
             </div>
           }
         }
@@ -157,6 +176,8 @@ type Pestana = 'general' | 'zonas' | 'pagos';
     </div>
   `,
   styles: `
+    .meta-zona { display: block; color: var(--color-text-muted); font-size: 0.75rem; padding: var(--space-1) 0 var(--space-2); overflow-wrap: anywhere; }
+    .zona-item .badge { margin-left: var(--space-2); }
     :host {
       display: block; width: min(30rem, 100%); background: var(--color-surface);
       border-radius: var(--radius-dialog); box-shadow: var(--shadow-overlay); max-height: 85vh; overflow: auto;

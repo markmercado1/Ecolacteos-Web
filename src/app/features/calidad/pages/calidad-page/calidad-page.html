@@ -92,6 +92,9 @@
         @case ('resultado') {
           <span class="badge" [class.red]="fila.resultado === 'RECHAZADO'">{{ fila.resultado }}</span>
         }
+        @case ('acciones') {
+          <button type="button" class="row-link" (click)="verPreciosDeCalidad(fila.registroAcopioId, fila.proveedorNombre)">Precios de calidad</button>
+        }
       }
     </ng-template>
     <div toolbar>
@@ -151,6 +154,9 @@
                 <span class="badge" [class.red]="fila.resultado === 'RECHAZADO'">{{ fila.resultado }}</span>
               }
               @case ('creadoEn') { {{ fila.creadoEn | date: 'dd/MM/yyyy HH:mm:ss' }} }
+              @case ('acciones') {
+                <button type="button" class="row-link" (click)="verPreciosDeCalidad(fila.registroAcopioId)">Precios de calidad</button>
+              }
               @default { {{ fila[columna] ?? '—' }} }
             }
           </ng-template>

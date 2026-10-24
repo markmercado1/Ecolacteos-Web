@@ -30,9 +30,17 @@ export interface CambiarZonaDialogData {
         <select id="zonaId" formControlName="zonaId" required>
           <option value="" disabled>Selecciona una zona</option>
           @for (zona of data.zonas; track zona.id) {
-            <option [value]="zona.id">{{ zona.nombre }}</option>
+            <option [value]="zona.id" [disabled]="zona.id === data.proveedor.zonaActualId">
+              {{ zona.nombre }}{{ zona.id === data.proveedor.zonaActualId ? ' (zona actual)' : '' }}
+            </option>
           }
         </select>
+      </div>
+      <div class="field" [class.has-error]="form.controls.motivo.invalid">
+        <label for="motivoZona">Motivo (opcional)</label>
+        <textarea id="motivoZona" rows="2" maxlength="200" formControlName="motivo"
+                  placeholder="Ej. Cambió su ruta de recojo"></textarea>
+        <small class="ayuda">Queda en el historial de zonas del proveedor, con la hora y quién lo hizo. Máximo 200 caracteres.</small>
       </div>
       @if (errorServidor()) { <p class="server-error" role="alert">{{ errorServidor() }}</p> }
       <div class="dialog-foot">
@@ -52,6 +60,7 @@ export interface CambiarZonaDialogData {
     .dialog-head h2 { font-size: var(--font-size-lg); margin: 0; }
     .close { border: 1px solid var(--color-border); background: var(--color-surface); border-radius: var(--radius-control); width: 2rem; height: 2rem; font-size: 1.1rem; line-height: 1; }
     .dialog-body { padding: var(--space-6); }
+    .ayuda { display: block; color: var(--color-text-muted); font-size: 0.75rem; margin-top: var(--space-1); }
     .contexto { font-size: var(--font-size-sm); color: var(--color-text-muted); margin: 0 0 var(--space-4); }
     .server-error { background: var(--color-danger-bg); color: var(--color-danger); border-radius: var(--radius-control); padding: var(--space-3); font-size: var(--font-size-sm); margin: 0 0 var(--space-4); }
     .dialog-foot { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-4); }
@@ -66,7 +75,8 @@ export class CambiarZonaDialog {
   protected readonly enviando = signal(false);
   protected readonly errorServidor = signal<string | null>(null);
   protected readonly form = this.fb.group({
-    zonaId: this.fb.nonNullable.control('', Validators.required)
+    zonaId: this.fb.nonNullable.control('', Validators.required),
+    motivo: this.fb.nonNullable.control('', Validators.maxLength(200))
   });
 
   enviar(): void {
@@ -76,7 +86,8 @@ export class CambiarZonaDialog {
     }
     this.enviando.set(true);
     this.errorServidor.set(null);
-    this.proveedoresApi.reasignarZona(this.data.proveedor.id, this.form.getRawValue().zonaId).subscribe({
+    const { zonaId, motivo } = this.form.getRawValue();
+    this.proveedoresApi.reasignarZona(this.data.proveedor.id, zonaId, motivo.trim() || undefined).subscribe({
       next: (proveedor) => this.dialogRef.close(proveedor),
       error: (error) => {
         this.enviando.set(false);

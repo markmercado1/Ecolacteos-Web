@@ -56,6 +56,13 @@ export const routes: Routes = [
           import('./features/proveedores/pages/proveedores-page/proveedores-page').then((m) => m.ProveedoresPage)
       },
       {
+        path: 'zonas-revision',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] },
+        loadComponent: () =>
+          import('./features/zonas/pages/revision-zonas-page/revision-zonas-page').then((m) => m.RevisionZonasPage)
+      },
+      {
         path: 'pagos',
         canActivate: [roleGuard],
         data: { roles: ['ADMIN', 'RECEPCION'] },

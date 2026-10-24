@@ -81,4 +81,11 @@ describe('CalidadApi', () => {
     req.flush({ mensaje: 'Sin prediccion calculada aun para la zona: z1' }, { status: 404, statusText: 'Not Found' });
     expect(error).toHaveBeenCalled();
   });
+
+  it('preciosDeCalidad() lee los precios de calidad de UNA entrega por GET (CALIDAD y ADMIN, sin acceso a pagos)', () => {
+    api.preciosDeCalidad('r 1/x').subscribe();
+    const req = http.expectOne(`${base}/analisis-calidad/registro/r%201%2Fx/precios-calidad`);
+    expect(req.request.method).toBe('GET');
+    req.flush([]);
+  });
 });

@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { AjusteCalidadEntregaResponse } from '../../pagos/data-access/pago.models';
 import {
   AlertaAnomalia,
   AnalisisBandeja,
@@ -33,6 +34,16 @@ export class CalidadApi {
   porRegistro(registroAcopioId: string): Observable<AnalisisCalidad[]> {
     return this.http.get<AnalisisCalidad[]>(
       `${this.baseUrl}/analisis-calidad/registro/${encodeURIComponent(registroAcopioId)}`,
+    );
+  }
+
+  /**
+   * Cierre de la Fase C. CALIDAD y ADMIN. Precios de calidad aplicados a UNA entrega (más reciente primero) con el análisis que los sustentó. No da
+   * acceso a los pagos ni incluye datos del proveedor. Vacío si la entrega no tiene ninguno.
+   */
+  preciosDeCalidad(registroAcopioId: string): Observable<AjusteCalidadEntregaResponse[]> {
+    return this.http.get<AjusteCalidadEntregaResponse[]>(
+      `${this.baseUrl}/analisis-calidad/registro/${encodeURIComponent(registroAcopioId)}/precios-calidad`,
     );
   }
 

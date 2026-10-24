@@ -1,5 +1,21 @@
 # Registro acumulativo
 
+## Cierre de las Fases A, B y C en el panel — 2026-10-23
+
+Autorizado («cerrar completamente las fases A, B y C»). Worktree `Ecolacteos-Web-cierre`, rama `feature/cierre-fases-abc` (desde `integration/7-fases`).
+
+- **Nuevo:** `features/zonas` (`RevisionZonasApi`, modelos, `RevisionZonasPage`), `features/calidad/ui/precios-calidad-entrega-dialog`, ruta `zonas-revision` (ADMIN) y entrada de navegación «Revisión de zonas».
+- **Modificado:** `cambiar-zona-dialog` (motivo opcional, zona actual deshabilitada), `proveedores.api.reasignarZona(id, zonaId, motivo?)` (el motivo viaja como query solo si no está en blanco),
+  `proveedor-detalle-dialog` (historial de zona enriquecido), `calidad-page` (+ `CalidadApi.preciosDeCalidad`), `pago-detalle-dialog` (`conPreciosPropios`: sin vista previa si alguna entrega tiene precio propio o mientras carga el historial).
+- **Defectos hallados al revisar A+B+C juntas:** (a) reasignar a la misma zona abría un periodo vacío → ahora 409 en el backend y opción deshabilitada en el panel; (b) CALIDAD tenía permiso en la API pero ninguna ruta del
+  panel → endpoint mínimo nuevo y diálogo en Calidad; (c) la vista previa del ajuste de precio del pago completo era incorrecta con precios por entrega → se oculta; (d) el «total nuevo» del historial de ajustes también → se oculta.
+- **Pruebas:** specs nuevos (revisión de zonas, modelos, cambiar zona, precios de calidad, rutas) y ampliados (proveedores.api, proveedor-detalle, calidad.api, calidad-page, shell, pago-detalle: 4 casos de vista previa). Panel 826/826;
+  builds OK. Backend 1172/1172.
+- **Flujos reales** (jar de la rama contra PostgreSQL temporal, panel en producción con proxy): cambio de zona con motivo, historial, periodo marcado, entregas sin zona, 409 misma zona, CALIDAD 200 en precios-calidad y 403 en `/pagos`
+  y `/admin/zonas/revision`, ajuste de precio con precios propios.
+- **Visual vs DOM:** capturas reales de `/zonas-revision`, diálogo de cambiar zona, historial de zona (con y sin periodo marcado) y diálogo de CALIDAD; la vista previa del ajuste se comprobó por DOM (el panel se ocultó antes de capturarla).
+  Tampoco se revisó visualmente el ancho móvil.
+
 ## Panel de pagos para las Fases B y C — 2026-10-23
 
 Autorizado por el usuario («implementa el panel de las fases B y C»; solo ADMIN aplica el precio de calidad; usa los contratos reales y no recalcules reglas económicas; sin formulario

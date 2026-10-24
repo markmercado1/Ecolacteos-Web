@@ -71,6 +71,17 @@ describe('Shell — navegación desplegable', () => {
     expect(enlaces(f)).not.toContain('Reservas');
   });
 
+  it('solo ADMIN ve «Revisión de zonas» en la navegación', async () => {
+    const admin = await crear('ADMIN', '/pagos');
+    expect(enlaces(admin)).toContain('Revisión de zonas');
+    TestBed.resetTestingModule();
+    for (const rol of ['RECEPCION', 'CALIDAD', 'PRODUCCION', 'VENTAS', 'ACOPIADOR'] as const) {
+      const f = await crear(rol, rol === 'RECEPCION' ? '/pagos' : '/');
+      expect(enlaces(f), rol).not.toContain('Revisión de zonas');
+      TestBed.resetTestingModule();
+    }
+  });
+
   it('alternar abre/cierra una sección, actualiza aria-expanded y lo recuerda en este navegador', async () => {
     const f = await crear('ADMIN', '/produccion');
     const admin = toggles(f).find((b) => b.textContent?.includes('Administración'))!;

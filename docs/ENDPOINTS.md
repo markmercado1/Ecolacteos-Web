@@ -657,7 +657,16 @@ Fuente: `C:\EcoLacteosProyect\acopio-backend-fase2\ecolacteos-backend\src\main\j
 
 - Permiso: `hasAnyRole('ADMIN','RECEPCION','CALIDAD')`.
 - Respuesta: `List<AjusteCalidadEntregaResponse>` (más reciente primero).
-- El panel lo muestra en el detalle del pago (ADMIN y RECEPCION). CALIDAD tiene permiso en la API pero **no hay ruta del panel** que lo alcance (su único acceso es «Calidad»; `/pagos` es ADMIN/RECEPCION).
+- El panel lo muestra en el detalle del pago (ADMIN y RECEPCION). CALIDAD lo consulta por entrega con `GET /api/analisis-calidad/registro/{id}/precios-calidad` desde la pantalla Calidad (`/pagos` sigue siendo ADMIN/RECEPCION).
+
+### GET /api/analisis-calidad/registro/{registroAcopioId}/precios-calidad (cierre A+B+C)
+
+- Permiso: `hasAnyRole('ADMIN','CALIDAD')`. 404 si la entrega no existe.
+- Respuesta: `List<AjusteCalidadEntregaResponse>` de esa entrega (más reciente primero). Solo lectura.
+
+### GET /api/admin/zonas/revision (Fase A)
+
+- Permiso: `hasRole('ADMIN')`. Respuesta: `RevisionZonasResponse`. Solo lectura: el panel no corrige nada.
 
 ### GET /api/pagos/ajustes/pendientes
 
@@ -745,8 +754,9 @@ Fuente: `C:\EcoLacteosProyect\acopio-backend-fase2\ecolacteos-backend\src\main\j
 
 - Permiso: `hasRole('ADMIN')`.
 - Respuesta: `ProveedorAdminResponse`.
-- Entrada: `@PathVariable UUID id, @RequestParam UUID zonaId`.
-- Fuente: línea 220, método `reasignarZona`.
+- Entrada: `@PathVariable UUID id, @RequestParam UUID zonaId, @RequestParam(required = false) String motivo` (≤200).
+- 409 si el proveedor ya está en esa zona. Cada cambio cierra el periodo actual y abre otro con el instante exacto, la zona de origen, el motivo y el usuario.
+- Fuente: método `reasignarZona`.
 
 ## RecepcionPlantaController.java
 

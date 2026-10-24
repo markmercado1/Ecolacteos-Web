@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Dialog } from '@angular/cdk/dialog';
 import { Subscription } from 'rxjs';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
@@ -22,6 +23,7 @@ import {
   ScoreConfianza,
 } from '../../data-access/calidad.models';
 import { CalidadApi } from '../../data-access/calidad.api';
+import { PreciosCalidadEntregaDialog } from '../../ui/precios-calidad-entrega-dialog/precios-calidad-entrega-dialog';
 import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 type Pestana = 'pendientes' | 'bandeja' | 'consulta' | 'alertas';
@@ -40,6 +42,7 @@ export class CalidadPage {
   private readonly zonasApi = inject(ZonasApi);
   private readonly proveedoresApi = inject(ProveedoresApi);
   private readonly destroy = inject(DestroyRef);
+  private readonly dialog = inject(Dialog);
 
   protected readonly hoy = fechaHoyLima;
   protected readonly pestana = signal<Pestana>('pendientes');
@@ -74,6 +77,7 @@ export class CalidadPage {
     { clave: 'proveedorNombre', etiqueta: 'Proveedor' },
     { clave: 'litros', etiqueta: 'Litros', alinearFin: true },
     { clave: 'resultado', etiqueta: 'Resultado' },
+    { clave: 'acciones', etiqueta: '' },
   ];
 
   // Consulta de análisis por folio o por registro de acopio.
@@ -93,6 +97,7 @@ export class CalidadPage {
     { clave: 'aguaAnadida', etiqueta: 'Agua añadida' },
     { clave: 'resultado', etiqueta: 'Resultado' },
     { clave: 'creadoEn', etiqueta: 'Registrado' },
+    { clave: 'acciones', etiqueta: '' },
   ];
 
   // Alertas de anomalía por zona.
@@ -176,6 +181,14 @@ export class CalidadPage {
           this.cargandoBandeja.set(false);
         },
       });
+  }
+
+  /** Precios de calidad que se fijaron a una entrega al liquidar su pago (solo lectura; CALIDAD no accede a los pagos). */
+  protected verPreciosDeCalidad(registroAcopioId: string, proveedorNombre?: string): void {
+    this.dialog.open(PreciosCalidadEntregaDialog, {
+      ariaLabel: 'Precios de calidad de la entrega',
+      data: { registroAcopioId, proveedorNombre }
+    });
   }
 
   /** Desde la fila de un pendiente: salta a la pestaña de consulta ya buscando ese registro. */
