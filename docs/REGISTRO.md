@@ -1,5 +1,26 @@
 # Registro acumulativo
 
+## Pagos efectivos a proveedores — 2026-10-23
+
+Autorizado («Pagos efectivos: implementa backend y panel según el diseño acordado, con concurrencia, idempotencia, anulación y permisos»). Worktree `Ecolacteos-Web-pagosef`
+(rama `feature/pagos-efectivos`, desde `integration/7-fases`). Decisión consultada al usuario: los ajustes de litros entran **dentro del saldo de su liquidación**.
+
+- **Nuevo:** `features/pagos-efectivos` — `data-access` (`pago-proveedor.models.ts`, `pagos-proveedor.api.ts`), `ui` (`registrar-pago-proveedor-dialog`, `aplicar-pago-proveedor-dialog`,
+  `pago-proveedor-detalle-dialog`, `saldo-pago`), `pages/pagos-efectivos-page`; ruta `pagos-efectivos` (ADMIN, RECEPCION) y entrada «Pagos a proveedores» en la navegación.
+- **Modificado:** `pago-detalle-dialog` incluye `<app-saldo-pago>`; su spec aísla `PagosProveedorApi` con un stub (el saldo se prueba en `saldo-pago.spec`).
+- **Reutiliza** `CampoUnicoDialog` para pedir el motivo de anulación.
+- **Pruebas:** specs de api/etiquetas, registrar (validaciones, solicitud limpia, mismo uuid en reintentos, aplicar o no), aplicar, detalle, saldo-pago, página (acciones por rol y estado, filtros, anular),
+  rutas y navegación. Panel 114 archivos / 866 pruebas; builds de `ecolacteos-web` y `web-publica` OK. Backend 1192 pruebas, 0 fallos.
+- **Mutaciones:** panel 9/9 detectadas (reintento con otro uuid, transferencia sin banco, RECEPCION anula, «Aplicar» sin adelanto, liquidaciones pagadas ofrecidas, saldo a favor en negativo,
+  CALIDAD en la ruta, aplicar aunque se desmarque, detalle sin saldo). Backend 11/11 (topes de saldo y de pago, ajustes de litros fuera del saldo, anulados que siguen contando, RECEPCION anula,
+  uuid repetido, falta de bloqueo de liquidación y de pago —con transacciones que sostienen la fila—, otro proveedor, misma operación, adelanto anulado, doble anulación).
+- **Flujo real** (jar de la rama + PostgreSQL temporal + panel de producción con proxy): RECEPCION registra una transferencia de S/ 100 (con banco y operación obligatorios), el servidor rechaza aplicar 150
+  (queda 100) y acepta 60; el detalle del pago muestra saldo 496 («Pago parcial»; 560 − 4 de ajustes de litros − 60); registrar 600 desde el detalle se rechaza por saldo y 496 lo lleva a «Pagado»; ADMIN anula
+  con motivo (queda «Anulado», conserva la aplicación y deja de contar); CALIDAD recibe 403 en la ruta. **Visual (capturas reales):** lista de pagos, diálogo de registro con datos bancarios,
+  diálogo de aplicar, sección de saldo del detalle y detalle de un pago anulado. **Solo DOM:** valores de los flujos anteriores, toasts y filas con sus acciones por rol. La captura de la pane muestra solo
+  800×450 px de un viewport de 1280×720: las columnas del extremo derecho de la tabla se verificaron por DOM, no visualmente.
+- **Backend (referencia):** ver `API_DOCUMENTATION.md` §12 del repositorio backend: idempotencia por uuid y por operación bancaria (también simultánea), bloqueos de fila, anulación sin borrar, saldos derivados.
+
 ## Cierre de las Fases A, B y C en el panel — 2026-10-23
 
 Autorizado («cerrar completamente las fases A, B y C»). Worktree `Ecolacteos-Web-cierre`, rama `feature/cierre-fases-abc` (desde `integration/7-fases`).

@@ -71,6 +71,19 @@ describe('Shell — navegación desplegable', () => {
     expect(enlaces(f)).not.toContain('Reservas');
   });
 
+  it('ADMIN y RECEPCION ven «Pagos a proveedores»; los demás roles no', async () => {
+    for (const rol of ['ADMIN', 'RECEPCION'] as const) {
+      const f = await crear(rol, '/pagos');
+      expect(enlaces(f), rol).toContain('Pagos a proveedores');
+      TestBed.resetTestingModule();
+    }
+    for (const rol of ['CALIDAD', 'PRODUCCION', 'VENTAS', 'ACOPIADOR'] as const) {
+      const f = await crear(rol, '/');
+      expect(enlaces(f), rol).not.toContain('Pagos a proveedores');
+      TestBed.resetTestingModule();
+    }
+  });
+
   it('solo ADMIN ve «Revisión de zonas» en la navegación', async () => {
     const admin = await crear('ADMIN', '/pagos');
     expect(enlaces(admin)).toContain('Revisión de zonas');

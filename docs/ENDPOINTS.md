@@ -668,6 +668,16 @@ Fuente: `C:\EcoLacteosProyect\acopio-backend-fase2\ecolacteos-backend\src\main\j
 
 - Permiso: `hasRole('ADMIN')`. Respuesta: `RevisionZonasResponse`. Solo lectura: el panel no corrige nada.
 
+### Pagos efectivos — PagoProveedorController (`/api/pagos-proveedor`)
+
+- `POST /api/pagos-proveedor` — ADMIN, RECEPCION. `PagoProveedorRequest` → `PagoProveedorResponse` (201; 200 si es un reenvío). 400 datos inválidos / banco y operación; 404 proveedor o liquidación; 409 uuid u operación ya usados con otros datos, o tope superado.
+- `GET /api/pagos-proveedor?proveedorId&estado&busqueda&page&size` — ADMIN, RECEPCION. `PaginaResponse<PagoProveedorResponse>`, más reciente primero.
+- `GET /api/pagos-proveedor/{id}` — ADMIN, RECEPCION.
+- `POST /api/pagos-proveedor/{id}/aplicaciones` — ADMIN, RECEPCION. `AplicarPagoProveedorRequest`. 409 si está anulado o se supera lo que queda del pago o el saldo de una liquidación; 400 si la liquidación es de otro proveedor.
+- `POST /api/pagos-proveedor/{id}/anular` — solo ADMIN. `AnularPagoProveedorRequest` (motivo obligatorio). No borra. 409 si ya estaba anulado.
+- `GET /api/pagos-proveedor/saldos?pagoIds=a,b` — ADMIN, RECEPCION. `List<SaldoPagoResponse>` (hasta 100).
+- `GET /api/pagos-proveedor/proveedor/{proveedorId}/saldo` — ADMIN, RECEPCION. `SaldoProveedorResponse`.
+
 ### GET /api/pagos/ajustes/pendientes
 
 - Permiso: `hasRole('ADMIN')`.
