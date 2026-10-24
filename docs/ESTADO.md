@@ -1,5 +1,15 @@
 # Estado vigente
 
+## 2026-10-23 — Fase E, reportes por zona histórica: IMPLEMENTADO (rama `feature/reportes-zona-historica`)
+
+Sin push. Backend de referencia: `integration/7-fases` + `feature/reportes-zona-historica` (solo consultas; sin migración ni cambios de contrato). **Cambia las cifras por zona**: ver `docs/fase-e-comparacion.md`.
+
+- **Criterio nuevo:** los reportes «por zona» (acopios por zona y su exportación, resumen por proveedor, alertas, rechazo por semana, bases del forecasting) usan la zona de **cada entrega**, no la actual del proveedor.
+- **Efecto medido (mismos datos, antes y después), variación neta de entregas por zona:** Zona Prueba −192, Chugur +105, Sorochuco +81, Bambamarca +3; las 3 entregas sin zona determinada no se cuentan en ninguna zona.
+  Sin filtro de zona no cambia nada (3 276 entregas).
+- **Panel:** al filtrar Acopios por zona se avisa que es la zona de cada entrega y que las entregas sin zona no aparecen (ver «Revisión de zonas»). Sin más cambios de interfaz.
+- **No se reparan** los casos históricos pendientes (3 entregas sin zona, 3 periodos invertidos): esta fase no los toca.
+
 ## 2026-10-23 — Fase D, historial consolidado del proveedor: IMPLEMENTADO (rama `feature/historial-consolidado`)
 
 Sin push. Backend de referencia: `integration/7-fases` + `feature/historial-consolidado` (`GET /api/proveedores/{id}/historial/resumen` y `/entregas`, sin migración).
