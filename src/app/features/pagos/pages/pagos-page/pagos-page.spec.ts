@@ -10,6 +10,7 @@ import { UsuarioMeResponse } from '../../../../core/auth/auth.models';
 import { PaginaResponse } from '../../../../shared/models/pagina-response';
 import { PagoResponse } from '../../data-access/pago.models';
 import { PagoDetalleDialog } from '../../ui/pago-detalle-dialog/pago-detalle-dialog';
+import { HistorialConsolidadoDialog } from '../../../historial-proveedor/ui/historial-consolidado-dialog/historial-consolidado-dialog';
 import { PagosPage } from './pagos-page';
 
 const base = environment.apiBaseUrl;
@@ -99,6 +100,29 @@ describe('PagosPage', () => {
       expect(abrir).toHaveBeenCalledWith(PagoDetalleDialog, expect.objectContaining({
         data: { pago: pago('pg-1'), esAdmin: rol === 'ADMIN', puedeVerHistorialCalidad: true }
       }));
+      http.verify();
+    }
+  });
+
+  it('«Historial» abre el historial consolidado del proveedor del pago, para ADMIN y RECEPCION', () => {
+    for (const rol of ['ADMIN', 'RECEPCION'] as const) {
+      TestBed.resetTestingModule();
+      const abrir = vi.fn(() => ({ closed: of(false) }));
+      TestBed.configureTestingModule({
+        providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), { provide: Dialog, useValue: { open: abrir } }]
+      });
+      http = TestBed.inject(HttpTestingController);
+      tokenStore = TestBed.inject(TokenStoreService);
+      tokenStore.establecer({ token: 't', refreshToken: 'r', expiraEn: 0, refreshExpiraEn: Date.now() + 100000, usuario: usuarioCon(rol) });
+      const f = TestBed.createComponent(PagosPage);
+      http.expectOne(`${base}/proveedores/operativo`).flush([]);
+      http.expectOne((r) => r.url === `${base}/pagos`).flush({ contenido: [pago('pg-1')], paginaActual: 0, tamanoPagina: 20, totalElementos: 1, totalPaginas: 1 });
+      f.detectChanges();
+
+      const boton = Array.from((f.nativeElement as HTMLElement).querySelectorAll('tbody button')).find((b) => b.textContent?.trim() === 'Historial') as HTMLButtonElement;
+      expect(boton, rol).toBeDefined();
+      boton.click();
+      expect(abrir).toHaveBeenCalledWith(HistorialConsolidadoDialog, expect.objectContaining({ data: { proveedorId: 'p-1', proveedorNombre: 'Juan' } }));
       http.verify();
     }
   });

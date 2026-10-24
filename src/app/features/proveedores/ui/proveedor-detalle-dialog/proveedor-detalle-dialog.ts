@@ -18,6 +18,7 @@ import { AjustePagoResponse, PagoResponse } from '../../../pagos/data-access/pag
 import { PagosApi } from '../../../pagos/data-access/pagos.api';
 import { PagoDetalleDialog } from '../../../pagos/ui/pago-detalle-dialog/pago-detalle-dialog';
 import { HistorialProveedorDialog } from '../../../acopios/historial-proveedor-dialog';
+import { HistorialConsolidadoDialog } from '../../../historial-proveedor/ui/historial-consolidado-dialog/historial-consolidado-dialog';
 
 /** El diálogo es angosto: páginas más cortas que en las tablas de pantalla completa. */
 const TAMANO_PAGINA_PAGOS = 10;
@@ -60,6 +61,7 @@ type Pestana = 'general' | 'zonas' | 'pagos';
         <div class="detail-row"><span>Código QR</span><b class="codigo">{{ data.proveedor.codigoQr }}</b></div>
 
         <button type="button" class="btn historial-btn" (click)="abrirHistorialEntregas()">Ver historial de entregas</button>
+        <button type="button" class="btn historial-btn" data-testid="historial-consolidado" (click)="abrirHistorialConsolidado()">Historial consolidado (zonas, calidad y pagos)</button>
 
         <div class="section-head"><h2>Score de confianza</h2></div>
         @if (cargandoScore()) {
@@ -378,6 +380,13 @@ export class ProveedorDetalleDialog {
     this.dialog.open(PagoDetalleDialog, {
       ariaLabel: `Detalle del pago de ${this.data.proveedor.nombre}`,
       data: { pago, esAdmin: true }
+    });
+  }
+
+  protected abrirHistorialConsolidado(): void {
+    this.dialog.open(HistorialConsolidadoDialog, {
+      ariaLabel: `Historial consolidado de ${this.data.proveedor.nombre}`,
+      data: { proveedorId: this.data.proveedor.id, proveedorNombre: this.data.proveedor.nombre }
     });
   }
 

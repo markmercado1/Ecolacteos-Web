@@ -1,5 +1,12 @@
 # Decisiones de producto y alcance
 
+## 2026-10-23 — Fase D, historial consolidado
+
+- **Las secciones las decide el servidor por rol** (no el panel): calidad para ADMIN y CALIDAD, pagos para ADMIN y RECEPCION, zonas solo ADMIN; una sección no autorizada llega nula y el panel no la muestra.
+- **La zona de cada entrega es la de ese momento** (Fase A); si no se pudo determinar se muestra «Sin zona» y no se rellena con la zona actual.
+- **Los totales no se recalculan en Angular**: salen del servidor, de las mismas fuentes que Pagos y Pagos a proveedores, y se prueba que cuadran con las líneas.
+- **Las entregas sin liquidar se avisan aparte** y no entran en los totales de liquidaciones.
+
 ## 2026-10-23 — Pagos efectivos
 
 - **Los ajustes de litros entran dentro del saldo de su liquidación** (decisión del usuario): saldo = total a pagar + ajustes de litros − pagos aplicados; negativo = saldo a favor. «Liquidar ajuste» sigue siendo

@@ -19,6 +19,7 @@ import { AjustePagoResponse, PagoResponse, pagoAjustado, pagoConAjusteDeCalidad,
 import { PagosApi } from '../../data-access/pagos.api';
 import { GenerarPagoDialog } from '../../ui/generar-pago-dialog/generar-pago-dialog';
 import { PagoDetalleDialog } from '../../ui/pago-detalle-dialog/pago-detalle-dialog';
+import { HistorialConsolidadoDialog } from '../../../historial-proveedor/ui/historial-consolidado-dialog/historial-consolidado-dialog';
 
 type Pestana = 'liquidaciones' | 'ajustes';
 
@@ -145,6 +146,14 @@ export class PagosPage {
       data: { pago, esAdmin: this.esAdmin(), puedeVerHistorialCalidad: puedeVerHistorialDeCalidad(this.auth.usuario()?.rolNombre) }
     });
     ref.closed.subscribe((cambiado) => { if (cambiado) this.cargar(); });
+  }
+
+  /** Historial consolidado del proveedor de este pago (ADMIN y RECEPCION: recibe solo sus secciones). */
+  protected verHistorial(pago: PagoResponse): void {
+    this.dialog.open(HistorialConsolidadoDialog, {
+      ariaLabel: `Historial consolidado de ${pago.proveedorNombre}`,
+      data: { proveedorId: pago.proveedorId, proveedorNombre: pago.proveedorNombre }
+    });
   }
 
   protected consultarAjustes(): void {

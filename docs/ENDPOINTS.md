@@ -678,6 +678,11 @@ Fuente: `C:\EcoLacteosProyect\acopio-backend-fase2\ecolacteos-backend\src\main\j
 - `GET /api/pagos-proveedor/saldos?pagoIds=a,b` — ADMIN, RECEPCION. `List<SaldoPagoResponse>` (hasta 100).
 - `GET /api/pagos-proveedor/proveedor/{proveedorId}/saldo` — ADMIN, RECEPCION. `SaldoProveedorResponse`.
 
+### Historial consolidado — HistorialProveedorController (`/api/proveedores/{proveedorId}/historial`)
+
+- `GET .../resumen` — ADMIN, RECEPCION, CALIDAD. `HistorialResumenResponse` (secciones por rol; las no autorizadas llegan nulas). 404 si el proveedor no existe.
+- `GET .../entregas?page&size` — ADMIN, RECEPCION, CALIDAD. `PaginaResponse<HistorialEntregaResponse>`, más reciente primero; `calidad` solo ADMIN y CALIDAD, `liquidacion` solo ADMIN y RECEPCION.
+
 ### GET /api/pagos/ajustes/pendientes
 
 - Permiso: `hasRole('ADMIN')`.

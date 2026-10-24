@@ -5,6 +5,7 @@ import { environment } from '../../../../../environments/environment';
 import { Dialog } from '@angular/cdk/dialog';
 import { CalidadPage } from './calidad-page';
 import { PreciosCalidadEntregaDialog } from '../../ui/precios-calidad-entrega-dialog/precios-calidad-entrega-dialog';
+import { HistorialConsolidadoDialog } from '../../../historial-proveedor/ui/historial-consolidado-dialog/historial-consolidado-dialog';
 
 const base = environment.apiBaseUrl;
 
@@ -172,6 +173,19 @@ describe('CalidadPage', () => {
       boton.click();
       expect(abrir).toHaveBeenCalledWith(PreciosCalidadEntregaDialog, expect.objectContaining({
         data: { registroAcopioId: 'r-9', proveedorNombre: 'Productor Uno' }
+      }));
+      http.verify();
+    });
+
+    it('cada entrega de la bandeja ofrece «Historial», que abre el historial consolidado del proveedor', () => {
+      const { f, http, abrir } = crearConDialogo();
+      f.componentInstance['pestana'].set('bandeja');
+      f.detectChanges();
+      const boton = Array.from((f.nativeElement as HTMLElement).querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Historial')!;
+      expect(boton).toBeDefined();
+      boton.click();
+      expect(abrir).toHaveBeenCalledWith(HistorialConsolidadoDialog, expect.objectContaining({
+        data: { proveedorId: 'p1', proveedorNombre: 'Productor Uno' }
       }));
       http.verify();
     });

@@ -1,5 +1,15 @@
 # Estado vigente
 
+## 2026-10-23 — Fase D, historial consolidado del proveedor: IMPLEMENTADO (rama `feature/historial-consolidado`)
+
+Sin push. Backend de referencia: `integration/7-fases` + `feature/historial-consolidado` (`GET /api/proveedores/{id}/historial/resumen` y `/entregas`, sin migración).
+
+- **Diálogo «Historial consolidado»** (solo lectura): totales de entregas (recibido y efectivo), calidad (último análisis de cada entrega, alertas, precios propios), liquidaciones y pagos (total reconocido, ajustes,
+  pagado, saldo, adelantos, saldo neto, entregas sin liquidar), movimientos de zona y la tabla paginada de entregas con su zona **de ese momento**, calidad y liquidación.
+- **Cada rol ve solo sus secciones, decididas por el servidor:** CALIDAD (calidad, sin pagos), RECEPCION (pagos, sin calidad), ADMIN (todo y zonas).
+- **Dónde se abre:** perfil del proveedor (ADMIN), botón «Historial» de cada pago (ADMIN y RECEPCION) y de cada entrega de la bandeja de Calidad (CALIDAD y ADMIN).
+- **El panel no calcula nada:** muestra los totales tal como llegan.
+
 ## 2026-10-23 — Pagos efectivos a proveedores: IMPLEMENTADO (rama `feature/pagos-efectivos`)
 
 Sin push. Backend de referencia: `integration/7-fases` + `feature/pagos-efectivos` (V30, `/api/pagos-proveedor`).
