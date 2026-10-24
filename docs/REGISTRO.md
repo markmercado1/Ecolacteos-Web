@@ -1,5 +1,23 @@
 # Registro acumulativo
 
+## Fase D: historial consolidado del proveedor — 2026-10-23
+
+Autorizada («Fase D, historial consolidado: completa backend y panel, incluyendo los saldos derivados de los pagos efectivos»). Worktree `Ecolacteos-Web-historial` (rama `feature/historial-consolidado`, desde `integration/7-fases`).
+
+- **Nuevo:** `features/historial-proveedor` — `historial.models.ts`, `historial.api.ts` (`HistorialApi.resumen/entregas`), `ui/historial-consolidado-dialog`.
+- **Modificado (puntos de entrada):** `proveedor-detalle-dialog` (botón «Historial consolidado»), `pagos-page` (acción «Historial» por pago) y `calidad-page` (acción «Historial» por entrega de la bandeja).
+- **Pruebas:** secciones por rol (CALIDAD sin pagos ni liquidación, RECEPCION sin calidad, ADMIN con zonas), texto de cada marca (Sin zona, Corregida, Precio propio, Sin liquidar), saldo neto a favor,
+  entregas sin liquidar, paginación, estado vacío y error con reintento, solo lectura; los tres puntos de entrada. Panel 115 archivos / 878 pruebas, builds de `ecolacteos-web` y `web-publica` OK; backend 1201 pruebas, 0 fallos.
+- **Mutaciones:** backend 10/10 detectadas (CALIDAD con pagos o RECEPCION con zonas, primer análisis en vez del último, ajustes de litros fuera del resumen, litros efectivos = recibidos,
+  entregas sin liquidar mal contadas, zona actual en vez de la de ese momento, sin zona no contada, precios propios ignorados) y panel 9/9 (columna de calidad para todos, saldo a favor en negativo,
+  «Sin zona» y «Corregida» sin marcar, aviso de sin liquidar, botones de entrada, paginación). El primer intento de H5 «se detectó» solo por error de plantilla: se repitió con un cambio que compila.
+- **Defecto hallado en el recorrido real:** el saldo por pagar de las liquidaciones se mostraba con «+» (S/ +496.00); corregido y con aserción en el spec.
+- **Flujo real** (jar de la rama + PostgreSQL temporal + panel de producción con proxy): ADMIN abre el historial desde el perfil de Alejandro (entregas 6 / 600 L recibidos / 585 efectivos, calidad, liquidación con saldo neto
+  456 = 496 − 40 de adelanto, movimientos de zona); RECEPCION desde «Historial» de un pago ve entregas y pagos sin calidad; CALIDAD desde la bandeja ve entregas y calidad y **ningún importe** (`S/` no aparece).
+  Las entregas del escenario salen «Sin zona» porque se registraron antes de que el proveedor tuviera zona: es el comportamiento esperado (no se rellena).
+  **Visual (capturas reales):** el diálogo de ADMIN (cabecera, entregas, calidad, liquidaciones y pagos). **Solo DOM:** RECEPCION y CALIDAD, las filas de la tabla y la paginación.
+- **Backend (referencia):** `API_DOCUMENTATION.md` §13.
+
 ## Pagos efectivos a proveedores — 2026-10-23
 
 Autorizado («Pagos efectivos: implementa backend y panel según el diseño acordado, con concurrencia, idempotencia, anulación y permisos»). Worktree `Ecolacteos-Web-pagosef`

@@ -24,6 +24,7 @@ import {
 } from '../../data-access/calidad.models';
 import { CalidadApi } from '../../data-access/calidad.api';
 import { PreciosCalidadEntregaDialog } from '../../ui/precios-calidad-entrega-dialog/precios-calidad-entrega-dialog';
+import { HistorialConsolidadoDialog } from '../../../historial-proveedor/ui/historial-consolidado-dialog/historial-consolidado-dialog';
 import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 type Pestana = 'pendientes' | 'bandeja' | 'consulta' | 'alertas';
@@ -184,6 +185,14 @@ export class CalidadPage {
   }
 
   /** Precios de calidad que se fijaron a una entrega al liquidar su pago (solo lectura; CALIDAD no accede a los pagos). */
+  /** Historial consolidado del proveedor de esta entrega (CALIDAD recibe solo entregas y calidad; sin pagos). */
+  protected verHistorialDelProveedor(proveedorId: string, proveedorNombre: string): void {
+    this.dialog.open(HistorialConsolidadoDialog, {
+      ariaLabel: `Historial consolidado de ${proveedorNombre}`,
+      data: { proveedorId, proveedorNombre }
+    });
+  }
+
   protected verPreciosDeCalidad(registroAcopioId: string, proveedorNombre?: string): void {
     this.dialog.open(PreciosCalidadEntregaDialog, {
       ariaLabel: 'Precios de calidad de la entrega',

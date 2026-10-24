@@ -908,6 +908,31 @@ public record SaldoProveedorResponse(UUID proveedorId, String proveedorNombre, L
 
 Ninguna respuesta trae DNI ni teléfono. `POST /api/pagos-proveedor` responde 201 al crear y 200 en un reenvío (mismo `uuidCliente`, o misma operación bancaria con los mismos datos).
 
+### Historial consolidado (Fase D) — HistorialProveedorController
+
+```java
+public record HistorialResumenResponse(
+    UUID proveedorId, String proveedorNombre, String zonaActualNombre,
+    List<String> secciones,            // ENTREGAS | CALIDAD | PAGOS | ZONAS: las que el rol puede ver
+    EntregasResumen entregas,          // todos
+    CalidadResumen calidad,            // ADMIN, CALIDAD (si no, null)
+    PagosResumen pagos,                // ADMIN, RECEPCION (si no, null)
+    List<HistorialZonaResponse> zonas  // solo ADMIN (si no, null)
+) {}
+// EntregasResumen(total, litrosRecibidos, litrosEfectivos, primeraEntrega, ultimaEntrega, conCorreccion, sinZona)
+// CalidadResumen(analizadas, sinAnalisis, aprobadas, observadas, rechazadas, alertas, conPrecioDeCalidad)
+// PagosResumen(liquidaciones, litrosLiquidados, totalOriginal, totalReconocido, ajusteCalidad, ajustesLitros, totalConAjustes,
+//              pagado, saldoLiquidaciones, adelantosSinAplicar, saldoNeto /* negativo = a favor */, entregasSinLiquidar, litrosSinLiquidar)
+public record HistorialEntregaResponse(
+    UUID id, LocalDateTime fechaHora, BigDecimal litrosOriginales, BigDecimal litrosEfectivos, boolean corregida,
+    String zonaNombre,                 // la de ese momento; null si no se pudo determinar
+    CalidadEntrega calidad,            // ADMIN, CALIDAD: resultado (último), folio, analizadoEn, analisis, alertas, precioPropio
+    LiquidacionEntrega liquidacion     // ADMIN, RECEPCION; null si no está liquidada: pagoId, semanaInicio, semanaFin, litrosLiquidados, precioAplicado, importe
+) {}
+```
+
+Sin DNI ni teléfono. `importe` = litros liquidados × precio aplicado sin redondear: la suma de los importes de un pago, redondeada una vez, es su `totalAPagar`.
+
 ### HistorialZonaResponse.java
 
 ```java

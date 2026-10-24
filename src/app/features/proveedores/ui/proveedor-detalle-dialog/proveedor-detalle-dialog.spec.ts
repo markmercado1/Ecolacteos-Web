@@ -7,6 +7,7 @@ import { ProveedorDetalleDialog } from './proveedor-detalle-dialog';
 import { ProveedorAdminResponse } from '../../data-access/proveedor.models';
 import { PagoDetalleDialog } from '../../../pagos/ui/pago-detalle-dialog/pago-detalle-dialog';
 import { HistorialProveedorDialog } from '../../../acopios/historial-proveedor-dialog';
+import { HistorialConsolidadoDialog } from '../../../historial-proveedor/ui/historial-consolidado-dialog/historial-consolidado-dialog';
 
 const base = environment.apiBaseUrl;
 
@@ -199,6 +200,21 @@ describe('ProveedorDetalleDialog (perfil integral)', () => {
     const abrirSpy = vi.spyOn(dialog, 'open').mockReturnValue({ closed: { subscribe: () => undefined } } as never);
     c['abrirHistorialEntregas']();
     expect(abrirSpy.mock.calls[0][0]).toBe(HistorialProveedorDialog);
+    expect(abrirSpy.mock.calls[0][1]?.data).toEqual({ proveedorId: 'p1', proveedorNombre: 'Máximo Quispe' });
+    http.verify();
+  });
+
+  it('"Historial consolidado" abre el historial de zonas, calidad y pagos del proveedor', () => {
+    const { f, http, c } = crear();
+    f.detectChanges();
+    http.expectOne(`${base}/innovacion/score/p1`).flush({}, { status: 404, statusText: 'Not Found' });
+    http.expectOne(`${base}/innovacion/prediccion/p1`).flush({}, { status: 404, statusText: 'Not Found' });
+    expect((f.nativeElement as HTMLElement).querySelector('[data-testid="historial-consolidado"]')).not.toBeNull();
+
+    const dialog = TestBed.inject(Dialog);
+    const abrirSpy = vi.spyOn(dialog, 'open').mockReturnValue({ closed: { subscribe: () => undefined } } as never);
+    c['abrirHistorialConsolidado']();
+    expect(abrirSpy.mock.calls[0][0]).toBe(HistorialConsolidadoDialog);
     expect(abrirSpy.mock.calls[0][1]?.data).toEqual({ proveedorId: 'p1', proveedorNombre: 'Máximo Quispe' });
     http.verify();
   });
