@@ -1,5 +1,22 @@
 # Registro acumulativo
 
+## Fase E: reportes por zona histórica — 2026-10-23
+
+Autorizada con el cambio de criterio y sus consecuencias («Compara antes y después sobre los mismos datos de prueba y documenta las diferencias y su causa. Esto no autoriza reparar los datos históricos pendientes»).
+Worktree `Ecolacteos-Web-reportes` (rama `feature/reportes-zona-historica`, desde `integration/7-fases`).
+
+- **Backend (referencia):** 9 consultas pasan de `proveedor.zona_actual_id` a `registro_acopio.zona_id` (listado, paginado y resumen por proveedor de acopios, alertas, litros en alerta, rechazo por semana y 4 bases del forecasting);
+  `API_DOCUMENTATION.md` §14. Cinco pruebas de integración nuevas y dos pruebas antiguas ajustadas (sus entregas ahora registran la zona de entonces, como hace el registro real).
+- **Panel:** aviso en Acopios al filtrar por zona (`aviso-zona-entrega`), con su prueba. `docs/fase-e-comparacion.md` documenta la comparación.
+- **Comparación antes/después:** se levantaron el backend de la Fase D (antes) y el de la rama (después) contra la misma copia de la base de desarrollo y se consultaron, por zona, los mismos endpoints reales;
+  causas atribuidas con consultas de solo lectura sobre la copia. Diferencias y causas en `docs/fase-e-comparacion.md`.
+- **Panel económico:** salió idéntico en estas zonas (usa predicciones ya guardadas y alertas recientes sin diferencias); no se afirma efecto sobre él con estos datos.
+- **Mutaciones:** backend 9/9 (cada consulta devuelta a la zona actual del proveedor: listado, paginado/resumen, litros por rango, promedio por mes, promedio histórico, suma semanal, alertas, litros en alerta y rechazo por semana).
+  E4 (promedio por mes) **no** se detectó al principio porque los datos del escenario daban el mismo promedio con ambos criterios; se reforzó el escenario (una entrega de 60 L de Norte en el mismo mes) y se detectó. Panel 2/2 (aviso siempre visible, texto del aviso).
+- **Flujo real y visual:** backend «después» sobre la copia con el panel de producción: el filtro de zona de Acopios muestra el aviso (captura real); las cifras por zona se verificaron por la API antes/después (no por pantalla).
+  Solo DOM: opciones del filtro y texto del aviso. La lista de la pantalla cargó el día de hoy (sin entregas), así que la tabla filtrada no se vio visualmente.
+- **Pruebas:** panel 115 archivos / 879 pruebas, builds de `ecolacteos-web` y `web-publica` OK; backend 1206 pruebas, 0 fallos.
+
 ## Fase D: historial consolidado del proveedor — 2026-10-23
 
 Autorizada («Fase D, historial consolidado: completa backend y panel, incluyendo los saldos derivados de los pagos efectivos»). Worktree `Ecolacteos-Web-historial` (rama `feature/historial-consolidado`, desde `integration/7-fases`).

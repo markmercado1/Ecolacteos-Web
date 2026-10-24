@@ -683,6 +683,11 @@ Fuente: `C:\EcoLacteosProyect\acopio-backend-fase2\ecolacteos-backend\src\main\j
 - `GET .../resumen` — ADMIN, RECEPCION, CALIDAD. `HistorialResumenResponse` (secciones por rol; las no autorizadas llegan nulas). 404 si el proveedor no existe.
 - `GET .../entregas?page&size` — ADMIN, RECEPCION, CALIDAD. `PaginaResponse<HistorialEntregaResponse>`, más reciente primero; `calidad` solo ADMIN y CALIDAD, `liquidacion` solo ADMIN y RECEPCION.
 
+### Fase E — parámetro `zonaId` de los reportes
+
+`zonaId` en `GET /api/registros-acopio`, `/paginado`, `/resumen-por-proveedor` e `GET /api/innovacion/alertas` filtra por la **zona de cada entrega** (la que tenía el proveedor cuando entregó), no por su zona actual;
+las entregas sin zona determinada no aparecen al filtrar. Sin `zonaId` el resultado es el de siempre. Ver `docs/fase-e-comparacion.md`.
+
 ### GET /api/pagos/ajustes/pendientes
 
 - Permiso: `hasRole('ADMIN')`.

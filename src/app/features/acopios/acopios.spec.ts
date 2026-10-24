@@ -226,6 +226,26 @@ describe('Acopios', () => {
       .flush([]);
     http.verify();
   });
+  it('al filtrar por zona avisa que es la zona de cada entrega (no la actual) y que las entregas sin zona no aparecen; sin filtro no avisa', () => {
+    const http = setup();
+    const { f, c } = crearPagina(http);
+    expect((f.nativeElement as HTMLElement).querySelector('[data-testid="aviso-zona-entrega"]')).toBeNull();
+    c['zonas'].set([{ id: 'z1', nombre: 'Zona Norte', activa: true }]);
+    c['cambiarFiltroZona']('z1');
+    http.expectOne((r) => esJornadas(r) && r.params.get('zonaId') === 'z1').flush(pagina([]));
+    http.expectOne((r) => esResumen(r) && r.params.get('zonaId') === 'z1').flush([]);
+    f.detectChanges();
+    const aviso = (f.nativeElement as HTMLElement).querySelector('[data-testid="aviso-zona-entrega"]');
+    expect(aviso?.textContent).toContain('Zona Norte');
+    expect(aviso?.textContent).toContain('no la actual');
+    expect(aviso?.textContent).toContain('sin zona determinada');
+    c['cambiarFiltroZona']('');
+    http.expectOne(esJornadas).flush(pagina([]));
+    http.expectOne(esResumen).flush([]);
+    f.detectChanges();
+    expect((f.nativeElement as HTMLElement).querySelector('[data-testid="aviso-zona-entrega"]')).toBeNull();
+    http.verify();
+  });
   it('muestra las jornadas agrupadas por el servidor (sin pedir GET /jornadas/{id} por fila)', () => {
     const http = setup();
     const { f, c } = crearPagina(http);

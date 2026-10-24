@@ -84,6 +84,12 @@ import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../.
         <button class="row-link" (click)="cargarUnidades()">Reintentar placas</button>
       </p>
     }
+    @if (filtroZona()) {
+      <p class="aviso-zona" data-testid="aviso-zona-entrega">
+        Se muestran las entregas hechas en <b>{{ zonaSeleccionadaNombre() }}</b>: la zona que tenía el proveedor cuando entregó, no la actual. Las entregas
+        sin zona determinada no aparecen en ninguna zona (ver «Revisión de zonas»).
+      </p>
+    }
     @if (errorZonas()) {
       <p role="alert">
         No se pudieron cargar las zonas para filtrar.
@@ -234,6 +240,10 @@ import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../.
       align-items: end;
       gap: var(--space-3);
       padding: var(--space-4);
+    }
+    .aviso-zona {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
     }
     .field {
       margin: 0;

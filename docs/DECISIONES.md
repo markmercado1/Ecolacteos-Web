@@ -1,5 +1,12 @@
 # Decisiones de producto y alcance
 
+## 2026-10-23 — Fase E, reportes por zona histórica
+
+- **Los reportes por zona usan la zona de cada entrega**, no la actual del proveedor (autorizado por el usuario, sabiendo que cambia cifras históricas). Documentado con comparación antes/después sobre los mismos datos.
+- **Una entrega sin zona determinada no se atribuye a ninguna zona** (no se rellena con la zona actual ni se repara): sigue visible sin filtro de zona y en «Revisión de zonas». La suma de las zonas puede ser menor que el total sin filtro.
+- **El score de confianza por zona no cambia**: es una propiedad del proveedor, no de una entrega. Tampoco el filtro de proveedores por zona (es un estado actual).
+- **El panel solo avisa**; no calcula ni reasigna zonas.
+
 ## 2026-10-23 — Fase D, historial consolidado
 
 - **Las secciones las decide el servidor por rol** (no el panel): calidad para ADMIN y CALIDAD, pagos para ADMIN y RECEPCION, zonas solo ADMIN; una sección no autorizada llega nula y el panel no la muestra.
