@@ -102,6 +102,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/ventas/pages/ventas-page/ventas-page').then((m) => m.VentasPage)
       },
       {
+        path: 'clientes',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'VENTAS'] },
+        loadComponent: () => import('./features/clientes/pages/clientes-page/clientes-page').then((m) => m.ClientesPage)
+      },
+      {
         path: 'reservas',
         canActivate: [roleGuard],
         data: { roles: ['ADMIN', 'VENTAS'] },

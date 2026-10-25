@@ -38,6 +38,8 @@ const ETIQUETAS_CANAL: Record<TipoClienteVenta, string> = {
           <div><dt>Fecha</dt><dd>{{ v.fecha | date: 'dd/MM/yyyy' }}</dd></div>
           <div><dt>Canal</dt><dd>{{ etiquetaCanal(v.tipoCliente) }}</dd></div>
           <div><dt>Identificador</dt><dd class="codigo">{{ v.id }}</dd></div>
+          <div><dt>Comprador</dt><dd data-testid="comprador-venta">{{ comprador(v) }}</dd></div>
+          @if (v.reservaCodigo) { <div><dt>Reserva de origen</dt><dd data-testid="reserva-origen">{{ v.reservaCodigo }}</dd></div> }
         </dl>
         <table class="tabla-lineas">
           <thead>
@@ -127,6 +129,15 @@ export class VentaDetalleDialog {
    */
   protected conDesglose(v: VentaResumenResponse): boolean {
     return !!v.igv && v.igv.estado !== 'SIN_DETERMINAR';
+  }
+
+  /** Fase H: nombre usado en la venta (copia histórica); «Cliente varios» si no se identificó. */
+  protected comprador(v: VentaResumenResponse): string {
+    const c = v.comprador;
+    if (!c || !c.nombre) return 'Cliente varios';
+    if (c.tipo === 'PROVEEDOR') return `${c.nombre} (proveedor)`;
+    if (c.tipo === 'CLIENTE') return `${c.nombre} (cliente)`;
+    return `${c.nombre} (datos de la reserva)`;
   }
 
   protected etiquetaCanal(canal: TipoClienteVenta): string {

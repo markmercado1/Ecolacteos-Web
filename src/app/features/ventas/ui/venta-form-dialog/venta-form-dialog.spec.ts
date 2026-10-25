@@ -299,6 +299,37 @@ describe('VentaFormDialog — precio y stock por línea', () => {
   });
 });
 
+const MAYORISTA_HABILITADO = { tipo: 'CLIENTE' as const, id: 'c-1', nombre: 'Bodega San Martín', mayorista: true };
+
+describe('VentaFormDialog — Fase H: comprador y canal', () => {
+  it('sin comprador solo se puede vender al canal PÚBLICO («Cliente varios»)', () => {
+    const { dialog } = crearConCatalogoListo();
+    expect(dialog['canalPermitido']('PUBLICO')).toBe(true);
+    expect(dialog['canalPermitido']('MAYORISTA')).toBe(false);
+    expect(dialog['canalPermitido']('PROVEEDOR')).toBe(false);
+  });
+
+  it('al elegir un proveedor se propone el canal PROVEEDOR y también puede comprar a PÚBLICO', () => {
+    const { dialog } = crearConCatalogoListo();
+    dialog['elegirComprador']({ tipo: 'PROVEEDOR', id: 'p-1', nombre: 'Juan', mayorista: false });
+    expect(dialog['form'].controls.tipoCliente.value).toBe('PROVEEDOR');
+    expect(dialog['canalPermitido']('PUBLICO')).toBe(true);
+    expect(dialog['canalPermitido']('MAYORISTA')).toBe(false);
+  });
+
+  it('un cliente no mayorista no puede comprar al canal MAYORISTA; uno habilitado sí; a ambos se les propone PÚBLICO', () => {
+    const { dialog } = crearConCatalogoListo();
+    dialog['elegirComprador']({ tipo: 'CLIENTE', id: 'c-2', nombre: 'Rosa', mayorista: false });
+    expect(dialog['form'].controls.tipoCliente.value).toBe('PUBLICO');
+    expect(dialog['canalPermitido']('MAYORISTA')).toBe(false);
+    dialog['elegirComprador'](MAYORISTA_HABILITADO);
+    expect(dialog['form'].controls.tipoCliente.value).toBe('PUBLICO');
+    expect(dialog['canalPermitido']('MAYORISTA')).toBe(true);
+    dialog['elegirComprador'](null);
+    expect(dialog['comprador']()).toBeNull();
+  });
+});
+
 describe('VentaFormDialog — resumen, envío y UUID estable', () => {
   afterEach(() => localStorage.clear());
 
@@ -311,6 +342,7 @@ describe('VentaFormDialog — resumen, envío y UUID estable', () => {
 
   it('avanza al resumen con datos válidos y calcula el total estimado sumando todas las líneas', () => {
     const { dialog, http } = crearConCatalogoListo();
+    dialog['comprador'].set(MAYORISTA_HABILITADO); // Fase H: MAYORISTA exige un cliente habilitado
     dialog['form'].controls.tipoCliente.setValue('MAYORISTA');
     const idA = primerId(dialog);
     llenarLinea(dialog, http, idA, { productoId: 'prod-1', presentacionId: 'pres-1', cantidad: 3, precio: 10 }); // 30
@@ -323,8 +355,9 @@ describe('VentaFormDialog — resumen, envío y UUID estable', () => {
     expect(dialog['totalEstimado']()).toBe(55);
   });
 
-  it('confirmar() envía uuidCliente, fecha, tipoCliente y una línea por cada presentación del carrito', () => {
+  it('confirmar() envía uuidCliente, fecha, tipoCliente, el comprador y una línea por cada presentación del carrito', () => {
     const { dialog, http } = crearConCatalogoListo();
+    dialog['comprador'].set(MAYORISTA_HABILITADO);
     dialog['form'].controls.tipoCliente.setValue('MAYORISTA');
     const idA = primerId(dialog);
     llenarLinea(dialog, http, idA, { productoId: 'prod-1', presentacionId: 'pres-1', cantidad: 3, precio: 10 });
@@ -344,7 +377,8 @@ describe('VentaFormDialog — resumen, envío y UUID estable', () => {
       detalles: [
         { presentacionId: 'pres-1', cantidad: 3 },
         { presentacionId: 'pres-3', cantidad: 2 }
-      ]
+      ],
+      comprador: { tipo: 'CLIENTE', id: 'c-1' }
     });
     req.flush({
       id: 'v-1', fecha: dialog['form'].getRawValue().fecha, tipoCliente: 'MAYORISTA',
@@ -461,7 +495,8 @@ describe('VentaFormDialog — resumen, envío y UUID estable', () => {
       uuidCliente: dialog['uuidCliente'],
       fecha: dialog['form'].getRawValue().fecha,
       tipoCliente: 'PUBLICO',
-      detalles: [{ presentacionId: 'pres-1', cantidad: 5 }]
+      detalles: [{ presentacionId: 'pres-1', cantidad: 5 }],
+      comprador: null
     });
     http.verify();
   });

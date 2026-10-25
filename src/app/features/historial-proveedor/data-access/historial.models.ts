@@ -1,3 +1,4 @@
+import { ComprasResumen } from '../../clientes/data-access/cliente.models';
 import { HistorialZonaResponse } from '../../proveedores/data-access/proveedor.models';
 
 /**
@@ -53,6 +54,8 @@ export interface HistorialResumenResponse {
   calidad: CalidadResumen | null;
   pagos: PagosResumen | null;
   zonas: HistorialZonaResponse[] | null;
+  /** Fase H (solo ADMIN): lo que el proveedor compró como comprador. No cambia sus liquidaciones de leche. */
+  compras?: ComprasResumen | null;
 }
 
 export interface CalidadEntrega {

@@ -325,3 +325,32 @@ describe('ReservaDetalleDialog', () => {
     expect(texto(fixture)).toContain('Rosa Quispe');
   });
 });
+
+describe('ReservaDetalleDialog — Fase H: comprador confirmado', () => {
+  it('sin comprador vinculado explica que al retirar no se crea ninguna ficha y ofrece identificarlo', () => {
+    const { fixture, http } = cargar(reserva({ estado: 'CONFIRMADA' }));
+    const seccion = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="comprador-reserva"]')?.textContent ?? '';
+    expect(seccion).toContain('no se crea ninguna ficha');
+    expect(seccion).toContain('Identificar comprador');
+    http.verify();
+  });
+
+  it('vincular el comprador elegido llama al servidor y muestra el comprador confirmado', () => {
+    const { fixture, http } = cargar(reserva({ estado: 'CONFIRMADA' }));
+    const comp = fixture.componentInstance as unknown as Record<string, any>;
+    comp['vincular'](reserva({ estado: 'CONFIRMADA' }), { tipo: 'CLIENTE', id: 'c-1', nombre: 'Rosa Quispe', mayorista: false });
+    const req = http.expectOne(`${base}/r-1/comprador`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({ tipo: 'CLIENTE', id: 'c-1' });
+    req.flush(reserva({ estado: 'CONFIRMADA', comprador: { tipo: 'CLIENTE', id: 'c-1', nombre: 'Rosa Quispe', ruc: null } }));
+    fixture.detectChanges();
+    expect(texto(fixture)).toContain('Al retirar, la venta queda a su nombre');
+    http.verify();
+  });
+
+  it('en una reserva retirada el comprador ya no se cambia', () => {
+    const { fixture, http } = cargar(reserva({ estado: 'RETIRADA', ventaId: 'v-1' }));
+    expect(texto(fixture)).not.toContain('Identificar comprador');
+    http.verify();
+  });
+});

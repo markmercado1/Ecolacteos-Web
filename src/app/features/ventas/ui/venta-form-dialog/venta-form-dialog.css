@@ -54,3 +54,7 @@ dd { margin: 0.2rem 0 0; font-weight: 600; overflow-wrap: anywhere; }
   .dialog-body { padding: 0; }
   .boleta { border: none; padding: 0; margin: 0; }
 }
+
+/* Fase H: comprador */
+.comprador .etiqueta { font-size: var(--font-size-sm); font-weight: 600; }
+.comprador-elegido { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: var(--space-1) 0 0; font-size: var(--font-size-sm); }

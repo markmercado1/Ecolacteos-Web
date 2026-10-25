@@ -101,6 +101,14 @@ const TAMANO_PAGINA = 10;
             }
           </section>
         }
+        @if (r.compras; as c) {
+          <section class="bloque" data-testid="seccion-compras">
+            <h3>Compras como comprador</h3>
+            <p>{{ c.totalCompras }} compras por S/ {{ c.montoTotal | number: '1.2-2' }} · en {{ c.anio }}: {{ c.comprasAnio }} (S/ {{ c.montoAnio | number: '1.2-2' }})
+              @if (c.ultimaCompra) { · última {{ c.ultimaCompra | date: 'dd/MM/yyyy' }} }</p>
+            <small>Ventas en las que se eligió a este proveedor como comprador; no se descuentan de sus liquidaciones de leche.</small>
+          </section>
+        }
         @if (r.zonas; as zonas) {
           <section class="bloque" data-testid="seccion-zonas">
             <h3>Movimientos de zona</h3>

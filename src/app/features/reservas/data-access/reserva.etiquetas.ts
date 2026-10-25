@@ -27,7 +27,9 @@ export const ETIQUETAS_EVENTO: Record<TipoEventoReserva, string> = {
   CONFIRMADA: 'Reserva confirmada',
   RECHAZADA: 'Reserva rechazada',
   CANCELADA: 'Reserva cancelada',
-  RETIRADA: 'Retiro registrado'
+  RETIRADA: 'Retiro registrado',
+  COMPRADOR_VINCULADO: 'Comprador confirmado',
+  COMPRADOR_DESVINCULADO: 'Comprador quitado'
 };
 
 export const ETIQUETAS_MEDIO: Record<MedioAceptacion, string> = {

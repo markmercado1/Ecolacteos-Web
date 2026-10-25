@@ -33,6 +33,13 @@ describe('rutas', () => {
     expect(ruta!.data?.['roles']).toEqual(['ADMIN']);
   });
 
+  it('«Clientes» es para ADMIN y VENTAS y pasa por el guard de roles', () => {
+    const ruta = buscar(routes, 'clientes');
+    expect(ruta).toBeDefined();
+    expect(ruta!.canActivate).toContain(roleGuard);
+    expect(ruta!.data?.['roles']).toEqual(['ADMIN', 'VENTAS']);
+  });
+
   it('«Pagos a proveedores» es solo para ADMIN y RECEPCION y pasa por el guard de roles', () => {
     const ruta = buscar(routes, 'pagos-efectivos');
     expect(ruta).toBeDefined();

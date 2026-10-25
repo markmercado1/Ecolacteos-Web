@@ -23,6 +23,8 @@ const CATALOGO = {
 describe('ReservarPage', () => {
   let http: HttpTestingController;
 
+  const AVISO = { version: '2026-10-24', completo: false, avisoReserva: ['Usamos tu nombre y teléfono solo para gestionar esta reserva.'] };
+
   function crear(lineas: Array<[string, number]> = [['pr-1', 2]], reglas: unknown = REGLAS) {
     sessionStorage.clear();
     TestBed.configureTestingModule({ providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] });
@@ -32,6 +34,8 @@ describe('ReservarPage', () => {
     const fixture = TestBed.createComponent(ReservarPage);
     http.expectOne('/api/catalogo/productos').flush(CATALOGO);
     if (reglas) http.expectOne('/api/catalogo/reservas/reglas').flush(reglas);
+    // Fase H: aviso de datos personales del formulario
+    http.expectOne('/api/catalogo/privacidad').flush(AVISO);
     fixture.detectChanges();
     return { fixture, carrito, page: fixture.componentInstance as unknown as Record<string, any> };
   }
@@ -89,6 +93,7 @@ describe('ReservarPage', () => {
       productos: [producto({ presentaciones: [presentacion({ id: 'pr-9', nombre: 'Unidad', disponibilidad: 'POCAS_UNIDADES', unidadesDisponibles: 2 })] })]
     });
     http.expectOne('/api/catalogo/reservas/reglas').flush(REGLAS);
+    http.expectOne('/api/catalogo/privacidad').flush(AVISO);
     fixture.detectChanges();
 
     expect(texto(fixture)).toContain('Quedan 2 unidades');
@@ -126,6 +131,14 @@ describe('ReservarPage', () => {
     peticionReserva().flush(reserva());
   });
 
+  it('Fase H: muestra cómo se usan los datos (aviso del servidor), sin casillas de publicidad', () => {
+    const { fixture } = crear();
+    const aviso = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="aviso-datos"]');
+    expect(aviso?.textContent).toContain('Cómo usamos tus datos');
+    expect(aviso?.textContent).toContain('solo para gestionar esta reserva');
+    expect((fixture.nativeElement as HTMLElement).querySelectorAll('input[type="checkbox"]').length).toBe(0);
+  });
+
   it('envía exactamente lo que el usuario eligió y muestra el código y el estado REAL que devuelve el servidor', () => {
     const { fixture, page, carrito } = crear([['pr-1', 2], ['pr-2', 1]]);
     llenar(page, { nombre: '  Rosa Quispe ', correo: 'rosa@correo.pe', nota: 'Paso por la tarde' });
@@ -138,6 +151,7 @@ describe('ReservarPage', () => {
       lineas: [{ presentacionId: 'pr-1', cantidad: 2 }, { presentacionId: 'pr-2', cantidad: 1 }]
     });
     expect(req.request.body.uuidCliente).toMatch(/^[0-9a-f-]{36}$/);
+    expect(req.request.body.avisoPrivacidadVersion).toBe('2026-10-24'); // Fase H: constancia del aviso mostrado
     req.flush(reserva({ codigo: 'ZX9KQ2MNB4', estado: 'PENDIENTE', precioAConfirmar: true, total: null }));
     fixture.detectChanges();
 
@@ -226,6 +240,7 @@ describe('ReservarPage', () => {
     const page = fixture.componentInstance as unknown as Record<string, any>;
     http.expectOne('/api/catalogo/productos').flush(CATALOGO);
     http.expectOne('/api/catalogo/reservas/reglas').error(new ProgressEvent('error'));
+    http.expectOne('/api/catalogo/privacidad').flush(AVISO);
     fixture.detectChanges();
     expect(texto(fixture)).toContain('No pudimos conectar');
     llenar(page);

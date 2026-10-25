@@ -1,5 +1,20 @@
 # Registro acumulativo
 
+## Fase H: clientes, compradores e historial — 2026-10-24
+
+Autorizada por el usuario («Autorización de implementación — padrón de clientes, compradores e historial de compras»), **sin integrar**: revisión
+previa. Worktrees `ecolacteos-backend-clientes` y `Ecolacteos-Web-clientes` (rama `feature/clientes-compradores`, desde `integration/7-fases`).
+
+- **Backend:** V33 (`cliente`, `cliente_telefono`, `cliente_consentimiento`, `cliente_fusion`; comprador y reserva en `venta`; comprador y versión
+  del aviso en `reserva`), `ClienteService`, `CompradorService`, `HistorialComprasService`, `PrivacidadService`, controladores de clientes,
+  sugerencias y aviso público; reglas de canal en `VentaService` (solo panel); vínculo en `ReservaService`; sección COMPRAS del proveedor.
+- **Panel:** `features/clientes` (padrón, ficha, registro, selector de comprador), formulario de venta con comprador y canales permitidos, detalle de
+  venta y de reserva con comprador, historial consolidado con compras, ruta `/clientes`. **Web pública:** aviso de datos en la reserva.
+- **Normativa revisada** en el texto oficial: Ley 29733 art. 14 y DS 016-2024-JUS arts. 1–10, 26, 42 y 69 (ver `CLIENTES.md`).
+- **Conflicto resuelto con la regla del propio usuario:** la app móvil vende MAYORISTA/PROVEEDOR sin comprador; como su contrato no puede
+  cambiar (punto 9), las reglas de comprador obligatorio se aplican solo a las ventas del panel. A confirmar por el usuario.
+- **Pruebas:** ver la sección de resultados en el informe final (backend completo, panel, web pública y builds).
+
 ## Fase G: RUC opcional e IGV configurable — 2026-10-24
 
 Autorizada por el usuario en modo autónomo (proveedores natural/empresa con RUC opcional; IGV dentro de precios finales, configurable y apagado hasta confirmar con el contador; sin

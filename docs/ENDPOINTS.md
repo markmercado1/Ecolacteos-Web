@@ -1,5 +1,15 @@
 # Inventario de endpoints comprobados
 
+## Ampliación 2026-10-24 (rama `feature/clientes-compradores`, sin integrar): Fase H
+
+- `GET|POST /api/clientes`, `GET|PUT /api/clientes/{id}`, `POST|DELETE /api/clientes/{id}/telefonos`, `PUT /api/clientes/{id}/mayorista`,
+  `PUT /api/clientes/{id}/desactivar|reactivar`, `POST /api/clientes/{id}/comunicaciones`, `GET /api/clientes/{id}/consentimientos|historial|compras|fusiones`,
+  `POST /api/clientes/{id}/fusionar` (`ClienteController`; roles en `CLIENTES.md`).
+- `POST /api/compradores/sugerencias` (ADMIN, VENTAS); `GET /api/catalogo/privacidad` (público).
+- `PUT|DELETE /api/reservas/{id}/comprador` (VENTAS, ADMIN); `GET /api/proveedores/{id}/historial/compras` (ADMIN).
+- Cambian sin romper: `POST /api/ventas/carrito`, `GET /api/ventas`, `GET /api/ventas/{id}`, `POST /api/reservas/{id}/retirar`, `GET /api/reservas/{id}`,
+  `POST /api/catalogo/reservas`, `GET /api/proveedores/{id}/historial/resumen`, exportación de ventas. Migración V33.
+
 ## Ampliación vigente 2026-10-24: Fase G (documentos del proveedor e IGV configurable)
 
 - `GET /api/admin/proveedores/revision-documentos` — ADMIN, solo lectura (`RevisionDocumentosController`).

@@ -1,5 +1,17 @@
 # Contratos exactos del backend
 
+## Ampliación 2026-10-24 (rama `feature/clientes-compradores`, sin integrar): clientes y comprador (Fase H, V33)
+
+- `CrearVentaCarritoRequest` agrega `comprador?: {tipo: 'CLIENTE'|'PROVEEDOR', id}`. `VentaResumenResponse` agrega `comprador: {tipo|null, id|null,
+  nombre|null, ruc|null} | null`, `reservaId|null`, `reservaCodigo|null`. `VentaRequest`/`VentaResponse` (móvil) **sin cambios**.
+- `ReservaResponse` agrega `comprador` (mismo formato); `CrearReservaRequest` agrega `avisoPrivacidadVersion?`; eventos nuevos
+  `COMPRADOR_VINCULADO` y `COMPRADOR_DESVINCULADO`.
+- `ClienteResponse {id, tipoPersona, nombre, razonSocial, dni, ruc, correo, telefonos[], mayorista, activo, fusionadoEnId, creadoEn, datosCompletos,
+  registro: EstadoAutorizacion, comunicaciones: EstadoAutorizacion}`; `EstadoAutorizacion {vigente, estado, medios[], forma, desde, avisoVersion,
+  avisoCompleto}`. `ClienteRequest`, `ComercialRequest`, `CompradorSugerencia`, `HistorialClienteResponse {compras: ComprasResumen, reservas[]}`,
+  `CompraResponse` y `AvisoPrivacidadResponse`: ver `ClienteDtos.java` y `cliente.models.ts`.
+- `HistorialResumenResponse` agrega `compras: ComprasResumen | null` (solo ADMIN) y la sección `COMPRAS`.
+
 ## Ampliación vigente 2026-10-24: documentos del proveedor e IGV configurable (Fase G, V31–V32)
 
 - `ProveedorRequest {nombre, dni|null, telefono|null, zonaActualId|null, tipoPersona?: 'NATURAL'|'EMPRESA' (NATURAL por defecto), ruc?|null, razonSocial?|null}`;

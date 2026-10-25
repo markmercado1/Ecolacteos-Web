@@ -59,3 +59,8 @@
 .tabla .num { text-align: right; white-space: nowrap; }
 .siguientes { padding-left: 1.2rem; display: grid; gap: 0.5rem; }
 .botones { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.25rem; }
+
+/* Fase H: aviso de datos personales */
+.aviso-datos { margin-top: 1rem; border: 1px solid var(--color-border, #ddd); border-radius: 0.5rem; padding: 0.75rem; }
+.aviso-datos summary { cursor: pointer; font-weight: 600; }
+.aviso-datos p { margin: 0.5rem 0 0; }

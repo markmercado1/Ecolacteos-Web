@@ -191,6 +191,14 @@
             <textarea id="nota" formControlName="nota" maxlength="300" rows="3"></textarea>
             <span class="hint">Máximo 300 caracteres.</span>
           </div>
+          <details class="aviso-datos" data-testid="aviso-datos">
+            <summary>Cómo usamos tus datos</summary>
+            @if (aviso(); as a) {
+              @for (p of a.avisoReserva; track p) { <p class="small">{{ p }}</p> }
+            } @else {
+              <p class="small">Usamos tu nombre y teléfono solo para gestionar esta reserva; no los usamos para publicidad.</p>
+            }
+          </details>
         </section>
       </div>
 
