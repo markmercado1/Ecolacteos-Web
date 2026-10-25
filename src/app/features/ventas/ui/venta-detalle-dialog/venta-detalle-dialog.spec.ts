@@ -128,3 +128,21 @@ describe('VentaDetalleDialog', () => {
     });
   });
 });
+
+describe('VentaDetalleDialog — Fase H: comprador', () => {
+  it('muestra «Cliente varios» si no se identificó y el comprador con su reserva de origen si lo hay', () => {
+    const anon = crear({ id: 'v-1' });
+    anon.http.expectOne(`${base}/ventas/v-1`).flush({ ...ventaDeUnaLinea, comprador: null });
+    anon.fixture.detectChanges();
+    expect((anon.fixture.nativeElement as HTMLElement).querySelector('[data-testid="comprador-venta"]')?.textContent).toContain('Cliente varios');
+    TestBed.resetTestingModule();
+
+    const conComprador = crear({ id: 'v-2' });
+    conComprador.http.expectOne(`${base}/ventas/v-2`).flush({ ...ventaDeVariasLineas, comprador: { tipo: 'CLIENTE', id: 'c-1', nombre: 'Rosa Quispe', ruc: null },
+      reservaId: 'r-1', reservaCodigo: 'ABC123' });
+    conComprador.fixture.detectChanges();
+    const raiz = conComprador.fixture.nativeElement as HTMLElement;
+    expect(raiz.querySelector('[data-testid="comprador-venta"]')?.textContent).toContain('Rosa Quispe (cliente)');
+    expect(raiz.querySelector('[data-testid="reserva-origen"]')?.textContent).toContain('ABC123');
+  });
+});

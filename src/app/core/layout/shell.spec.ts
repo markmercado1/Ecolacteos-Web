@@ -60,10 +60,10 @@ describe('Shell — navegación desplegable', () => {
     expect(toggles(f).some((b) => b.textContent?.includes('Visión general'))).toBe(false);
   });
 
-  it('VENTAS ve Inventario como enlace directo y Ventas y Reservas dentro de Comercial', async () => {
+  it('VENTAS ve Inventario como enlace directo y Ventas, Reservas y Clientes dentro de Comercial', async () => {
     const f = await crear('VENTAS', '/ventas');
     expect(toggles(f).map((b) => b.textContent?.trim())).toEqual(['Comercial']);
-    expect(enlaces(f)).toEqual(['Inventario', 'Ventas', 'Reservas']);
+    expect(enlaces(f)).toEqual(['Inventario', 'Ventas', 'Reservas', 'Clientes']);
   });
 
   it('solo ADMIN y VENTAS ven Reservas en la navegación', async () => {

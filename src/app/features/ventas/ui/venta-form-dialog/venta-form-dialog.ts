@@ -9,6 +9,8 @@ import { mapHttpError } from '../../../../core/http/app-error';
 import { ProductoResponse } from '../../../catalogos/data-access/producto.models';
 import { ProductosApi } from '../../../catalogos/data-access/productos.api';
 import { InventarioApi } from '../../../inventario/data-access/inventario.api';
+import { CompradorSelectorComponent } from '../../../clientes/ui/comprador-selector/comprador-selector';
+import { CompradorSeleccion } from '../../../clientes/ui/registro-cliente-dialog/registro-cliente-dialog';
 import { CrearVentaCarritoRequest, DetalleVentaRequest, TipoClienteVenta, VentaResumenResponse } from '../../data-access/venta.models';
 import { VentasApi } from '../../data-access/ventas.api';
 
@@ -76,13 +78,17 @@ function filaVacia(): FilaCarrito {
  * (@media print más abajo oculta todo lo demás del diálogo al imprimir) -- no depende de ningún servicio ni
  * librería nueva.
  *
+ * Fase H: quien compra. PÚBLICO admite «Cliente varios» (sin datos) o un comprador identificado; MAYORISTA exige un cliente que ADMIN
+ * habilitó como mayorista; PROVEEDOR exige un proveedor del padrón. Al elegir un proveedor se propone el canal PROVEEDOR (puede comprar
+ * también a precio PÚBLICO); a cualquier otro comprador, PÚBLICO. El canal sigue decidiendo el precio y el servidor vuelve a validar todo.
+ *
  * El uuidCliente se genera una sola vez por instancia de este diálogo y se conserva en cualquier reintento
  * de esa misma venta, incluido un fallo de red: mismo patrón de idempotencia que el resto de la app
  * (RegistrarLoteDialog, AjustarStockDialog).
  */
 @Component({
   selector: 'app-venta-form-dialog',
-  imports: [ReactiveFormsModule, DecimalPipe],
+  imports: [ReactiveFormsModule, DecimalPipe, CompradorSelectorComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './venta-form-dialog.html',
   styleUrl: './venta-form-dialog.css'
@@ -120,6 +126,31 @@ export class VentaFormDialog {
   protected readonly tipoClienteValor = toSignal(this.form.controls.tipoCliente.valueChanges, {
     initialValue: this.form.controls.tipoCliente.value
   });
+
+  /** Fase H: comprador elegido (null = cliente varios). */
+  protected readonly comprador = signal<CompradorSeleccion | null>(null);
+  protected readonly eligiendoComprador = signal(false);
+
+  /** Canales que admite el comprador actual (el servidor aplica la misma regla). */
+  protected canalPermitido(canal: TipoClienteVenta): boolean {
+    const c = this.comprador();
+    if (canal === 'PUBLICO') return true;
+    if (canal === 'MAYORISTA') return !!c && c.tipo === 'CLIENTE' && c.mayorista;
+    return !!c && c.tipo === 'PROVEEDOR';
+  }
+
+  protected motivoCanal(canal: TipoClienteVenta): string {
+    if (canal === 'MAYORISTA') return 'requiere un cliente habilitado como mayorista';
+    if (canal === 'PROVEEDOR') return 'requiere elegir al proveedor que compra';
+    return '';
+  }
+
+  protected elegirComprador(c: CompradorSeleccion | null): void {
+    this.comprador.set(c);
+    this.eligiendoComprador.set(false);
+    // proveedor -> se propone PROVEEDOR; cualquier otro comprador (o ninguno) -> PUBLICO
+    this.form.controls.tipoCliente.setValue(c?.tipo === 'PROVEEDOR' ? 'PROVEEDOR' : 'PUBLICO');
+  }
 
   protected readonly etiquetaCanal = computed(() => {
     const canal = this.tipoClienteValor();
@@ -167,7 +198,8 @@ export class VentaFormDialog {
 
   protected readonly puedeContinuar = computed(() => {
     if (this.cargandoProductos() || this.productos().length === 0) return false;
-    if (!this.tipoClienteValor()) return false;
+    const canal = this.tipoClienteValor();
+    if (!canal || !this.canalPermitido(canal)) return false;
     const filas = this.filas();
     if (filas.length === 0) return false;
     return filas.every(
@@ -335,7 +367,8 @@ export class VentaFormDialog {
       const { fecha, tipoCliente } = this.form.getRawValue();
       if (!tipoCliente || !this.puedeContinuar()) return;
       const detalles: DetalleVentaRequest[] = this.filas().map((f) => ({ presentacionId: f.presentacionId, cantidad: f.cantidad! }));
-      this.solicitudEnviada = { uuidCliente: this.uuidCliente, fecha, tipoCliente, detalles };
+      const c = this.comprador();
+      this.solicitudEnviada = { uuidCliente: this.uuidCliente, fecha, tipoCliente, detalles, comprador: c ? { tipo: c.tipo, id: c.id } : null };
     }
     // Si incierto() es true, se reenvía this.solicitudEnviada tal cual quedó armado la primera vez.
 

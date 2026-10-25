@@ -1,3 +1,5 @@
+import { CompradorRef, CompradorResumen } from '../../clientes/data-access/cliente.models';
+
 /** Fuente: docs/CONTRATOS.md, VentaRequest.java. Valores reales de tipoCliente. */
 export type TipoClienteVenta = 'MAYORISTA' | 'PROVEEDOR' | 'PUBLICO';
 
@@ -20,6 +22,8 @@ export interface CrearVentaCarritoRequest {
   fecha: string;
   tipoCliente: TipoClienteVenta;
   detalles: DetalleVentaRequest[];
+  /** Fase H (opcional): quien compra. Sin comprador = cliente varios (solo en canal PÚBLICO). */
+  comprador?: CompradorRef | null;
 }
 
 /** Fuente: docs/CONTRATOS.md, DetalleVentaResponse.java. Una línea ya confirmada por el servidor. */
@@ -64,4 +68,8 @@ export interface VentaResumenResponse {
   total: number;
   /** Fase G: puede faltar si el backend es anterior a esta fase. */
   igv?: ResumenIgvVenta | null;
+  /** Fase H: comprador (null = cliente varios; tipo null + nombre = nombre dado en la reserva, sin ficha) y reserva de origen. */
+  comprador?: CompradorResumen | null;
+  reservaId?: string | null;
+  reservaCodigo?: string | null;
 }

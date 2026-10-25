@@ -14,12 +14,27 @@
       <input id="v-fecha" type="date" formControlName="fecha" required>
     </div>
 
+    <div class="field comprador" data-testid="comprador">
+      <span class="etiqueta">Comprador</span>
+      @if (comprador(); as c) {
+        <p class="comprador-elegido"><strong>{{ c.nombre }}</strong> · {{ c.tipo === 'PROVEEDOR' ? 'Proveedor' : (c.mayorista ? 'Cliente mayorista' : 'Cliente') }}
+          <button type="button" class="btn small" (click)="eligiendoComprador.set(true)">Cambiar</button>
+          <button type="button" class="btn small" (click)="elegirComprador(null)">Quitar</button></p>
+      } @else if (!eligiendoComprador()) {
+        <p class="comprador-elegido">Cliente varios (sin datos)
+          <button type="button" class="btn small" (click)="eligiendoComprador.set(true)">Identificar comprador</button></p>
+      }
+      @if (eligiendoComprador()) {
+        <app-comprador-selector (elegido)="elegirComprador($event)" />
+      }
+    </div>
+
     <div class="field" [class.has-error]="form.controls.tipoCliente.invalid && form.controls.tipoCliente.touched">
       <label for="v-canal">Canal (tipo de cliente)</label>
       <select id="v-canal" formControlName="tipoCliente" required>
         <option value="" disabled>Selecciona un canal</option>
-        <option value="MAYORISTA">Mayorista</option>
-        <option value="PROVEEDOR">Proveedor</option>
+        <option value="MAYORISTA" [disabled]="!canalPermitido('MAYORISTA')">Mayorista{{ canalPermitido('MAYORISTA') ? '' : ' (' + motivoCanal('MAYORISTA') + ')' }}</option>
+        <option value="PROVEEDOR" [disabled]="!canalPermitido('PROVEEDOR')">Proveedor{{ canalPermitido('PROVEEDOR') ? '' : ' (' + motivoCanal('PROVEEDOR') + ')' }}</option>
         <option value="PUBLICO">Público</option>
       </select>
       @if (form.controls.tipoCliente.invalid && form.controls.tipoCliente.touched) {
@@ -125,6 +140,7 @@
     <dl>
       <div><dt>Fecha</dt><dd>{{ form.getRawValue().fecha }}</dd></div>
       <div><dt>Canal</dt><dd>{{ etiquetaCanal() }}</dd></div>
+      <div><dt>Comprador</dt><dd>{{ comprador()?.nombre ?? 'Cliente varios' }}</dd></div>
     </dl>
 
     <div class="section-head"><h3>Líneas</h3></div>
@@ -172,6 +188,7 @@
         <div><dt>Identificador</dt><dd class="codigo">{{ venta.id }}</dd></div>
         <div><dt>Fecha</dt><dd>{{ venta.fecha }}</dd></div>
         <div><dt>Canal</dt><dd>{{ etiquetaCanal() }}</dd></div>
+        <div><dt>Comprador</dt><dd>{{ venta.comprador?.nombre ?? 'Cliente varios' }}</dd></div>
       </dl>
       <table class="tabla-boleta">
         <thead>

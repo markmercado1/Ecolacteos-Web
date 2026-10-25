@@ -1,3 +1,4 @@
+import { CompradorRef } from '../../clientes/data-access/cliente.models';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -58,6 +59,15 @@ export class ReservasApi {
    * Retiro = venta real por el flujo normal (FEFO, kardex) y reserva RETIRADA en la misma transacción del servidor.
    * `uuidCliente` es la clave de idempotencia de esa venta: reintentar con el mismo valor no duplica nada.
    */
+  /** Fase H: comprador confirmado (ficha de cliente o de proveedor existente). No crea fichas. */
+  vincularComprador(id: string, comprador: CompradorRef): Observable<ReservaResponse> {
+    return this.http.put<ReservaResponse>(`${this.baseUrl}/${encodeURIComponent(id)}/comprador`, comprador);
+  }
+
+  desvincularComprador(id: string): Observable<ReservaResponse> {
+    return this.http.delete<ReservaResponse>(`${this.baseUrl}/${encodeURIComponent(id)}/comprador`);
+  }
+
   retirar(id: string, uuidCliente: string): Observable<VentaResumenResponse> {
     return this.http.post<VentaResumenResponse>(`${this.baseUrl}/${encodeURIComponent(id)}/retirar`, { uuidCliente });
   }

@@ -1,9 +1,12 @@
+import { CompradorResumen } from '../../clientes/data-access/cliente.models';
+
 /** Fuente: EstadoReserva.java. `VENCIDA` no se escribe en la base: el servidor la calcula y siempre informa el estado efectivo. */
 export type EstadoReserva = 'PENDIENTE' | 'CONFIRMADA' | 'RECHAZADA' | 'CANCELADA' | 'VENCIDA' | 'RETIRADA';
 
 /** Fuente: TipoEventoReserva.java. */
 export type TipoEventoReserva =
-  | 'CREADA' | 'PRECIOS_RECOTIZADOS' | 'PRECIO_ACEPTADO' | 'CONFIRMADA' | 'RECHAZADA' | 'CANCELADA' | 'RETIRADA';
+  | 'CREADA' | 'PRECIOS_RECOTIZADOS' | 'PRECIO_ACEPTADO' | 'CONFIRMADA' | 'RECHAZADA' | 'CANCELADA' | 'RETIRADA'
+  | 'COMPRADOR_VINCULADO' | 'COMPRADOR_DESVINCULADO';
 
 /** Fuente: AceptacionPrecioRequest.java. */
 export type MedioAceptacion = 'TELEFONO' | 'WHATSAPP' | 'PRESENCIAL' | 'OTRO';
@@ -78,6 +81,8 @@ export interface ReservaResponse {
   ventaId: string | null;
   lineas: LineaReservaResponse[];
   eventos: EventoReserva[];
+  /** Fase H: comprador confirmado por el personal (null si no se vinculó ninguno). */
+  comprador?: CompradorResumen | null;
 }
 
 export interface AceptacionPrecioRequest {

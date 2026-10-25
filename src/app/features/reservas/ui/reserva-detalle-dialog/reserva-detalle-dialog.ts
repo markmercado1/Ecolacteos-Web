@@ -8,6 +8,8 @@ import { CampoUnicoDialog, CampoUnicoDialogData } from '../../../../shared/ui/di
 import { ErrorStateComponent } from '../../../../shared/ui/state/error-state';
 import { LoadingStateComponent } from '../../../../shared/ui/state/loading-state';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
+import { CompradorSelectorComponent } from '../../../clientes/ui/comprador-selector/comprador-selector';
+import { CompradorSeleccion } from '../../../clientes/ui/registro-cliente-dialog/registro-cliente-dialog';
 import { VentaDetalleDialog } from '../../../ventas/ui/venta-detalle-dialog/venta-detalle-dialog';
 import { COLOR_ESTADO, ETIQUETAS_ESTADO, ETIQUETAS_EVENTO, ETIQUETAS_MEDIO } from '../../data-access/reserva.etiquetas';
 import { ReservaResponse } from '../../data-access/reserva.models';
@@ -26,7 +28,7 @@ export interface ReservaDetalleDialogData {
  */
 @Component({
   selector: 'app-reserva-detalle-dialog',
-  imports: [DatePipe, DecimalPipe, LoadingStateComponent, ErrorStateComponent],
+  imports: [DatePipe, DecimalPipe, LoadingStateComponent, ErrorStateComponent, CompradorSelectorComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="dialog-head">
@@ -114,6 +116,25 @@ export interface ReservaDetalleDialogData {
           @if (r.total === null) { Total: <span class="a-confirmar">a confirmar</span> (hay presentaciones sin precio) }
           @else { Total: S/ {{ r.total | number: '1.2-2' }} }
         </p>
+
+        <section class="bloque" aria-label="Comprador" data-testid="comprador-reserva">
+          <h3>Comprador</h3>
+          @if (r.comprador; as c) {
+            <p><strong>{{ c.nombre }}</strong> · {{ c.tipo === 'PROVEEDOR' ? 'Proveedor' : 'Cliente' }} (confirmado). Al retirar, la venta queda a su nombre.
+              @if (editableComprador(r)) { <button type="button" class="row-link" [disabled]="ocupado()" (click)="quitarComprador(r)">Quitar</button> }</p>
+          } @else {
+            <p class="nota">Sin comprador confirmado: al retirar, la venta guarda solo el nombre de la reserva y no se crea ninguna ficha.</p>
+            @if (editableComprador(r)) {
+              @if (buscandoComprador()) {
+                <app-comprador-selector [inicial]="r.telefono" [permitirVarios]="false"
+                  [datosRegistro]="{ nombre: r.nombreCliente, telefono: r.telefono, correo: r.correo }"
+                  (elegido)="vincular(r, $event)" />
+              } @else {
+                <button type="button" class="btn small" (click)="buscandoComprador.set(true)">Identificar comprador</button>
+              }
+            }
+          }
+        </section>
 
         @if (r.aceptacion.totalAceptado !== null) {
           <section class="bloque" aria-label="Aceptación del cliente">
@@ -258,6 +279,23 @@ export class ReservaDetalleDialog {
   }
   protected etiquetaMedio(medio: keyof typeof ETIQUETAS_MEDIO): string {
     return ETIQUETAS_MEDIO[medio];
+  }
+
+  /** Fase H: el comprador se confirma o se quita solo mientras la reserva está pendiente o confirmada. */
+  protected readonly buscandoComprador = signal(false);
+
+  protected editableComprador(r: ReservaResponse): boolean {
+    return r.estado === 'PENDIENTE' || r.estado === 'CONFIRMADA';
+  }
+
+  protected vincular(r: ReservaResponse, c: CompradorSeleccion | null): void {
+    if (!c) return;
+    this.buscandoComprador.set(false);
+    this.ejecutar(this.api.vincularComprador(r.id, { tipo: c.tipo, id: c.id }), `Comprador confirmado: ${c.nombre}.`);
+  }
+
+  protected quitarComprador(r: ReservaResponse): void {
+    this.ejecutar(this.api.desvincularComprador(r.id), 'Comprador quitado de la reserva.');
   }
 
   protected verVenta(ventaId: string): void {
