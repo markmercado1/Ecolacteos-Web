@@ -16,6 +16,8 @@ export interface CrearReservaRequest {
   fechaRetiro: string;
   nota?: string;
   lineas: LineaReservaRequest[];
+  /** Fase H: versión del aviso de datos personales que se mostró (constancia del deber de informar). */
+  avisoPrivacidadVersion?: string;
 }
 
 export interface ConsultaReservaRequest {
@@ -51,4 +53,11 @@ export interface ReglasReserva {
   fechasDisponibles: string[];
   maxUnidades: number;
   horasPendiente: number;
+}
+
+/** Fuente: AvisoPrivacidadResponse.java (GET /api/catalogo/privacidad, público). Solo se usan los textos de la reserva. */
+export interface AvisoPrivacidad {
+  version: string;
+  completo: boolean;
+  avisoReserva: string[];
 }

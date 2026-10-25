@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { urlFoto } from '../../core/api/api-url';
 import { ErrorAmigable, errorAmigable } from '../../core/api/http-error';
 import { PresentacionCatalogo, ProductoCatalogo } from '../../core/api/catalogo.models';
-import { CrearReservaRequest, ReglasReserva, ReservaPublica } from '../../core/api/reservas.models';
+import { CrearReservaRequest, ReglasReserva, ReservaPublica, AvisoPrivacidad } from '../../core/api/reservas.models';
 import { ReservasPublicasApi } from '../../core/api/reservas.api';
 import { CarritoStore } from '../../core/state/carrito.store';
 import { CatalogoStore } from '../../core/state/catalogo.store';
@@ -51,6 +51,8 @@ export class ReservarPage {
   private readonly fb = inject(FormBuilder);
 
   protected readonly reglas = signal<ReglasReserva | null>(null);
+  /** Fase H: aviso de datos personales (deber de informar). Si no carga, la reserva sigue funcionando y se muestra un texto mínimo. */
+  protected readonly aviso = signal<AvisoPrivacidad | null>(null);
   protected readonly reglasEstado = signal<'cargando' | 'listo' | 'error'>('cargando');
   protected readonly reglasError = signal<string | null>(null);
 
@@ -108,6 +110,7 @@ export class ReservarPage {
   constructor() {
     this.catalogo.cargar();
     this.cargarReglas();
+    this.api.aviso().subscribe({ next: (a) => this.aviso.set(a), error: () => this.aviso.set(null) });
   }
 
   protected cargarReglas(): void {
@@ -163,6 +166,7 @@ export class ReservarPage {
       correo: v.correo.trim() || undefined,
       fechaRetiro: v.fecha,
       nota: v.nota.trim() || undefined,
+      avisoPrivacidadVersion: this.aviso()?.version,
       lineas: this.carrito.lineas().map((l) => ({ presentacionId: l.presentacionId, cantidad: l.cantidad }))
     };
     const firma = JSON.stringify(solicitud);
