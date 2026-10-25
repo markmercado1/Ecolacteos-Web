@@ -1,5 +1,18 @@
 # Estado vigente
 
+## 2026-10-24 — Fase H, clientes y comprador de cada venta: IMPLEMENTADO (rama `feature/clientes-compradores`, SIN MERGE)
+
+Sin merge ni push: **pendiente de revisión** antes de integrar. Detalle en `CLIENTES.md`; backend `API_DOCUMENTATION.md` §17 (V33).
+
+- Comprador opcional en las ventas del panel (cliente voluntario o ficha de proveedor; «Cliente varios» si no se identifica), con las reglas por canal
+  (MAYORISTA = cliente habilitado por ADMIN; PROVEEDOR = proveedor del padrón). App móvil sin cambios.
+- Reservas: comprador confirmado por el personal; el retiro lo usa sin pedir datos; sin comprador no se crea ficha.
+- Pantalla «Clientes» (ADMIN y VENTAS), registro voluntario con aviso y autorización, promociones aparte y revocables, historial con indicadores
+  del año, fusión manual (ADMIN). Historial consolidado del proveedor con «Compras» (ADMIN).
+- Web pública: aviso «Cómo usamos tus datos» en la reserva.
+- **Pendiente del negocio:** datos del responsable para los avisos (razón social, RUC, domicilio, canal ARCO, banco de datos inscrito,
+  destinatarios/transferencias, plazos de conservación) y la supresión de fichas a pedido.
+
 ## 2026-10-24 — Fase G, RUC opcional e IGV configurable: IMPLEMENTADO (rama `feature/ruc-igv`)
 
 Sin push. Backend de referencia: `integration/7-fases` + `feature/ruc-igv` (V31 documentos del proveedor, V32 IGV configurable). Detalle de contratos en `CONTRATOS.md` y

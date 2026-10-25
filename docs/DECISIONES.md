@@ -1,5 +1,21 @@
 # Decisiones de producto y alcance
 
+## 2026-10-24 — Fase H, clientes y compradores
+
+**Del usuario:** teléfono = sugerencia (no identificador); DNI/RUC = identificador fuerte; el trabajador confirma; nunca fusionar solo; fusión
+manual con motivo; varios teléfonos por persona; PÚBLICO comprador opcional, MAYORISTA con ficha habilitada por ADMIN, PROVEEDOR con ficha del
+padrón de proveedores (sin duplicar identidad); ventas anónimas y reservas no crean fichas; el canal decide el precio, sin descuentos;
+registro voluntario (nombre y teléfono) con aviso y autorización; promociones aparte, opcionales, nunca marcadas, con evidencia y revocación;
+historial con indicadores reales; sin migrar reservas antiguas; aviso de datos en la reserva pública; app móvil sin cambios.
+
+**Técnicas:**
+- Reglas de comprador por canal **solo en el panel**; la app móvil sigue anónima (su contrato no cambia). A confirmar.
+- Copia histórica en la venta: nombre y RUC (no el DNI). Al retirar una reserva sin comprador, la venta guarda el nombre de la reserva sin ficha.
+- Ficha o proveedor desactivados no se usan como compradores en ventas nuevas.
+- Fusión: rechaza DNI/RUC distintos o tipos de persona distintos; no transfiere autorizaciones; el mayorista del destino no cambia.
+- Año de los indicadores = calendario en curso, America/Lima.
+- Datos del responsable del tratamiento: configurables y marcados como pendientes mientras falten (`completo=false`).
+
 ## 2026-10-24 — Fase G, RUC opcional e IGV configurable
 
 **Del usuario:**
