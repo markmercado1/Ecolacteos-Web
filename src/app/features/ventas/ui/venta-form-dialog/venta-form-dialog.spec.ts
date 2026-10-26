@@ -328,6 +328,15 @@ describe('VentaFormDialog — Fase H: comprador y canal', () => {
     dialog['elegirComprador'](null);
     expect(dialog['comprador']()).toBeNull();
   });
+
+  it('a un cliente se le propone su canal habitual, y MAYORISTA solo si está habilitado', () => {
+    const { dialog } = crearConCatalogoListo();
+    dialog['elegirComprador']({ ...MAYORISTA_HABILITADO, canalHabitual: 'MAYORISTA' });
+    expect(dialog['form'].controls.tipoCliente.value).toBe('MAYORISTA');
+    // un canal habitual MAYORISTA sin la habilitación (dato viejo) no se propone
+    dialog['elegirComprador']({ tipo: 'CLIENTE', id: 'c-2', nombre: 'Rosa', mayorista: false, canalHabitual: 'MAYORISTA' });
+    expect(dialog['form'].controls.tipoCliente.value).toBe('PUBLICO');
+  });
 });
 
 describe('VentaFormDialog — resumen, envío y UUID estable', () => {

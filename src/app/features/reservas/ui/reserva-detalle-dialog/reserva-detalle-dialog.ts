@@ -195,8 +195,9 @@ export interface ReservaDetalleDialogData {
     }
   `,
   styles: `
+    /* ancho FIJO con tope (no porcentual): con textos largos el panel del overlay se estiraba y la tarjeta quedaba a la izquierda */
     :host {
-      display: block; width: min(46rem, 100%); background: var(--color-surface);
+      display: block; width: 46rem; max-width: calc(100vw - 2rem); background: var(--color-surface);
       border-radius: var(--radius-dialog); box-shadow: var(--shadow-overlay); max-height: 90vh; overflow: auto;
     }
     .dialog-head { display: flex; justify-content: space-between; align-items: flex-start; padding: var(--space-6) var(--space-6) 0; gap: var(--space-3); }

@@ -1,7 +1,7 @@
 /** Fuente: backend `importacion/*Response.java` (ImportacionController, /api/admin/importaciones). */
 
 /** Tipos de dato maestro que se pueden importar. Nunca movimientos operativos (acopios, pagos, ventas...). */
-export type TipoImportacion = 'proveedores' | 'insumos';
+export type TipoImportacion = 'proveedores' | 'insumos' | 'clientes';
 
 export type EstadoFilaImportacion = 'VALIDA' | 'INVALIDA' | 'DUPLICADA' | 'OMITIDA' | 'CREADA';
 

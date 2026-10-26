@@ -1,5 +1,11 @@
 # Estado vigente
 
+## 2026-10-24 — Refactor de UX de Clientes (rama `feature/clientes-ventas`)
+
+Registro en un solo paso (la acción «Registrar cliente» deja la constancia; promociones = marcar medios), tipo de cliente y canal habitual
+(V34, aditiva), columna «Reservas» en el padrón, exportar/importar clientes en Excel (ADMIN) y diálogo de registro centrado y responsivo.
+Detalle en `CLIENTES.md`; backend `API_DOCUMENTATION.md` §17.1. Verificado el 2026-10-26: panel 125 archivos / 940 pruebas, web pública 6 / 74, builds de los dos proyectos OK; backend suite completa en verde (ver REGISTRO). Commiteado y publicado por la limpieza de Git del 2026-10-26.
+
 ## 2026-10-24 — Fase H, clientes y comprador de cada venta: IMPLEMENTADO (rama `feature/clientes-compradores`, SIN MERGE)
 
 Sin merge ni push: **pendiente de revisión** antes de integrar. Detalle en `CLIENTES.md`; backend `API_DOCUMENTATION.md` §17 (V33).

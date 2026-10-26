@@ -5,11 +5,15 @@ import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ErrorStateComponent } from '../../../../shared/ui/state/error-state';
 import { LoadingStateComponent } from '../../../../shared/ui/state/loading-state';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
+import { ETIQUETAS_ESTADO } from '../../../reservas/data-access/reserva.etiquetas';
+import { EstadoReserva } from '../../../reservas/data-access/reserva.models';
 import {
+  CanalHabitual,
   ClienteResponse,
   CompraResponse,
   ConsentimientoResponse,
   CompradorSugerencia,
+  ETIQUETAS_CANAL_HABITUAL,
   ETIQUETAS_FORMA,
   ETIQUETAS_MEDIO,
   FormaAutorizacion,
@@ -48,7 +52,8 @@ export interface ClienteDetalleDialogData {
         @if (c.fusionadoEnId) { <p class="aviso">Esta ficha se fusionó en otra: sus compras y teléfonos están en la ficha destino.</p> }
         @if (!c.activo && !c.fusionadoEnId) { <p class="aviso">Ficha desactivada: no se usa en ventas nuevas.</p> }
         <dl class="datos">
-          <div><dt>Tipo</dt><dd>{{ c.tipoPersona === 'EMPRESA' ? 'Empresa' : 'Persona natural' }}{{ c.mayorista ? ' · Mayorista' : '' }}</dd></div>
+          <div><dt>Tipo</dt><dd>{{ c.tipoPersona === 'EMPRESA' ? 'Empresa' : 'Persona natural' }} · {{ c.mayorista ? 'Mayorista' : 'Regular' }}</dd></div>
+          <div><dt>Canal habitual</dt><dd data-testid="canal-habitual">{{ etiquetaCanal(c.canalHabitual) }}</dd></div>
           @if (c.razonSocial) { <div><dt>Razón social</dt><dd>{{ c.razonSocial }}</dd></div> }
           <div><dt>DNI</dt><dd>{{ c.dni ?? '—' }}</dd></div>
           <div><dt>RUC</dt><dd>{{ c.ruc ?? '—' }}</dd></div>
@@ -68,18 +73,20 @@ export interface ClienteDetalleDialogData {
         <section class="bloque" data-testid="promociones">
           <h3>Promociones</h3>
           @if (c.comunicaciones.vigente) {
-            <p>Autorizó recibir promociones por <strong>{{ medios(c.comunicaciones.medios) }}</strong> desde el {{ c.comunicaciones.desde | date: 'dd/MM/yyyy' }}.</p>
-            <button type="button" class="btn small danger" [disabled]="ocupado()" (click)="revocar(c)">Registrar que ya no quiere recibirlas</button>
+            <div class="fila-accion">
+              <p class="estado-promos">Acepta promociones por <strong>{{ medios(c.comunicaciones.medios) }}</strong> desde el {{ c.comunicaciones.desde | date: 'dd/MM/yyyy' }}.</p>
+              <button type="button" class="btn small danger" [disabled]="ocupado()" (click)="revocar(c)">Ya no quiere recibirlas</button>
+            </div>
           } @else {
             <p>{{ c.comunicaciones.estado === 'REVOCADO' ? 'Retiró su autorización: no se le envían promociones.' : 'No autorizó promociones: no se le envían.' }}</p>
             @if (c.activo && !c.fusionadoEnId) {
-              <p class="nota">Solo si el comprador lo pide o lo acepta al preguntarle. Nunca se marca por defecto.</p>
-              <div class="medios">
+              <fieldset class="medios">
+                <legend>Si ahora las acepta (solo si lo pide o lo acepta al preguntarle), marca por dónde y guarda:</legend>
                 @for (m of todosLosMedios; track m) {
                   <label><input type="checkbox" [checked]="medioElegido(m)" (change)="alternarMedio(m)"> {{ etiquetaMedio(m) }}</label>
                 }
-              </div>
-              <button type="button" class="btn small" [disabled]="ocupado() || mediosElegidos().length === 0" (click)="otorgar(c)">Registrar su autorización</button>
+                <button type="button" class="btn small" [disabled]="ocupado() || mediosElegidos().length === 0" (click)="otorgar(c)">Guardar: acepta promociones</button>
+              </fieldset>
             }
           }
         </section>
@@ -92,6 +99,15 @@ export interface ClienteDetalleDialogData {
               <input type="text" [value]="motivoMayorista()" (input)="motivoMayorista.set($any($event.target).value)" placeholder="Motivo (obligatorio)" aria-label="Motivo del cambio de mayorista">
               <button type="button" class="btn small" [disabled]="ocupado() || !motivoMayorista().trim()" (click)="cambiarMayorista(c)">{{ c.mayorista ? 'Quitar mayorista' : 'Habilitar mayorista' }}</button>
             </div>
+            @if (c.mayorista) {
+              <div class="fila-accion">
+                <label for="cd-canal" class="etiqueta-inline">Canal que se propone al venderle</label>
+                <select id="cd-canal" [value]="c.canalHabitual" [disabled]="ocupado()" (change)="cambiarCanal(c, $any($event.target).value)">
+                  <option value="PUBLICO">Público</option>
+                  <option value="MAYORISTA">Mayorista</option>
+                </select>
+              </div>
+            }
           </section>
         }
 
@@ -113,10 +129,13 @@ export interface ClienteDetalleDialogData {
                 }
               </ul>
             }
+            <h4 id="reservas-cliente">Reservas</h4>
+            <p data-testid="resumen-reservas">{{ resumenReservas(c) }}</p>
             @if (h.reservas.length) {
-              <h4>Reservas</h4>
-              <ul class="lista">
-                @for (r of h.reservas; track r.id) { <li>{{ r.codigo }} · {{ r.estado }} · retiro {{ r.fechaRetiro | date: 'dd/MM/yyyy' }}</li> }
+              <ul class="lista" aria-labelledby="reservas-cliente">
+                @for (r of h.reservas; track r.id) {
+                  <li>{{ r.codigo }} · <span class="badge" [class.gray]="!esActiva(r.estado)">{{ etiquetaEstado(r.estado) }}</span> · retiro {{ r.fechaRetiro | date: 'dd/MM/yyyy' }}</li>
+                }
               </ul>
             }
           </section>
@@ -159,7 +178,8 @@ export interface ClienteDetalleDialogData {
     <div class="dialog-foot"><button type="button" class="btn" (click)="dialogRef.close(cambios)">Cerrar</button></div>
   `,
   styles: `
-    :host { display: block; width: min(38rem, 100%); background: var(--color-surface); border-radius: var(--radius-dialog); box-shadow: var(--shadow-overlay); max-height: 92vh; overflow: auto; }
+    /* ancho FIJO (no porcentual): así el panel del overlay se ajusta a la tarjeta y queda centrado, aunque los textos sean largos */
+    :host { display: block; width: 38rem; max-width: calc(100vw - 2rem); background: var(--color-surface); border-radius: var(--radius-dialog); box-shadow: var(--shadow-overlay); max-height: 90vh; overflow: auto; }
     .dialog-head { display: flex; justify-content: space-between; align-items: flex-start; padding: var(--space-6) var(--space-6) 0; }
     .dialog-head h2 { font-size: var(--font-size-lg); margin: 0; }
     .close { border: 1px solid var(--color-border); background: var(--color-surface); border-radius: var(--radius-control); width: 2rem; height: 2rem; font-size: 1.1rem; line-height: 1; }
@@ -172,7 +192,12 @@ export interface ClienteDetalleDialogData {
     .bloque summary { cursor: pointer; font-weight: 600; }
     .fila-accion { display: flex; gap: var(--space-2); margin: var(--space-2) 0; }
     .fila-accion input { flex: 1; }
-    .medios { display: flex; gap: var(--space-3); flex-wrap: wrap; margin: var(--space-2) 0; }
+    .medios { border: none; padding: 0; display: flex; gap: var(--space-2) var(--space-3); flex-wrap: wrap; align-items: center; margin: var(--space-2) 0; }
+    .medios legend { font-size: 0.75rem; color: var(--color-text-muted); padding: 0; margin-bottom: var(--space-2); }
+    .medios label { display: inline-flex; align-items: center; gap: var(--space-1); }
+    .estado-promos { flex: 1; margin: 0; }
+    .etiqueta-inline { align-self: center; font-size: 0.75rem; color: var(--color-text-muted); }
+    .fila-accion { align-items: center; flex-wrap: wrap; }
     .indicadores { display: grid; gap: var(--space-1); }
     .cifra { font-weight: 800; }
     .lista { list-style: none; padding: 0; margin: var(--space-2) 0; }
@@ -212,6 +237,33 @@ export class ClienteDetalleDialog {
 
   constructor() {
     this.cargar();
+  }
+
+  protected etiquetaCanal(c: CanalHabitual): string {
+    return ETIQUETAS_CANAL_HABITUAL[c] ?? c;
+  }
+
+  protected etiquetaEstado(e: string): string {
+    return ETIQUETAS_ESTADO[e as EstadoReserva] ?? e;
+  }
+
+  protected esActiva(e: string): boolean {
+    return e === 'PENDIENTE' || e === 'CONFIRMADA';
+  }
+
+  protected resumenReservas(c: ClienteResponse): string {
+    const r = c.reservas;
+    if (!r || r.total === 0) return 'Sin reservas vinculadas a esta ficha.';
+    if (r.activas === 0) return `Ninguna activa (${r.total} en total).`;
+    const partes = [r.pendientes ? `${r.pendientes} pendiente${r.pendientes > 1 ? 's' : ''}` : '', r.confirmadas ? `${r.confirmadas} confirmada${r.confirmadas > 1 ? 's' : ''}` : '']
+      .filter(Boolean).join(' y ');
+    return `${partes}; próximo retiro ${this.fechaCorta(r.proximoRetiro)} (${r.total} en total).`;
+  }
+
+  private fechaCorta(iso: string | null): string {
+    if (!iso) return '—';
+    const [a, m, d] = iso.split('-');
+    return `${d}/${m}/${a}`;
   }
 
   protected forma(f: FormaAutorizacion): string {
@@ -303,6 +355,19 @@ export class ClienteDetalleDialog {
     this.errorAccion.set(null);
     this.api.cambiarMayorista(c.id, !c.mayorista, this.motivoMayorista().trim()).subscribe({
       next: (r) => { this.motivoMayorista.set(''); this.aplicar(r, r.mayorista ? 'Habilitado como mayorista.' : 'Ya no es mayorista.'); },
+      error: (e) => this.fallar(e)
+    });
+  }
+
+  /** ADMIN: el canal que se propone al venderle (MAYORISTA solo para mayoristas; el servidor lo vuelve a validar). */
+  protected cambiarCanal(c: ClienteResponse, canal: CanalHabitual): void {
+    if (canal === c.canalHabitual) return;
+    this.ocupado.set(true);
+    this.errorAccion.set(null);
+    this.api.actualizar(c.id, {
+      tipoPersona: c.tipoPersona, nombre: c.nombre, correo: c.correo, dni: c.dni, ruc: c.ruc, razonSocial: c.razonSocial, canalHabitual: canal
+    }).subscribe({
+      next: (r) => this.aplicar(r, `Canal habitual: ${this.etiquetaCanal(r.canalHabitual)}.`),
       error: (e) => this.fallar(e)
     });
   }

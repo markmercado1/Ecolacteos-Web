@@ -13,7 +13,9 @@ const cliente: ClienteResponse = {
   id: 'c-1', tipoPersona: 'NATURAL', nombre: 'Rosa Quispe', razonSocial: null, dni: null, ruc: null, correo: null,
   telefonos: ['••• ••• 321'], mayorista: false, activo: true, fusionadoEnId: null, creadoEn: '2026-10-24T10:00:00', datosCompletos: false,
   registro: { ...sinAutorizar, vigente: true, estado: 'OTORGADO', forma: 'VERBAL_PRESENCIAL', desde: '2026-10-24T10:00:00', avisoVersion: '2026-10-24' },
-  comunicaciones: { vigente: true, estado: 'OTORGADO', medios: ['WHATSAPP'], forma: 'VERBAL_PRESENCIAL', desde: '2026-10-24T10:00:00', avisoVersion: '2026-10-24', avisoCompleto: false }
+  comunicaciones: { vigente: true, estado: 'OTORGADO', medios: ['WHATSAPP'], forma: 'VERBAL_PRESENCIAL', desde: '2026-10-24T10:00:00', avisoVersion: '2026-10-24', avisoCompleto: false },
+  canalHabitual: 'PUBLICO',
+  reservas: { pendientes: 1, confirmadas: 1, activas: 2, total: 3, proximoRetiro: '2026-10-26' }
 };
 
 function crear(esAdmin: boolean, c: ClienteResponse = cliente) {
@@ -41,6 +43,9 @@ describe('ClienteDetalleDialog (Fase H)', () => {
     const texto = el(f).textContent ?? '';
     expect(el(f).querySelector('[data-testid="historial"]')?.textContent).toContain('2 compras');
     expect(texto).toContain('ABC123');
+    expect(texto).toContain('Retirada'); // estado legible, no el código
+    expect(el(f).querySelector('[data-testid="resumen-reservas"]')?.textContent).toContain('1 pendiente y 1 confirmada; próximo retiro 26/10/2026 (3 en total)');
+    expect(el(f).querySelector('[data-testid="canal-habitual"]')?.textContent).toContain('Público');
     expect(texto).toContain('ADMIN los ve completos');
     expect(texto).not.toContain('Habilitar mayorista');
     expect(texto).not.toContain('Fusionar');
@@ -49,7 +54,7 @@ describe('ClienteDetalleDialog (Fase H)', () => {
 
   it('revocar las promociones es un clic, sin justificación, y queda registrado', () => {
     const { f, http } = crear(false);
-    const boton = Array.from(el(f).querySelectorAll('button')).find((b) => b.textContent?.includes('ya no quiere recibirlas')) as HTMLButtonElement;
+    const boton = Array.from(el(f).querySelectorAll('button')).find((b) => b.textContent?.includes('Ya no quiere recibirlas')) as HTMLButtonElement;
     boton.click();
     const req = http.expectOne(`${base}/clientes/c-1/comunicaciones`);
     expect(req.request.body).toEqual({ otorgada: false, forma: 'VERBAL_PRESENCIAL' });
@@ -69,6 +74,40 @@ describe('ClienteDetalleDialog (Fase H)', () => {
     expect(req.request.body).toEqual({ mayorista: true, motivo: 'Compra por mayor' });
     req.flush({ ...cliente, mayorista: true });
     http.expectOne(`${base}/clientes/c-1/consentimientos`).flush([]);
+    http.verify();
+  });
+
+  it('otorgar promociones es un paso: marcar medios y guardar (con la versión vigente del aviso)', () => {
+    const sinPromos: ClienteResponse = { ...cliente, comunicaciones: { ...cliente.comunicaciones, vigente: false, estado: null, medios: [] } };
+    const { f, http, comp } = crear(false, sinPromos);
+    comp['alternarMedio']('SMS');
+    f.detectChanges();
+    (Array.from(el(f).querySelectorAll('button')).find((b) => b.textContent?.includes('acepta promociones')) as HTMLButtonElement).click();
+    http.expectOne(`${base}/catalogo/privacidad`).flush({ version: '2026-10-24' });
+    const req = http.expectOne(`${base}/clientes/c-1/comunicaciones`);
+    expect(req.request.body).toEqual({ otorgada: true, medios: ['SMS'], forma: 'VERBAL_PRESENCIAL', avisoVersion: '2026-10-24' });
+    req.flush(cliente);
+    http.expectOne(`${base}/clientes/c-1/consentimientos`).flush([]);
+    http.verify();
+  });
+
+  it('ADMIN cambia el canal habitual de un mayorista sin tocar sus demás datos', () => {
+    const mayorista: ClienteResponse = { ...cliente, mayorista: true };
+    const { f, http, comp } = crear(true, mayorista);
+    expect(el(f).querySelector('#cd-canal')).toBeTruthy();
+    comp['cambiarCanal'](mayorista, 'MAYORISTA');
+    const req = http.expectOne(`${base}/clientes/c-1`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({ tipoPersona: 'NATURAL', nombre: 'Rosa Quispe', correo: null, dni: null, ruc: null, razonSocial: null, canalHabitual: 'MAYORISTA' });
+    req.flush({ ...mayorista, canalHabitual: 'MAYORISTA' });
+    http.expectOne(`${base}/clientes/c-1/consentimientos`).flush([]);
+    http.verify();
+  });
+
+  it('sin reservas vinculadas lo dice, y VENTAS no ve el cambio de canal', () => {
+    const { f, http } = crear(false, { ...cliente, reservas: { pendientes: 0, confirmadas: 0, activas: 0, total: 0, proximoRetiro: null } });
+    expect(el(f).querySelector('[data-testid="resumen-reservas"]')?.textContent).toContain('Sin reservas vinculadas');
+    expect(el(f).querySelector('#cd-canal')).toBeNull();
     http.verify();
   });
 });

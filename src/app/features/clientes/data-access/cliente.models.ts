@@ -5,6 +5,12 @@
 export type TipoComprador = 'CLIENTE' | 'PROVEEDOR';
 export type FormaAutorizacion = 'VERBAL_PRESENCIAL' | 'ESCRITO' | 'TELEFONICA' | 'DIGITAL';
 export type MedioComercial = 'WHATSAPP' | 'SMS' | 'LLAMADA' | 'CORREO';
+/**
+ * Canal que el panel PROPONE al vender a esta ficha (V34). No es el tipo de cliente: el tipo (regular o mayorista, este solo lo habilita
+ * ADMIN) decide si puede comprar a precio MAYORISTA; el canal habitual solo preselecciona. PROVEEDOR nunca es de un cliente.
+ */
+export type CanalHabitual = 'PUBLICO' | 'MAYORISTA';
+export const ETIQUETAS_CANAL_HABITUAL: Record<CanalHabitual, string> = { PUBLICO: 'Público', MAYORISTA: 'Mayorista' };
 
 export const MEDIOS_COMERCIALES: MedioComercial[] = ['WHATSAPP', 'SMS', 'LLAMADA', 'CORREO'];
 export const ETIQUETAS_MEDIO: Record<MedioComercial, string> = { WHATSAPP: 'WhatsApp', SMS: 'SMS', LLAMADA: 'Llamada', CORREO: 'Correo' };
@@ -25,6 +31,15 @@ export interface EstadoAutorizacion {
   avisoCompleto: boolean;
 }
 
+/** Reservas VINCULADAS a la ficha, por estado efectivo (una vencida no cuenta como activa). */
+export interface ResumenReservas {
+  pendientes: number;
+  confirmadas: number;
+  activas: number;
+  total: number;
+  proximoRetiro: string | null;
+}
+
 export interface ClienteResponse {
   id: string;
   tipoPersona: 'NATURAL' | 'EMPRESA';
@@ -41,6 +56,8 @@ export interface ClienteResponse {
   datosCompletos: boolean;
   registro: EstadoAutorizacion;
   comunicaciones: EstadoAutorizacion;
+  canalHabitual: CanalHabitual;
+  reservas: ResumenReservas;
 }
 
 export interface ClienteRequest {
@@ -55,6 +72,10 @@ export interface ClienteRequest {
   comunicaciones: { otorgada: boolean; medios: MedioComercial[]; forma: FormaAutorizacion } | null;
   avisoVersion: string;
   confirmadoSinCoincidencia: boolean;
+  /** Solo ADMIN puede registrar la ficha ya habilitada como mayorista, con motivo. */
+  mayorista?: boolean;
+  motivoMayorista?: string | null;
+  canalHabitual?: CanalHabitual;
 }
 
 export interface ClienteUpdateRequest {
@@ -64,6 +85,7 @@ export interface ClienteUpdateRequest {
   dni?: string | null;
   ruc?: string | null;
   razonSocial?: string | null;
+  canalHabitual?: CanalHabitual;
 }
 
 export interface ComercialRequest {
@@ -122,6 +144,8 @@ export interface CompradorSugerencia {
   mayorista: boolean;
   activo: boolean;
   coincidencia: TipoCoincidencia;
+  /** null para un proveedor. */
+  canalHabitual: CanalHabitual | null;
 }
 
 export interface CoincidenciasRequest {
