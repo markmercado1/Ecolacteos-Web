@@ -23,7 +23,7 @@ Rama `feature/clientes-compradores` (backend y panel), creada desde `integration
   monto total y del **año calendario en curso (America/Lima)**, última compra y compras desde reserva. El historial consolidado del proveedor
   suma la sección «Compras» (solo ADMIN). Las ventas anónimas siguen en los totales generales, pero no se atribuyen a nadie.
 
-## Refactor de UX (2026-10-24, sobre `integration/7-fases`, sin commit)
+## Refactor de UX (2026-10-24; rama `feature/clientes-ventas`, integrado en `integration/7-fases`)
 
 - **Consentimiento sin pasos redundantes:** el registro es un solo paso. El trabajador lee el aviso y, si el comprador acepta, pulsa
   «Registrar cliente»: esa acción deja la constancia (forma elegida, versión del aviso, quién y cuándo). Ya no hay casilla «autoriza» ni botón
