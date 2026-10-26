@@ -1,5 +1,12 @@
 # Registro acumulativo
 
+## Refactor de UX de Clientes y Compradores — 2026-10-24
+
+Pedido del usuario («Refactor UX y mejoras funcionales — Clientes y Compradores»), directamente en `integration/7-fases` (worktrees
+`ecolacteos-backend-integracion` y `Ecolacteos-Web-integracion`), **sin commits**. Backend: V34 `cliente.canal_habitual`, tipo/canal en
+`ClienteService`, resumen de reservas por ficha, exportación `clientes`, importación `ImportacionClientes`. Panel: registro rehecho, ficha,
+tabla con reservas y Excel, propuesta de canal en la venta. Ver `CLIENTES.md`.
+
 ## Fase H: clientes, compradores e historial — 2026-10-24
 
 Autorizada por el usuario («Autorización de implementación — padrón de clientes, compradores e historial de compras»), **sin integrar**: revisión

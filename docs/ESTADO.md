@@ -1,5 +1,11 @@
 # Estado vigente
 
+## 2026-10-24 — Refactor de UX de Clientes (sobre `integration/7-fases`, SIN COMMIT)
+
+Registro en un solo paso (la acción «Registrar cliente» deja la constancia; promociones = marcar medios), tipo de cliente y canal habitual
+(V34, aditiva), columna «Reservas» en el padrón, exportar/importar clientes en Excel (ADMIN) y diálogo de registro centrado y responsivo.
+Detalle en `CLIENTES.md`; backend `API_DOCUMENTATION.md` §17.1. Pendiente de revisión y autorización para commitear.
+
 ## 2026-10-24 — Fase H, clientes y comprador de cada venta: IMPLEMENTADO (rama `feature/clientes-compradores`, SIN MERGE)
 
 Sin merge ni push: **pendiente de revisión** antes de integrar. Detalle en `CLIENTES.md`; backend `API_DOCUMENTATION.md` §17 (V33).

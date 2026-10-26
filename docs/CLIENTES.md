@@ -23,6 +23,24 @@ Rama `feature/clientes-compradores` (backend y panel), creada desde `integration
   monto total y del **año calendario en curso (America/Lima)**, última compra y compras desde reserva. El historial consolidado del proveedor
   suma la sección «Compras» (solo ADMIN). Las ventas anónimas siguen en los totales generales, pero no se atribuyen a nadie.
 
+## Refactor de UX (2026-10-24, sobre `integration/7-fases`, sin commit)
+
+- **Consentimiento sin pasos redundantes:** el registro es un solo paso. El trabajador lee el aviso y, si el comprador acepta, pulsa
+  «Registrar cliente»: esa acción deja la constancia (forma elegida, versión del aviso, quién y cuándo). Ya no hay casilla «autoriza» ni botón
+  «No se registra» (se cancela y la venta sigue igual). Abrir o ver una pantalla nunca registra nada.
+- **Promociones:** pregunta aparte y opcional dentro del mismo formulario; marcar por qué medios acepta **es** su autorización; sin medios, no se
+  registra ninguna. En la ficha: «Ya no quiere recibirlas» (un clic) o marcar medios y «Guardar: acepta promociones».
+- **Tipo de cliente y canal habitual** (V34): tipo = Regular o Mayorista (solo ADMIN, con motivo; habilita el precio MAYORISTA); canal habitual =
+  Público o Mayorista (este solo para mayoristas), el canal que se **propone** al elegirlo en una venta. Tipo de persona (natural/empresa) con
+  sus campos dinámicos (empresa: razón social y RUC). Validación en el formulario (errores junto a cada campo) y en el servidor.
+- **Reservas en la tabla:** columna «Reservas» con las activas (pendientes + confirmadas, por estado efectivo) y el próximo retiro; abre la ficha
+  con el detalle. Solo cuentan las reservas **vinculadas** a la ficha (el teléfono no vincula). Se recarga al cerrar la ficha con cambios.
+- **Excel (ADMIN):** «Exportar a Excel» con el mismo filtro y búsqueda de la tabla; «Importar desde Excel» con el diálogo común (plantilla,
+  vista previa, inválidas y duplicadas, confirmación transaccional, reporte). Duplicados: DNI/RUC de otra ficha o de un proveedor, teléfono ya
+  usado (salvo que la fila confirme «otra persona») o repetidos en el archivo; nada se fusiona.
+- **Diseño:** el diálogo de registro (y la ficha) tenían un ancho porcentual; con textos largos el panel del overlay ocupaba todo el ancho y la
+  tarjeta quedaba a la izquierda, sobre el menú. Ahora usan ancho fijo con tope `100vw - 2rem` (centrados, responsivos).
+
 ## Pantallas del panel
 
 - **Comercial → Clientes** (`/clientes`, ADMIN y VENTAS): padrón con búsqueda, filtros (activos, mayoristas, con promociones, desactivados) y
@@ -39,7 +57,7 @@ Revisado contra el texto oficial del reglamento (arts. 1–10, 26, 42, 69) y de 
 | Tratamiento | Base | Qué se implementó |
 |---|---|---|
 | Reserva web y compra | Relación contractual (Ley art. 14.5): no requiere consentimiento, sí el deber de informar (reglamento art. 6.1) | Aviso «Cómo usamos tus datos» en el formulario de reserva; se guarda la versión del aviso mostrada |
-| Registro como cliente | Finalidad adicional: consentimiento libre, previo, expreso e informado (arts. 2–6); verbal en persona vale (art. 5.1.1); la prueba es del responsable (art. 9) | Aviso para leer al comprador; casilla de autorización obligatoria para crear la ficha; evidencia append-only |
+| Registro como cliente | Finalidad adicional: consentimiento libre, previo, expreso e informado (arts. 2–6); verbal en persona vale (art. 5.1.1); la prueba es del responsable (art. 9) | Aviso para leer al comprador; la acción «Registrar cliente» (tras el aviso) registra la autorización con su forma; evidencia append-only. En la importación, quien importa declara fila por fila cómo se obtuvo |
 | Promociones | Consentimiento directo y separado (art. 26.1); negarse o revocar gratis, sin más complejidad que otorgarlo, atendido en ≤ 10 días (arts. 10, 26.5) | Pregunta aparte, nunca marcada; medios; revocación inmediata desde la ficha; filtro «con promociones» para no contactar a nadie más |
 
 **Pendiente del negocio (no se inventó):** el aviso exige datos del **responsable** que no están en el sistema. Se configuran en el backend
