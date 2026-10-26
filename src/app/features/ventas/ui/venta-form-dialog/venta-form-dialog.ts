@@ -80,7 +80,7 @@ function filaVacia(): FilaCarrito {
  *
  * Fase H: quien compra. PÚBLICO admite «Cliente varios» (sin datos) o un comprador identificado; MAYORISTA exige un cliente que ADMIN
  * habilitó como mayorista; PROVEEDOR exige un proveedor del padrón. Al elegir un proveedor se propone el canal PROVEEDOR (puede comprar
- * también a precio PÚBLICO); a cualquier otro comprador, PÚBLICO. El canal sigue decidiendo el precio y el servidor vuelve a validar todo.
+ * también a precio PÚBLICO); a un cliente, su canal habitual (MAYORISTA solo si está habilitado); a cualquier otro, PÚBLICO. El canal sigue decidiendo el precio y el servidor vuelve a validar todo.
  *
  * El uuidCliente se genera una sola vez por instancia de este diálogo y se conserva en cualquier reintento
  * de esa misma venta, incluido un fallo de red: mismo patrón de idempotencia que el resto de la app
@@ -148,8 +148,9 @@ export class VentaFormDialog {
   protected elegirComprador(c: CompradorSeleccion | null): void {
     this.comprador.set(c);
     this.eligiendoComprador.set(false);
-    // proveedor -> se propone PROVEEDOR; cualquier otro comprador (o ninguno) -> PUBLICO
-    this.form.controls.tipoCliente.setValue(c?.tipo === 'PROVEEDOR' ? 'PROVEEDOR' : 'PUBLICO');
+    // proveedor -> se propone PROVEEDOR; un cliente -> su canal habitual si lo puede usar (MAYORISTA solo habilitado); si no, PUBLICO
+    const habitual = c?.tipo === 'CLIENTE' && c.canalHabitual === 'MAYORISTA' && c.mayorista ? 'MAYORISTA' : 'PUBLICO';
+    this.form.controls.tipoCliente.setValue(c?.tipo === 'PROVEEDOR' ? 'PROVEEDOR' : habitual);
   }
 
   protected readonly etiquetaCanal = computed(() => {
