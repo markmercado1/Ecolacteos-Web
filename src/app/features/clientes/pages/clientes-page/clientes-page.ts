@@ -4,9 +4,11 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
+import { ImportarExcelDialog } from '../../../../shared/ui/importar-excel/importar-excel-dialog';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO, paginaCorregida } from '../../../../shared/util/paginacion';
-import { ClienteResponse } from '../../data-access/cliente.models';
+import { ClienteResponse, ETIQUETAS_MEDIO, MedioComercial, ResumenReservas } from '../../data-access/cliente.models';
 import { ClientesApi } from '../../data-access/clientes.api';
 import { ClienteDetalleDialog } from '../../ui/cliente-detalle-dialog/cliente-detalle-dialog';
 import { CompradorSeleccion, RegistroClienteDialog } from '../../ui/registro-cliente-dialog/registro-cliente-dialog';
@@ -16,10 +18,14 @@ type Filtro = 'TODOS' | 'MAYORISTAS' | 'CON_PROMOCIONES' | 'INACTIVOS';
 /**
  * Fase H: padrón VOLUNTARIO de clientes (ADMIN y VENTAS). Solo están quienes aceptaron registrarse; los proveedores que compran no
  * aparecen aquí (se usan sus fichas de proveedor). VENTAS ve teléfonos y documentos enmascarados.
+ *
+ * Refactor: la columna «Reservas» resume las reservas VINCULADAS a cada ficha (activas y próximo retiro, por estado efectivo) y abre
+ * la ficha con el detalle; se recarga al volver de la ficha o de una importación. ADMIN exporta (con los mismos filtros y búsqueda)
+ * e importa desde Excel con la infraestructura común (vista previa, duplicados, sin fusionar nada).
  */
 @Component({
   selector: 'app-clientes-page',
-  imports: [DataTableComponent],
+  imports: [DataTableComponent, ExportarExcelComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="page-heading">
@@ -30,6 +36,7 @@ type Filtro = 'TODOS' | 'MAYORISTAS' | 'CON_PROMOCIONES' | 'INACTIVOS';
           Los proveedores que compran se identifican con su ficha de proveedor.</p>
       </div>
       <div class="heading-actions">
+        @if (esAdmin()) { <button type="button" class="btn" (click)="importarExcel()">Importar desde Excel</button> }
         <button type="button" class="btn primary" (click)="registrar()">Registrar cliente</button>
       </div>
     </div>
@@ -63,6 +70,7 @@ type Filtro = 'TODOS' | 'MAYORISTAS' | 'CON_PROMOCIONES' | 'INACTIVOS';
           <option value="CON_PROMOCIONES">Con autorización de promociones</option>
           <option value="INACTIVOS">Desactivados</option>
         </select>
+        @if (esAdmin()) { <ui-exportar-excel recurso="clientes" [filtro]="filtroExportacion()" /> }
       </div>
       <ng-template #celda let-fila let-columna="columna">
         @switch (columna) {
@@ -73,14 +81,26 @@ type Filtro = 'TODOS' | 'MAYORISTAS' | 'CON_PROMOCIONES' | 'INACTIVOS';
           }
           @case ('telefono') { {{ fila.telefonos[0] ?? '—' }}{{ fila.telefonos.length > 1 ? ' (+' + (fila.telefonos.length - 1) + ')' : '' }} }
           @case ('documento') { {{ fila.ruc ? 'RUC ' + fila.ruc : (fila.dni ? 'DNI ' + fila.dni : '—') }} }
-          @case ('promociones') { {{ fila.comunicaciones.vigente ? 'Sí (' + fila.comunicaciones.medios.join(', ') + ')' : 'No' }} }
+          @case ('promociones') { {{ fila.comunicaciones.vigente ? 'Sí (' + medios(fila.comunicaciones.medios) + ')' : 'No' }} }
+          @case ('reservas') {
+            @if (fila.reservas.activas > 0) {
+              <button type="button" class="row-link" (click)="abrir(fila)" [attr.aria-label]="'Ver reservas de ' + fila.nombre" data-testid="reservas-activas">
+                {{ textoActivas(fila.reservas) }}</button>
+              <span class="meta">retiro {{ fechaCorta(fila.reservas.proximoRetiro) }}</span>
+            } @else if (fila.reservas.total > 0) {
+              <span class="meta">Ninguna activa ({{ fila.reservas.total }})</span>
+            } @else { — }
+          }
           @case ('acciones') { <button type="button" class="row-link" (click)="abrir(fila)">Ver ficha</button> }
           @default { {{ fila[columna] ?? '—' }} }
         }
       </ng-template>
     </ui-data-table>
   `,
-  styles: `.badge { margin-left: var(--space-2); }`
+  styles: `
+    .badge { margin-left: var(--space-2); }
+    .meta { display: block; color: var(--color-text-muted); font-size: 0.75rem; }
+  `
 })
 export class ClientesPage {
   private readonly api = inject(ClientesApi);
@@ -100,12 +120,23 @@ export class ClientesPage {
   protected readonly filtro = signal<Filtro>('TODOS');
   private readonly busqueda = signal('');
   private peticion?: Subscription;
+  /** Filtro y búsqueda vigentes: el Excel trae todas las fichas que cumplen esto (mismos parámetros que la tabla), no solo la página. */
+  protected readonly filtroExportacion = computed(() => {
+    const f = this.filtro();
+    return {
+      activo: f !== 'INACTIVOS',
+      mayorista: f === 'MAYORISTAS' ? true : undefined,
+      conComunicaciones: f === 'CON_PROMOCIONES' ? true : undefined,
+      busqueda: this.busqueda() || undefined
+    };
+  });
 
   protected readonly columnas: ColumnaTabla[] = [
     { clave: 'nombre', etiqueta: 'Cliente' },
     { clave: 'telefono', etiqueta: 'Teléfono' },
     { clave: 'documento', etiqueta: 'DNI / RUC' },
     { clave: 'promociones', etiqueta: 'Promociones' },
+    { clave: 'reservas', etiqueta: 'Reservas' },
     { clave: 'acciones', etiqueta: '' }
   ];
 
@@ -117,12 +148,8 @@ export class ClientesPage {
     this.peticion?.unsubscribe();
     this.cargando.set(true);
     this.error.set(null);
-    const f = this.filtro();
     this.peticion = this.api.listar({
-      busqueda: this.busqueda() || undefined,
-      activo: f !== 'INACTIVOS',
-      mayorista: f === 'MAYORISTAS' ? true : undefined,
-      conComunicaciones: f === 'CON_PROMOCIONES' ? true : undefined,
+      ...this.filtroExportacion(),
       page: this.pagina(),
       size: this.tamano()
     }).subscribe({
@@ -175,6 +202,35 @@ export class ClientesPage {
       if (!c) return;
       this.toast.exito(c.tipo === 'CLIENTE' ? `Cliente «${c.nombre}» registrado o elegido.` : `${c.nombre} ya es proveedor: usa su ficha de proveedor.`);
       this.cargar();
+    });
+  }
+
+  protected medios(ms: MedioComercial[]): string {
+    return ms.map((m) => ETIQUETAS_MEDIO[m] ?? m).join(', ');
+  }
+
+  protected textoActivas(r: ResumenReservas): string {
+    return `${r.activas} ${r.activas === 1 ? 'activa' : 'activas'}`;
+  }
+
+  protected fechaCorta(iso: string | null): string {
+    if (!iso) return '—';
+    const [, m, d] = iso.split('-');
+    return `${d}/${m}`;
+  }
+
+  /** ADMIN: importa fichas desde la plantilla oficial (vista previa + confirmación; solo crea, nunca une ni actualiza). */
+  protected importarExcel(): void {
+    const ref = this.dialog.open<number | undefined>(ImportarExcelDialog, {
+      ariaLabel: 'Importar clientes desde Excel',
+      data: { tipo: 'clientes', nombre: 'clientes' }
+    });
+    ref.closed.subscribe((creados) => {
+      if (creados) {
+        this.toast.exito(`Se importaron ${creados} ${creados === 1 ? 'cliente' : 'clientes'}.`);
+        this.pagina.set(0);
+        this.cargar();
+      }
     });
   }
 
