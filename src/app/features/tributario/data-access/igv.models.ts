@@ -63,6 +63,28 @@ export interface EstadoIgvResponse {
   inafectas: number;
   /** Avisos del servidor, en texto. */
   avisos: string[];
+  /** El último cambio del interruptor (quién, cuándo y por qué), o null si nadie lo ha cambiado desde el panel. */
+  ultimoCambio: CambioCalculoResponse | null;
+}
+
+export interface CambioCalculoResponse {
+  habilitado: boolean;
+  motivo: string;
+  usuarioNombre: string | null;
+  creadoEn: string;
+}
+
+/** Clasifica de una vez las presentaciones activas; soloSinDefinir (por defecto true) no pisa lo ya decidido. */
+export interface AfectacionLoteRequest {
+  afectacion: AfectacionIgv;
+  vigenteDesde: string;
+  motivo: string;
+  soloSinDefinir?: boolean;
+}
+
+export interface AfectacionLoteResponse {
+  aplicadas: number;
+  omitidas: number;
 }
 
 const ETIQUETAS_AFECTACION: Record<AfectacionIgv, string> = {

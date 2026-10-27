@@ -40,14 +40,14 @@ describe('AfectacionIgvDialog (Fase G)', () => {
     const { f, http, close } = crear();
     http.expectOne(`${base}/presentaciones/pr-1/afectaciones`).flush([]);
     f.detectChanges();
-    comp(f)['form'].setValue({ afectacion: 'GRAVADO', vigenteDesde: '2026-11-01', motivo: '  Confirmado por el contador  ' });
+    comp(f)['form'].setValue({ afectacion: 'GRAVADO', vigenteDesde: '2026-11-01', motivo: '  Decisión del administrador  ' });
     comp(f)['enviar']();
     const req = http.expectOne(`${base}/presentaciones/pr-1/afectaciones`);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ afectacion: 'GRAVADO', vigenteDesde: '2026-11-01', motivo: 'Confirmado por el contador' });
-    req.flush({ id: 'a-1', presentacionId: 'pr-1', afectacion: 'GRAVADO', vigenteDesde: '2026-11-01', motivo: 'Confirmado por el contador', usuarioNombre: 'Admin', creadoEn: '' });
+    expect(req.request.body).toEqual({ afectacion: 'GRAVADO', vigenteDesde: '2026-11-01', motivo: 'Decisión del administrador' });
+    req.flush({ id: 'a-1', presentacionId: 'pr-1', afectacion: 'GRAVADO', vigenteDesde: '2026-11-01', motivo: 'Decisión del administrador', usuarioNombre: 'Admin', creadoEn: '' });
     http.expectOne(`${base}/presentaciones/pr-1/afectaciones`).flush([
-      { id: 'a-1', presentacionId: 'pr-1', afectacion: 'GRAVADO', vigenteDesde: '2026-11-01', motivo: 'Confirmado por el contador', usuarioNombre: 'Admin', creadoEn: '' }
+      { id: 'a-1', presentacionId: 'pr-1', afectacion: 'GRAVADO', vigenteDesde: '2026-11-01', motivo: 'Decisión del administrador', usuarioNombre: 'Admin', creadoEn: '' }
     ]);
     f.detectChanges();
     expect(el(f).querySelector('[data-testid="historial-afectacion"]')?.textContent).toContain('Gravado');

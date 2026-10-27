@@ -13,7 +13,8 @@
 ## Ampliación vigente 2026-10-24: Fase G (documentos del proveedor e IGV configurable)
 
 - `GET /api/admin/proveedores/revision-documentos` — ADMIN, solo lectura (`RevisionDocumentosController`).
-- `GET /api/admin/tributario/estado`, `GET|POST /api/admin/tributario/tasas-igv`, `GET /api/admin/tributario/afectaciones`, `GET|POST /api/admin/tributario/presentaciones/{id}/afectaciones` —
+- `GET /api/admin/tributario/estado`, `GET|POST /api/admin/tributario/tasas-igv`, `GET /api/admin/tributario/afectaciones`, `GET|POST /api/admin/tributario/presentaciones/{id}/afectaciones`,
+  `PUT /api/admin/tributario/calculo` (enciende/apaga el cálculo, con motivo), `POST /api/admin/tributario/afectaciones/lote` (clasifica de una vez) —
   ADMIN (`ConfiguracionIgvController`).
 - Cambian sin romper: `POST|PUT /api/proveedores` (campos de documentos), `GET /api/proveedores`, `/api/pagos`, `/api/pagos-proveedor` y sus exportaciones (búsqueda por RUC y razón social),
   `GET /api/ventas`, `/api/ventas/{id}`, `POST /api/ventas/carrito` (foto tributaria y resumen de IGV), `GET /api/catalogo/productos` (`incluyeIgv`), plantilla de importación de proveedores (v2).

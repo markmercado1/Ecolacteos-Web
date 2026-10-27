@@ -21,7 +21,8 @@
 - `GET /api/admin/proveedores/revision-documentos` → `{totalProveedores, proveedoresConObservaciones, observaciones: [{proveedorId, nombre, tipoPersona, dni|null, ruc|null, activo, codigo, detalle}]}`;
   `codigo` ∈ `DNI_FORMATO | DNI_PARECE_RUC | DNI_DUPLICADO_PROBABLE | RUC_INVALIDO | RUC_NO_COINCIDE_DNI | POSIBLE_MISMA_PERSONA`.
 - `/api/admin/tributario`: `GET /estado` → `{calculoHabilitado, estado: 'PENDIENTE'|'ACTIVO', tasaVigente|null, tasaProgramada|null, presentacionesActivas, sinDefinir, gravadas, exoneradas,
-  inafectas, avisos: string[]}`; `GET|POST /tasas-igv` (`{tasa, vigenteDesde, motivo}` → `{id, tasa, vigenteDesde, motivo, usuarioNombre|null, creadoEn}`); `GET /afectaciones?busqueda&page&size` →
+  inafectas, avisos: string[], ultimoCambio: {habilitado, motivo, usuarioNombre|null, creadoEn}|null}`; `PUT /calculo` `{habilitado, motivo}` → el mismo estado (409 si ya está así);
+  `POST /afectaciones/lote` `{afectacion: GRAVADO|EXONERADO|INAFECTO, vigenteDesde, motivo, soloSinDefinir?}` → `{aplicadas, omitidas}`; `GET|POST /tasas-igv` (`{tasa, vigenteDesde, motivo}` → `{id, tasa, vigenteDesde, motivo, usuarioNombre|null, creadoEn}`); `GET /afectaciones?busqueda&page&size` →
   `PaginaResponse<{presentacionId, presentacionNombre, productoId, productoNombre, familiaNombre|null, afectacionVigente, vigenteDesde|null, afectacionProgramada|null, programadaDesde|null}>`;
   `GET|POST /presentaciones/{id}/afectaciones` (`{afectacion: 'GRAVADO'|'EXONERADO'|'INAFECTO'|'SIN_DEFINIR', vigenteDesde, motivo}` → `{id, presentacionId, afectacion, vigenteDesde, motivo,
   usuarioNombre|null, creadoEn}`). 400 por valores fuera de rango o sin motivo; 409 por fecha repetida; 404 presentación inexistente.

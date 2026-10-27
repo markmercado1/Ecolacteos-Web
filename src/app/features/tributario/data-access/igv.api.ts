@@ -6,13 +6,15 @@ import { PaginaResponse } from '../../../shared/models/pagina-response';
 import {
   AfectacionIgvRequest,
   AfectacionIgvResponse,
+  AfectacionLoteRequest,
+  AfectacionLoteResponse,
   EstadoIgvResponse,
   FilaAfectacionIgvResponse,
   TasaIgvRequest,
   TasaIgvResponse
 } from './igv.models';
 
-/** Fuente: docs/ENDPOINTS.md, ConfiguracionIgvController.java. Solo ADMIN. Preparar la configuración no activa ningún cálculo. */
+/** Fuente: docs/ENDPOINTS.md, ConfiguracionIgvController.java. Solo ADMIN. El cálculo se enciende o apaga aquí, con motivo. */
 @Injectable({ providedIn: 'root' })
 export class IgvApi {
   private readonly http = inject(HttpClient);
@@ -39,6 +41,15 @@ export class IgvApi {
 
   historialAfectacion(presentacionId: string): Observable<AfectacionIgvResponse[]> {
     return this.http.get<AfectacionIgvResponse[]>(`${this.baseUrl}/presentaciones/${presentacionId}/afectaciones`);
+  }
+
+  /** Enciende o apaga el cálculo (solo ADMIN, con motivo). No recalcula ventas ya registradas. Devuelve el estado resultante. */
+  cambiarCalculo(habilitado: boolean, motivo: string): Observable<EstadoIgvResponse> {
+    return this.http.put<EstadoIgvResponse>(`${this.baseUrl}/calculo`, { habilitado, motivo });
+  }
+
+  clasificarEnLote(datos: AfectacionLoteRequest): Observable<AfectacionLoteResponse> {
+    return this.http.post<AfectacionLoteResponse>(`${this.baseUrl}/afectaciones/lote`, datos);
   }
 
   registrarAfectacion(presentacionId: string, datos: AfectacionIgvRequest): Observable<AfectacionIgvResponse> {

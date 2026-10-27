@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Dialog } from '@angular/cdk/dialog';
+import { CampoUnicoDialog, CampoUnicoDialogData } from '../../../../shared/ui/dialog/campo-unico-dialog';
 import { Subscription } from 'rxjs';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
@@ -10,6 +11,7 @@ import { LoadingStateComponent } from '../../../../shared/ui/state/loading-state
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO, paginaCorregida } from '../../../../shared/util/paginacion';
 import {
+  AfectacionLoteResponse,
   EstadoIgvResponse,
   etiquetaAfectacion,
   FilaAfectacionIgvResponse,
@@ -17,12 +19,14 @@ import {
 } from '../../data-access/igv.models';
 import { IgvApi } from '../../data-access/igv.api';
 import { AfectacionIgvDialog } from '../../ui/afectacion-igv-dialog/afectacion-igv-dialog';
+import { ClasificarLoteDialog } from '../../ui/clasificar-lote-dialog/clasificar-lote-dialog';
 import { TasaIgvDialog } from '../../ui/tasa-igv-dialog/tasa-igv-dialog';
 
 /**
  * Fase G: configuración del IGV de las ventas (solo ADMIN). Los precios son finales: el IGV se desglosa dentro del precio, nunca se
- * suma. Esta pantalla PREPARA la configuración (tasa con vigencia y afectación por presentación); si el cálculo está apagado en el
- * servidor (estado PENDIENTE, por defecto hasta que confirme el contador) nada de lo registrado cambia una venta.
+ * suma. El administrador decide aquí, cuando quiera, si el cálculo está ACTIVO o apagado (con motivo; queda registrado), la tasa con
+ * vigencia y la afectación de cada presentación. Con el cálculo apagado (PENDIENTE) nada de lo registrado cambia una venta; encendido,
+ * solo las ventas NUEVAS desglosan el IGV. Nunca se recalculan ventas ya registradas.
  */
 @Component({
   selector: 'app-igv-page',
@@ -39,7 +43,12 @@ import { TasaIgvDialog } from '../../ui/tasa-igv-dialog/tasa-igv-dialog';
         </p>
       </div>
       <div class="heading-actions">
-        <button type="button" class="btn primary" (click)="registrarTasa()">Registrar tasa</button>
+        @if (estado(); as e) {
+          @if (e.sinDefinir > 0) {
+            <button type="button" class="btn" data-testid="clasificar-lote" (click)="clasificarEnLote(e.sinDefinir)">Clasificar las {{ e.sinDefinir }} que faltan</button>
+          }
+        }
+        <button type="button" class="btn" (click)="registrarTasa()">Registrar tasa</button>
       </div>
     </div>
 
@@ -58,10 +67,28 @@ import { TasaIgvDialog } from '../../ui/tasa-igv-dialog/tasa-igv-dialog';
         </div>
         @if (e.estado === 'PENDIENTE') {
           <p class="estado-texto">
-            Configuración pendiente de la confirmación del contador. Puedes preparar la tasa y la afectación de cada presentación, pero
-            <strong>las ventas se siguen registrando como hasta ahora, sin desglose</strong>, hasta que se active el cálculo en el servidor.
+            El cálculo está apagado: <strong>las ventas se registran como hasta ahora, sin desglose</strong>. Puedes preparar la tasa y la
+            afectación de cada presentación y activarlo cuando lo decidas.
+          </p>
+        } @else {
+          <p class="estado-texto" data-testid="texto-activo">
+            Las ventas <strong>nuevas</strong> desglosan el IGV <strong>dentro del precio</strong> (el total no cambia) según la afectación de cada
+            presentación. Las ventas ya registradas no se modifican.
           </p>
         }
+        <div class="estado-acciones">
+          @if (e.estado === 'PENDIENTE') {
+            <button type="button" class="btn primary" data-testid="activar-calculo" (click)="cambiarCalculo(true)">Activar el cálculo del IGV</button>
+          } @else {
+            <button type="button" class="btn" data-testid="desactivar-calculo" (click)="cambiarCalculo(false)">Desactivar el cálculo del IGV</button>
+          }
+          @if (e.ultimoCambio; as c) {
+            <span class="muted" data-testid="ultimo-cambio">
+              Último cambio: {{ c.habilitado ? 'activado' : 'desactivado' }} {{ c.usuarioNombre ? 'por ' + c.usuarioNombre : '' }}
+              el {{ c.creadoEn | date: 'dd/MM/yyyy HH:mm' }} — {{ c.motivo }}
+            </span>
+          }
+        </div>
         @if (avisosExtra(e).length) {
           <ul class="avisos">
             @for (a of avisosExtra(e); track a) { <li data-testid="aviso-igv">{{ a }}</li> }
@@ -115,7 +142,7 @@ import { TasaIgvDialog } from '../../ui/tasa-igv-dialog/tasa-igv-dialog';
       [error]="errorFilas()"
       mensajeVacio="No hay presentaciones activas que coincidan."
       titulo="Afectación por presentación"
-      subtitulo="Ninguna presentación viene clasificada: la afectación la decide el contador. Las ventas ya registradas no cambian."
+      subtitulo="La afectación de cada presentación la decide el administrador. Las ventas ya registradas no cambian."
       [buscable]="true"
       placeholderBusqueda="Buscar por producto o presentación"
       etiquetaBusqueda="Buscar presentación por producto o nombre"
@@ -152,6 +179,7 @@ import { TasaIgvDialog } from '../../ui/tasa-igv-dialog/tasa-igv-dialog';
     .estado.pendiente { border-left-color: var(--color-warning); background: var(--color-warning-bg); }
     .estado-titulo { font-weight: 700; display: flex; align-items: center; gap: var(--space-2); }
     .estado-texto { margin: var(--space-2) 0 0; font-size: var(--font-size-sm); }
+    .estado-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-top: var(--space-3); }
     .avisos { margin: var(--space-2) 0 0; padding-left: 1.2rem; font-size: var(--font-size-sm); }
     .resumen { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: var(--space-4); margin-bottom: var(--space-4); }
     .cifra { font-size: 1.75rem; font-weight: 800; }
@@ -201,9 +229,48 @@ export class IgvPage {
     this.cargarFilas();
   }
 
-  /** Avisos del servidor sin repetir el de «configuración pendiente», que ya explica el recuadro. */
+  /** Avisos del servidor sin repetir el del cálculo apagado, que ya explica el recuadro. */
   protected avisosExtra(e: EstadoIgvResponse): string[] {
-    return e.estado === 'PENDIENTE' ? e.avisos.filter((a) => !a.includes('pendiente de la confirmación del contador')) : e.avisos;
+    return e.estado === 'PENDIENTE' ? e.avisos.filter((a) => !a.includes('cálculo del IGV está desactivado')) : e.avisos;
+  }
+
+  /**
+   * Activa o desactiva el cálculo. Pide un motivo (queda registrado) y avisa qué cambia y qué no; el servidor decide y rechaza repetir
+   * el estado en el que ya está.
+   */
+  protected cambiarCalculo(habilitar: boolean): void {
+    const e = this.estado();
+    const faltan = e && (e.sinDefinir > 0 || !e.tasaVigente);
+    const datos: CampoUnicoDialogData = {
+      titulo: habilitar ? 'Activar el cálculo del IGV' : 'Desactivar el cálculo del IGV',
+      etiquetaCampo: 'Motivo',
+      valorInicial: '',
+      ayuda: habilitar
+        ? 'Las ventas NUEVAS desglosarán el IGV dentro del precio (el total no cambia) y el catálogo mostrará «Incluye IGV» en lo gravado. No se recalculan ventas ya registradas.'
+          + (faltan ? ' Atención: ' + (!e?.tasaVigente ? 'no hay una tasa vigente; ' : '') + (e && e.sinDefinir > 0 ? e.sinDefinir + ' presentación(es) sin afectación quedarán «sin determinar».' : '') : '')
+        : 'Las ventas NUEVAS volverán a registrarse sin desglose del IGV. Lo ya registrado no cambia.',
+      etiquetaGuardar: habilitar ? 'Activar' : 'Desactivar',
+      guardar: (motivo) => this.api.cambiarCalculo(habilitar, motivo.trim())
+    };
+    const ref = this.dialog.open<unknown>(CampoUnicoDialog, { ariaLabel: datos.titulo, data: datos });
+    ref.closed.subscribe((resultado) => {
+      if (!resultado) return;
+      this.toast.exito(habilitar ? 'Cálculo del IGV activado.' : 'Cálculo del IGV desactivado.');
+      this.cargarEstado();
+    });
+  }
+
+  protected clasificarEnLote(sinDefinir: number): void {
+    const ref = this.dialog.open<AfectacionLoteResponse | undefined>(ClasificarLoteDialog, {
+      ariaLabel: 'Clasificar presentaciones sin afectación',
+      data: { sinDefinir }
+    });
+    ref.closed.subscribe((r) => {
+      if (!r) return;
+      this.toast.exito(`${r.aplicadas} presentación(es) clasificadas${r.omitidas ? ` (${r.omitidas} omitidas por ya tener afectación)` : ''}.`);
+      this.cargarEstado();
+      this.cargarFilas();
+    });
   }
 
   protected etiqueta(a: string | null): string {

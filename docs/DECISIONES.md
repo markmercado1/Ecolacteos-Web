@@ -1,5 +1,16 @@
 # Decisiones de producto y alcance
 
+## 2026-10-26 — IGV encendible desde el panel
+
+Pedido del usuario: «el sistema debe ser dinámico, si el admin decide un día que lo incluya lo incluye y si no, no».
+- **El administrador enciende o apaga el cálculo desde `/igv`**, con un motivo obligatorio que queda registrado (quién, cuándo, por qué). No requiere el contador ni reiniciar el servidor. La
+  propiedad `TRIBUTARIO_IGV_CALCULO_HABILITADO` solo es el valor inicial (apagado) mientras nadie haya decidido.
+- **También clasifica el administrador**: afectación por presentación (gravado, exonerado o inafecto, con fecha y motivo), una a una o de una vez con «Clasificar las N que faltan». El servidor no
+  clasifica nada por su cuenta y el lote no pisa lo ya decidido.
+- **Precios finales:** el IGV está contenido en el precio, no se suma (118,00 ⇒ IGV 18,00). Por eso el cálculo no es «precio × 0,18», que cobraría de más.
+- **No se recalcula nada del pasado:** encender o apagar solo afecta a las ventas nuevas; las ventas y reservas ya registradas conservan su foto.
+- Apagado por defecto: hasta que alguien lo active, el sistema se comporta como antes.
+
 ## 2026-10-24 — Fase H, clientes y compradores
 
 **Del usuario:** teléfono = sugerencia (no identificador); DNI/RUC = identificador fuerte; el trabajador confirma; nunca fusionar solo; fusión
@@ -27,8 +38,7 @@ historial con indicadores reales; sin migrar reservas antiguas; aviso de datos e
 - Fuera: clientes identificados, facturación electrónica, detracciones, retenciones.
 
 **Técnicas (tomadas en esta fase, a confirmar con el contador donde se indica):**
-- El cálculo se enciende con una **propiedad del servidor** (`app.tributario.igv.calculo-habilitado`, `TRIBUTARIO_IGV_CALCULO_HABILITADO`), no con un botón del panel: activarlo exige un
-  cambio deliberado de configuración, igual que el control de vencimiento. El panel solo informa el estado.
+- ~~El cálculo se enciende con una propiedad del servidor, no con un botón del panel.~~ **Reemplazada el 2026-10-26:** ver «IGV encendible desde el panel» más abajo.
 - Validación de forma del RUC: 11 dígitos, dígito verificador módulo 11, prefijo **10** para persona natural (debe contener su DNI) y **20** para empresa. No se consulta a SUNAT.
 - Un DNI/RUC anterior fuera de formato **se conserva al editar** si no se cambia (no bloquea corregir el resto de la ficha).
 - Una empresa no lleva DNI (la base lo exige). Su `nombre` es opcional y, si falta, es la razón social.

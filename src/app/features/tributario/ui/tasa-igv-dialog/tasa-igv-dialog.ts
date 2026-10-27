@@ -16,7 +16,7 @@ import { IgvApi } from '../../data-access/igv.api';
       <button type="button" class="close" (click)="dialogRef.close()" aria-label="Cerrar">×</button>
     </div>
     <form [formGroup]="form" (ngSubmit)="enviar()" class="dialog-body" aria-labelledby="tasa-igv-titulo">
-      <p class="hint-block">Regístrala solo con la tasa que confirme el contador. Abre una vigencia nueva: no edita las anteriores ni cambia ventas registradas.</p>
+      <p class="hint-block">Registra la tasa que rige en la ley (hoy 18 %). Abre una vigencia nueva: no edita las anteriores ni cambia ventas registradas.</p>
       <div class="field" [class.has-error]="invalido('tasa')">
         <label for="tasa">Tasa (%)</label>
         <input id="tasa" type="number" min="0.01" max="99.99" step="0.01" formControlName="tasa" required>
@@ -28,7 +28,7 @@ import { IgvApi } from '../../data-access/igv.api';
       </div>
       <div class="field" [class.has-error]="invalido('motivo')">
         <label for="motivo">Motivo</label>
-        <textarea id="motivo" rows="2" maxlength="500" formControlName="motivo" required placeholder="Por ejemplo: confirmada por el contador el 20/10/2026"></textarea>
+        <textarea id="motivo" rows="2" maxlength="500" formControlName="motivo" required placeholder="Por ejemplo: tasa general vigente"></textarea>
         @if (invalido('motivo')) { <span class="error">El motivo es obligatorio.</span> }
       </div>
       @if (errorServidor()) { <p class="server-error" role="alert">{{ errorServidor() }}</p> }
