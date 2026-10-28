@@ -21,8 +21,8 @@
     [error]="errorInsumos()"
     [identificarFila]="identificarInsumo"
     mensajeVacio="No hay insumos registrados."
-    titulo="Stock de insumos"
-    subtitulo="Se descuentan al iniciar una producción. Registra aquí los ingresos; los ajustes por conteo físico son solo para ADMIN."
+    titulo="Insumos"
+    subtitulo="Catálogo, existencias y movimientos. El stock cambia por movimientos; editar la ficha no cambia las cantidades."
     placeholderBusqueda="Buscar insumo"
     etiquetaBusqueda="Buscar insumos por nombre"
     unidad="insumos"
@@ -42,13 +42,22 @@
               <button type="button" class="btn primary small" (click)="movimientoInsumo(fila, 'INGRESO')">Registrar ingreso</button>
             }
             @if (esAdmin()) {
+              <button type="button" class="btn small" (click)="registrarSalida({ tipo: 'insumos', id: fila.id, nombre: fila.nombre, controlaVencimiento: false })">Registrar salida</button>
               <button type="button" class="btn small" (click)="movimientoInsumo(fila, 'AJUSTE')">Ajustar</button>
+              @if (fila.activo) {
+                <button type="button" class="btn small" (click)="editarInsumo(fila)">Editar</button>
+                <button type="button" class="btn small" (click)="desactivarInsumo(fila)">Desactivar</button>
+              }
             }
           </div>
         }
       }
     </ng-template>
     <div toolbar>
+      @if (esAdmin()) {
+        <button type="button" class="btn small" (click)="importarInsumos()">Importar desde Excel</button>
+        <button type="button" class="btn primary small" (click)="nuevoInsumo()">Nuevo insumo</button>
+      }
       <ui-exportar-excel recurso="inventario-insumos" [filtro]="filtroExportacionInsumos()" />
     </div>
   </ui-data-table>
@@ -150,6 +159,7 @@
             <button type="button" class="btn small" (click)="verLotes(fila)">Lotes y vencimientos</button>
           }
           @if (esAdmin()) {
+            <button type="button" class="btn small" (click)="registrarSalida({ tipo: 'presentaciones', id: fila.presentacionId, nombre: fila.productoNombre + ' · ' + fila.presentacionNombre, controlaVencimiento: fila.controlaVencimiento })">Registrar salida</button>
             <button type="button" class="btn small" (click)="verAjustes(fila)">Ver ajustes</button>
             <button type="button" class="btn primary small" (click)="ajustarStock(fila)">
               Ajustar stock

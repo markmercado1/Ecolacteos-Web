@@ -87,7 +87,7 @@ import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../.
     @if (filtroZona()) {
       <p class="aviso-zona" data-testid="aviso-zona-entrega">
         Se muestran las entregas hechas en <b>{{ zonaSeleccionadaNombre() }}</b>: la zona que tenía el proveedor cuando entregó, no la actual. Las entregas
-        sin zona determinada no aparecen en ninguna zona (ver «Revisión de zonas»).
+        sin zona determinada no aparecen en ninguna zona.
       </p>
     }
     @if (errorZonas()) {

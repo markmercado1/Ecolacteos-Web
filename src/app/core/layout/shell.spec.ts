@@ -71,22 +71,24 @@ describe('Shell — navegación desplegable', () => {
     expect(enlaces(f)).not.toContain('Reservas');
   });
 
-  it('ADMIN y RECEPCION ven «Pagos a proveedores»; los demás roles no', async () => {
+  it('ADMIN y RECEPCION ven «Desembolsos a proveedores»; los demás roles no', async () => {
     for (const rol of ['ADMIN', 'RECEPCION'] as const) {
       const f = await crear(rol, '/pagos');
-      expect(enlaces(f), rol).toContain('Pagos a proveedores');
+      expect(enlaces(f), rol).toContain('Desembolsos a proveedores');
       TestBed.resetTestingModule();
     }
     for (const rol of ['CALIDAD', 'PRODUCCION', 'VENTAS', 'ACOPIADOR'] as const) {
       const f = await crear(rol, '/');
-      expect(enlaces(f), rol).not.toContain('Pagos a proveedores');
+      expect(enlaces(f), rol).not.toContain('Desembolsos a proveedores');
       TestBed.resetTestingModule();
     }
   });
 
-  it('solo ADMIN ve «Revisión de zonas» en la navegación', async () => {
+  it('ningún rol ve los módulos retirados', async () => {
     const admin = await crear('ADMIN', '/pagos');
-    expect(enlaces(admin)).toContain('Revisión de zonas');
+    expect(enlaces(admin)).not.toContain('Revisión de zonas');
+    expect(enlaces(admin)).not.toContain('Revisión de documentos');
+    expect(enlaces(admin)).not.toContain('Producción diaria');
     TestBed.resetTestingModule();
     for (const rol of ['RECEPCION', 'CALIDAD', 'PRODUCCION', 'VENTAS', 'ACOPIADOR'] as const) {
       const f = await crear(rol, rol === 'RECEPCION' ? '/pagos' : '/');
@@ -113,7 +115,7 @@ describe('Shell — navegación desplegable', () => {
   it('restaura las secciones abiertas guardadas', async () => {
     localStorage.setItem(CLAVE, JSON.stringify(['proveedores']));
     const f = await crear('ADMIN', '/produccion');
-    expect(enlaces(f)).toContain('Pagos');     // recordada
+    expect(enlaces(f)).toContain('Liquidaciones de leche');     // recordada
     expect(enlaces(f)).toContain('Inventario'); // la actual, siempre abierta al entrar
   });
 

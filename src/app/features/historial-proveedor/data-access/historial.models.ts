@@ -83,7 +83,7 @@ export interface HistorialEntregaResponse {
   litrosOriginales: number;
   litrosEfectivos: number;
   corregida: boolean;
-  /** Zona del proveedor cuando entregó; nula si no se pudo determinar (ver «Revisión de zonas»). */
+  /** Zona del proveedor cuando entregó; nula si no se pudo determinar. */
   zonaNombre: string | null;
   calidad: CalidadEntrega | null;
   liquidacion: LiquidacionEntrega | null;

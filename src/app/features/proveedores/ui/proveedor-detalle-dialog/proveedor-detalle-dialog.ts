@@ -121,7 +121,7 @@ type Pestana = 'general' | 'zonas' | 'pagos';
               <small class="meta-zona">
                 @if (item.requiereRevision) {
                   {{ item.notaRevision ?? 'Periodo con fechas invertidas heredado de una versión anterior.' }}
-                  No decide la zona de ninguna entrega; está en «Revisión de zonas».
+                  No determina la zona histórica de las entregas.
                 } @else {
                   @if (item.zonaOrigenNombre) { Venía de {{ item.zonaOrigenNombre }} · }
                   {{ item.motivo ?? 'Sin motivo registrado' }}{{ item.usuarioNombre ? ' · ' + item.usuarioNombre : '' }}

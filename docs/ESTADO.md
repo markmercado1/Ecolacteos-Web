@@ -1,3 +1,7 @@
+# 2026-10-26 — Reorganización de módulos: TERMINADA (suites completas verdes, sin push)
+
+Rama exclusiva `feature/limpieza-modulos-inventario`, worktree `.worktrees/limpieza`. Origen frontend `2b4b4f53918422fed5efe65d1ed4b219d4411f57`; backend `a4904cd100b0b1dc182514b2c90a2fadc6523524`, ambos `feature/igv-activable`. Sin push. Auditoría y decisiones en `REORGANIZACION.md`.
+
 # Estado vigente
 
 ## 2026-10-26 — IGV encendible desde el panel (rama `feature/igv-activable`)

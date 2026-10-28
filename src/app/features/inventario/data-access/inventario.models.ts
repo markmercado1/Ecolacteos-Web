@@ -111,3 +111,24 @@ export interface AjusteInventarioResponse {
 export interface SaldoLecheResponse {
   litrosDisponibles: number;
 }
+
+export interface SalidaInventarioRequest {
+  uuidCliente: string;
+  cantidad: number;
+  tipo: 'VENCIMIENTO' | 'DETERIORO' | 'OTRA';
+  motivo: string;
+  origenLote: 'LOTE' | 'REGULARIZACION' | null;
+  loteId: string | null;
+}
+export interface SalidaInventarioResponse {
+  id: string;
+  movimientoId: string;
+  cantidad: number;
+  tipo: string;
+  motivo: string;
+  origenLote: string | null;
+  loteId: string | null;
+  fechaVencimiento: string | null;
+  usuarioNombre: string;
+  creadoEn: string;
+}

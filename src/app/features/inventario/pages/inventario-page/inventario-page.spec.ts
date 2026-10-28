@@ -334,13 +334,14 @@ describe('InventarioPage — kardex e insumos', () => {
     expect(botones).toContain('Registrar ingreso');
     expect(botones).toContain('Kardex');
     expect(botones).not.toContain('Ajustar');
+    for (const accion of ['Nuevo insumo', 'Editar', 'Desactivar', 'Registrar salida', 'Importar desde Excel']) expect(botones).not.toContain(accion);
   });
 
   it('ADMIN también puede ajustar insumos por conteo', () => {
     const f = crear('ADMIN', { seccion: 'insumos' });
     http.expectOne(`${environment.apiBaseUrl}/inventario/insumos`).flush([insumoSal]);
     f.detectChanges();
-    expect(textoBotones(f)).toContain('Ajustar');
+    for (const accion of ['Ajustar', 'Nuevo insumo', 'Editar', 'Desactivar', 'Registrar salida', 'Importar desde Excel']) expect(textoBotones(f)).toContain(accion);
   });
 
   it('un ingreso registrado recarga el stock de insumos', () => {

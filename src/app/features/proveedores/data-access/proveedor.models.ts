@@ -74,46 +74,6 @@ export interface HistorialZonaResponse {
   notaRevision: string | null;
 }
 
-/** Fuente: RevisionDocumentosResponse.java (GET /api/admin/proveedores/revision-documentos, solo ADMIN, solo lectura). */
-export type CodigoObservacionDocumento =
-  | 'DNI_FORMATO'
-  | 'DNI_PARECE_RUC'
-  | 'DNI_DUPLICADO_PROBABLE'
-  | 'RUC_INVALIDO'
-  | 'RUC_NO_COINCIDE_DNI'
-  | 'POSIBLE_MISMA_PERSONA';
-
-export interface ObservacionDocumento {
-  proveedorId: string;
-  nombre: string;
-  tipoPersona: TipoPersona | null;
-  dni: string | null;
-  ruc: string | null;
-  activo: boolean;
-  codigo: CodigoObservacionDocumento;
-  /** Explicación del servidor, en texto. */
-  detalle: string;
-}
-
-export interface RevisionDocumentosResponse {
-  totalProveedores: number;
-  proveedoresConObservaciones: number;
-  observaciones: ObservacionDocumento[];
-}
-
-const ETIQUETAS_OBSERVACION: Record<CodigoObservacionDocumento, string> = {
-  DNI_FORMATO: 'DNI fuera de formato',
-  DNI_PARECE_RUC: 'RUC escrito en el campo DNI',
-  DNI_DUPLICADO_PROBABLE: 'DNI posiblemente repetido',
-  RUC_INVALIDO: 'RUC no válido',
-  RUC_NO_COINCIDE_DNI: 'RUC que no corresponde al DNI',
-  POSIBLE_MISMA_PERSONA: 'Posible persona en dos fichas'
-};
-
-export function etiquetaObservacion(codigo: string): string {
-  return ETIQUETAS_OBSERVACION[codigo as CodigoObservacionDocumento] ?? 'Otra observación';
-}
-
 export function etiquetaTipoPersona(tipo: TipoPersona | null | undefined): string {
   return tipo === 'EMPRESA' ? 'Empresa' : 'Persona natural';
 }

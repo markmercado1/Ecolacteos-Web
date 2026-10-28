@@ -44,7 +44,7 @@ export interface GenerarPagoDialogData {
       <div class="dialog-foot">
         <button type="button" class="btn" (click)="dialogRef.close()">Cancelar</button>
         <button type="submit" class="btn primary" [disabled]="form.invalid || enviando()">
-          {{ enviando() ? 'Generando…' : 'Generar pago' }}
+          {{ enviando() ? 'Generando…' : 'Generar liquidación' }}
         </button>
       </div>
     </form>

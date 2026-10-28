@@ -1,3 +1,4 @@
+import { SalidaInventarioRequest, SalidaInventarioResponse } from './inventario.models';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -7,11 +8,13 @@ import { AjusteInventarioRequest, AjusteInventarioResponse, ExistenciasPresentac
 import { PaginaResponse } from '../../../shared/models/pagina-response';
 import { FamiliaResponse } from '../../catalogos/data-access/familia.models';
 
-/** Fuente: docs/ENDPOINTS.md, InventarioController.java. Solo lectura -- ni el stock de queso ni el saldo
- *  de leche se escriben desde el frontend, solo cambian como efecto de operaciones ya existentes
- *  (Producción, Ventas, Recepción). */
+/** Existencias y operaciones de inventario. Los cambios de stock se registran en el Kardex. */
 @Injectable({ providedIn: 'root' })
 export class InventarioApi {
+  registrarSalida(tipo: 'insumos' | 'presentaciones', id: string, datos: SalidaInventarioRequest): Observable<SalidaInventarioResponse> {
+    return this.http.post<SalidaInventarioResponse>(`${this.baseUrl}/inventario/${tipo}/${id}/salidas`, datos);
+  }
+
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiBaseUrl;
 

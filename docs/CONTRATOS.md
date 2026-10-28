@@ -1,3 +1,7 @@
+## Actualización 2026-10-27 — limpieza de módulos (rama sin integrar)
+
+Nuevos POST `/api/inventario/presentaciones/{id}/salidas` y `/api/inventario/insumos/{id}/salidas`, solo ADMIN, HTTP 200 e idempotencia por UUID. Request/response, validaciones, Kardex y V36 detallados en [REORGANIZACION.md](REORGANIZACION.md). Se retiran los endpoints de informes de producción diaria y revisiones de documentos/zonas, incluida su exportación exclusiva. Las referencias anteriores a esos endpoints en este documento son históricas y quedan sustituidas por esta actualización. Pagos e insumos conservan sus contratos previos.
+
 # Contratos exactos del backend
 
 ## Ampliación 2026-10-24 (rama `feature/clientes-compradores`, sin integrar): clientes y comprador (Fase H, V33)

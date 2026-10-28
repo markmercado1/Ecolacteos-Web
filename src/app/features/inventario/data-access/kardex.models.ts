@@ -85,5 +85,8 @@ export const ETIQUETA_MOVIMIENTO: Record<string, string> = {
   SALIDA_PRODUCCION: 'Consumo en producción',
   AJUSTE: 'Ajuste por conteo',
   ENTRADA_PRODUCCION: 'Ingreso por producción',
-  SALIDA_VENTA: 'Venta'
+  SALIDA_VENTA: 'Venta',
+  SALIDA_VENCIMIENTO: 'Retiro por vencimiento',
+  SALIDA_DETERIORO: 'Baja por deterioro',
+  SALIDA_OTRA: 'Otra salida justificada'
 };

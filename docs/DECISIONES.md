@@ -287,3 +287,7 @@ Se sustituye el turno UNICO fijo por selector MAÑANA/TARDE/UNICO, conforme al m
 - **Recepción de jornadas.** El formulario vive en `RecepcionJornadaForm`. Regla de identificador: una solicitud con resultado incierto (sin respuesta, 5xx, 408, 409, 429, o HTTP 200 sin confirmación propia) se reintenta idéntica y con el mismo `uuidCliente`; un rechazo definitivo (error individual en HTTP 200 o 4xx) libera el formulario y la solicitud corregida estrena `uuidCliente`, porque es otra solicitud. El éxito se avisa con `ToastService`.
 - **Tablas.** `jornadas-page` combina la búsqueda/paginación en el cliente (`ListaLocal`, orden FIFO de la bandeja) con las acciones de recepción.
 - **Mapa de contacto.** Es de la web pública (`projects/web-publica`). `deploy/panel` solo publica el panel, así que el mapa llega a producción con la rama desde la que se despliega la web pública (`main`), no con `deploy/panel`.
+
+## 2026-10-27 — Reorganización de módulos e inventario
+
+Solicitud explícita amplía alcance a retirar Producción diaria y revisiones, unificar gestión de insumos y registrar salidas físicas. Auditoría y fundamentos en REORGANIZACION.md. Se conservan libros, lotes, historia SQL y servicios compartidos; V36 añade documento de retiro asociado a un único movimiento existente. Bajas ADMIN; PRODUCCION conserva ingresos. Los dos procesos financieros son distintos: Liquidaciones de leche y Desembolsos a proveedores; se mantienen separados. Insumos no tienen lotes/fecha: solo retiro manual con motivo. Sin push ni integración automática.
