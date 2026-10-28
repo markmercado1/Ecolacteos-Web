@@ -1,3 +1,5 @@
+import { TiposPrecioApi } from '../../../tipos-precio/data-access/tipos-precio.api';
+import { TipoPrecioResponse } from '../../../tipos-precio/data-access/tipo-precio.models';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Dialog } from '@angular/cdk/dialog';
 import { Subscription } from 'rxjs';
@@ -22,6 +24,10 @@ export class VentasPage {
   private readonly ventasApi = inject(VentasApi);
   private readonly dialog = inject(Dialog);
   private readonly toast = inject(ToastService);
+  private readonly tiposPrecioApi = inject(TiposPrecioApi);
+
+  /** Todos los tipos del catálogo (también los desactivados): el filtro y las etiquetas cubren lo histórico. */
+  protected readonly tiposPrecio = signal<TipoPrecioResponse[]>([]);
 
   protected readonly cargando = signal(true);
   protected readonly error = signal<AppError | null>(null);
@@ -53,6 +59,7 @@ export class VentasPage {
   ];
 
   constructor() {
+    this.tiposPrecioApi.listar(false).subscribe({ next: (t) => this.tiposPrecio.set(t), error: () => this.tiposPrecio.set([]) });
     this.cargar();
   }
 
@@ -112,15 +119,9 @@ export class VentasPage {
     this.cargar();
   }
 
+  /** Nombre del tipo de precio de una venta (activo o no: lo histórico sigue mostrando su tipo); sin catálogo, el código estable. */
   protected etiquetaCanal(canal: TipoClienteVenta): string {
-    switch (canal) {
-      case 'MAYORISTA':
-        return 'Mayorista';
-      case 'PROVEEDOR':
-        return 'Proveedor';
-      case 'PUBLICO':
-        return 'Público';
-    }
+    return this.tiposPrecio().find((t) => t.codigo === canal)?.nombre ?? canal;
   }
 
   /** Resumen corto de las líneas para la fila de la tabla (el detalle completo está a un clic, en "Ver detalle"). */

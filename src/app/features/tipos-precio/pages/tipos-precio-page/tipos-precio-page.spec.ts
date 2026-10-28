@@ -11,10 +11,10 @@ import { TiposPrecioPage } from './tipos-precio-page';
 const url = `${environment.apiBaseUrl}/tipos-precio`;
 
 const TIPOS: TipoPrecioResponse[] = [
-  { codigo: 'MAYORISTA', nombre: 'Mayorista', descripcion: 'Cliente habilitado', activo: true, protegido: false, ultimoCambio: null },
-  { codigo: 'PROVEEDOR', nombre: 'Proveedor', descripcion: 'Proveedor del padrón', activo: false, protegido: false,
+  { codigo: 'MAYORISTA', nombre: 'Mayorista', descripcion: 'Cliente habilitado', activo: true, protegido: false, reglaComprador: 'CUALQUIERA', ultimoCambio: null },
+  { codigo: 'PROVEEDOR', nombre: 'Proveedor', descripcion: 'Proveedor del padrón', activo: false, protegido: false, reglaComprador: 'PROVEEDOR_PADRON',
     ultimoCambio: { activo: false, motivo: 'Ya no vendemos a proveedores', usuarioNombre: 'Admin Planta', creadoEn: '2026-10-27T09:30:00' } },
-  { codigo: 'PUBLICO', nombre: 'Público', descripcion: 'Catálogo y reservas', activo: true, protegido: false, ultimoCambio: null }
+  { codigo: 'PUBLICO', nombre: 'Público', descripcion: 'Catálogo y reservas', activo: true, protegido: false, reglaComprador: 'CUALQUIERA', ultimoCambio: null }
 ];
 
 function crear() {

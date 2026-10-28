@@ -11,24 +11,21 @@ import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../.
 import { FamiliaResponse } from '../../../catalogos/data-access/familia.models';
 import { FamiliasApi } from '../../../catalogos/data-access/familias.api';
 import { PresentacionResponse } from '../../../catalogos/data-access/producto.models';
-import { FilaPrecioPresentacionResponse, PrecioQuesoResponse } from '../../data-access/precio-queso.models';
+import { FilaPrecioPresentacionResponse, PrecioModalidadResponse, PrecioQuesoResponse } from '../../data-access/precio-queso.models';
 import { PrecioLitroResponse } from '../../data-access/precio.models';
 import { PreciosQuesoApi } from '../../data-access/precios-queso.api';
 import { PreciosApi } from '../../data-access/precios.api';
 import { PrecioQuesoFormDialog } from '../../ui/precio-queso-form-dialog/precio-queso-form-dialog';
 import { HistorialPrecioDialog } from '../../ui/historial-precio-dialog/historial-precio-dialog';
+import { TiposPrecioApi } from '../../../tipos-precio/data-access/tipos-precio.api';
+import { TipoPrecioResponse } from '../../../tipos-precio/data-access/tipo-precio.models';
 import { PrecioFormDialog } from '../../ui/precio-form-dialog/precio-form-dialog';
 import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 type Pestana = 'leche' | 'queso';
 type TipoCliente = PrecioQuesoResponse['modalidad'];
+const PREFIJO_TIPO = 'tipo:';
 
-const ETIQUETAS_MODALIDAD: Record<TipoCliente, string> = {
-  MAYORISTA: 'Mayorista',
-  PROVEEDOR: 'Proveedor',
-  PUBLICO: 'Público'
-};
-const MODALIDADES: TipoCliente[] = ['MAYORISTA', 'PROVEEDOR', 'PUBLICO'];
 
 @Component({
   selector: 'app-precios-page',
@@ -41,13 +38,15 @@ export class PreciosPage {
   private readonly preciosApi = inject(PreciosApi);
   private readonly preciosQuesoApi = inject(PreciosQuesoApi);
   private readonly familiasApi = inject(FamiliasApi);
+  private readonly tiposPrecioApi = inject(TiposPrecioApi);
   private readonly dialog = inject(Dialog);
   private readonly toast = inject(ToastService);
   private readonly destroy = inject(DestroyRef);
 
   protected readonly pestana = signal<Pestana>('leche');
   private readonly hoyIso = new Date().toISOString().slice(0, 10);
-  protected readonly modalidades = MODALIDADES;
+  /** Catálogo de tipos de precio (activos o no: un tipo desactivado conserva sus precios históricos a la vista). */
+  protected readonly tiposPrecio = signal<TipoPrecioResponse[]>([]);
   protected readonly tamanosPagina = TAMANOS_PAGINA;
 
   // --- Leche: histórico paginado en el servidor; el vigente viene de su propio endpoint ---
@@ -89,15 +88,14 @@ export class PreciosPage {
   protected readonly tamanoPagina = signal(TAMANO_PAGINA_POR_DEFECTO);
   protected readonly pagina = signal(0);
 
-  protected readonly columnasQueso: ColumnaTabla[] = [
+  /** Una columna por cada tipo del catálogo; los tipos nuevos aparecen sin tocar el código. */
+  protected readonly columnasQueso = computed<ColumnaTabla[]>(() => [
     { clave: 'familiaNombre', etiqueta: 'Familia' },
     { clave: 'productoNombre', etiqueta: 'Producto' },
     { clave: 'presentacionNombre', etiqueta: 'Presentación' },
-    { clave: 'MAYORISTA', etiqueta: 'Mayorista', alinearFin: true },
-    { clave: 'PROVEEDOR', etiqueta: 'Proveedor', alinearFin: true },
-    { clave: 'PUBLICO', etiqueta: 'Público', alinearFin: true },
+    ...this.tiposPrecio().map((t) => ({ clave: PREFIJO_TIPO + t.codigo, etiqueta: t.activo ? t.nombre : t.nombre + ' (desactivado)', alinearFin: true })),
     { clave: 'acciones', etiqueta: '' }
-  ];
+  ]);
 
   /** Un producto sin presentaciones no tiene id de presentación -- se usa el id del producto como llave
    *  (no puede colisionar con un id de presentación, son UUIDs de tablas distintas). */
@@ -111,6 +109,16 @@ export class PreciosPage {
     this.cargar();
     this.cargarFamilias();
     this.cargarQueso();
+    this.tiposPrecioApi.listar(false).subscribe({ next: (t) => this.tiposPrecio.set(t), error: () => this.tiposPrecio.set([]) });
+  }
+
+  /** El resumen de una fila para la columna de un tipo (los tipos originales también vienen en sus campos de compatibilidad). */
+  protected modalidadDe(fila: FilaPrecioPresentacionResponse, clave: string): PrecioModalidadResponse {
+    return fila.porTipo?.[clave.slice(PREFIJO_TIPO.length)] ?? { estado: 'SIN_PRECIO', precio: null, vigenteDesde: null };
+  }
+
+  protected esColumnaTipo(clave: string): boolean {
+    return clave.startsWith(PREFIJO_TIPO);
   }
 
   protected estadoDe(precio: PrecioLitroResponse): 'Vigente' | 'Programado' | 'Anterior' {
@@ -120,7 +128,7 @@ export class PreciosPage {
   }
 
   protected etiquetaModalidad(modalidad: TipoCliente): string {
-    return ETIQUETAS_MODALIDAD[modalidad];
+    return this.tiposPrecio().find((t) => t.codigo === modalidad)?.nombre ?? modalidad;
   }
 
   /** "2026-09-18" -> "18/09/2026", solo para mostrar; el dato que viaja y se guarda sigue siendo ISO. */

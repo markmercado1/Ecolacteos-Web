@@ -137,26 +137,28 @@ export class VentaFormDialog {
   /** Canales que admite el comprador actual (el servidor aplica la misma regla). */
   protected canalPermitido(canal: TipoClienteVenta): boolean {
     const c = this.comprador();
-    if (canal === 'PUBLICO') return true;
-    if (canal === 'MAYORISTA') return !!c && c.tipo === 'CLIENTE' && c.mayorista;
-    return !!c && c.tipo === 'PROVEEDOR';
+    const regla = this.tiposActivos().find((t) => t.codigo === canal)?.reglaComprador;
+    if (regla === 'CLIENTE_HABILITADO') return !!c && c.tipo === 'CLIENTE' && (c.tiposHabilitados ?? []).includes(canal);
+    if (regla === 'PROVEEDOR_PADRON') return !!c && c.tipo === 'PROVEEDOR';
+    return true;   // CUALQUIERA
   }
 
   protected motivoCanal(canal: TipoClienteVenta): string {
-    if (canal === 'MAYORISTA') return 'requiere un cliente habilitado como mayorista';
-    if (canal === 'PROVEEDOR') return 'requiere elegir al proveedor que compra';
+    const regla = this.tiposActivos().find((t) => t.codigo === canal)?.reglaComprador;
+    if (regla === 'CLIENTE_HABILITADO') return 'requiere un cliente habilitado para este tipo';
+    if (regla === 'PROVEEDOR_PADRON') return 'requiere elegir al proveedor que compra';
     return '';
   }
 
   protected elegirComprador(c: CompradorSeleccion | null): void {
     this.comprador.set(c);
     this.eligiendoComprador.set(false);
-    // proveedor -> se propone PROVEEDOR; un cliente -> su canal habitual si lo puede usar (MAYORISTA solo habilitado); si no, PUBLICO
-    const habitual = c?.tipo === 'CLIENTE' && c.canalHabitual === 'MAYORISTA' && c.mayorista ? 'MAYORISTA' : 'PUBLICO';
-    const propuesto = c?.tipo === 'PROVEEDOR' ? 'PROVEEDOR' : habitual;
-    // un tipo desactivado no se propone (el servidor tampoco lo acepta)
+    // proveedor -> el tipo para proveedores del padrón; un cliente -> su tipo habitual. Solo se propone si sigue activo y la ficha puede usarlo:
+    // si dejó de ser válido NO se cambia nada guardado, se deja vacío y se pide elegir uno válido.
     const activos = this.tiposActivos();
-    this.form.controls.tipoCliente.setValue(activos.some((t) => t.codigo === propuesto) ? propuesto : (activos.find((t) => t.codigo === 'PUBLICO') ?? activos[0])?.codigo ?? '');
+    const propuesto = c?.tipo === 'PROVEEDOR' ? activos.find((t) => t.reglaComprador === 'PROVEEDOR_PADRON')?.codigo
+      : c?.tipo === 'CLIENTE' ? (c.canalHabitual ?? 'PUBLICO') : (activos.find((t) => t.codigo === 'PUBLICO')?.codigo);
+    this.form.controls.tipoCliente.setValue(propuesto && activos.some((t) => t.codigo === propuesto) && this.canalPermitido(propuesto) ? propuesto : '');
   }
 
   /** Tipos de precio activos: los únicos que se ofrecen para una venta nueva. Vienen del servidor, no de una lista fija. */
@@ -164,7 +166,7 @@ export class VentaFormDialog {
 
   protected readonly etiquetaCanal = computed(() => {
     const canal = this.tipoClienteValor();
-    return canal ? ETIQUETAS_CANAL[canal] : '—';
+    return canal ? (this.tiposActivos().find((t) => t.codigo === canal)?.nombre ?? ETIQUETAS_CANAL[canal] ?? canal) : '—';
   });
 
   /** Por fila: sus opciones de presentación excluyen las ya elegidas en OTRAS filas (evita duplicados en la UI). */

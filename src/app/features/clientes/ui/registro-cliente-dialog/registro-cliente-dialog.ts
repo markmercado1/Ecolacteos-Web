@@ -30,6 +30,7 @@ export interface CompradorSeleccion {
   id: string;
   nombre: string;
   mayorista: boolean;
+  tiposHabilitados?: string[];
   /** Canal que se propone al vender (solo clientes; null o ausente = PÚBLICO). */
   canalHabitual?: CanalHabitual | null;
 }
@@ -318,7 +319,7 @@ export class RegistroClienteDialog {
   }
 
   protected usar(c: CompradorSugerencia): void {
-    this.dialogRef.close({ tipo: c.tipo, id: c.id, nombre: c.nombre, mayorista: c.mayorista, canalHabitual: c.canalHabitual });
+    this.dialogRef.close({ tipo: c.tipo, id: c.id, nombre: c.nombre, mayorista: c.mayorista, tiposHabilitados: c.tiposHabilitados ?? [], canalHabitual: c.canalHabitual });
   }
 
   /** Mismas formas que el servidor (que vuelve a validar todo, incluidos duplicados). */
@@ -397,7 +398,7 @@ export class RegistroClienteDialog {
       motivoMayorista: mayorista ? v.motivoMayorista.trim() : null,
       canalHabitual: mayorista ? v.canalHabitual : 'PUBLICO'
     }).subscribe({
-      next: (c) => this.dialogRef.close({ tipo: 'CLIENTE', id: c.id, nombre: c.nombre, mayorista: c.mayorista, canalHabitual: c.canalHabitual }),
+      next: (c) => this.dialogRef.close({ tipo: 'CLIENTE', id: c.id, nombre: c.nombre, mayorista: c.mayorista, tiposHabilitados: c.tiposHabilitados ?? [], canalHabitual: c.canalHabitual }),
       error: (e) => {
         this.enviando.set(false);
         this.error.set(mapHttpError(e).mensaje);

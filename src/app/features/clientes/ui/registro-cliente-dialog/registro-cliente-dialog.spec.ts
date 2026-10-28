@@ -65,8 +65,8 @@ describe('RegistroClienteDialog (registro voluntario en un solo paso)', () => {
     expect(req.request.body.confirmadoSinCoincidencia).toBe(false);
     expect(req.request.body.mayorista).toBe(false);
     expect(req.request.body.canalHabitual).toBe('PUBLICO');
-    req.flush({ id: 'c-1', nombre: 'Rosa', mayorista: false, canalHabitual: 'PUBLICO' });
-    expect(close).toHaveBeenCalledWith({ tipo: 'CLIENTE', id: 'c-1', nombre: 'Rosa', mayorista: false, canalHabitual: 'PUBLICO' });
+    req.flush({ id: 'c-1', nombre: 'Rosa', mayorista: false, tiposHabilitados: [], canalHabitual: 'PUBLICO' });
+    expect(close).toHaveBeenCalledWith({ tipo: 'CLIENTE', id: 'c-1', nombre: 'Rosa', mayorista: false, tiposHabilitados: [], canalHabitual: 'PUBLICO' });
     http.verify();
   });
 
@@ -176,8 +176,8 @@ describe('RegistroClienteDialog (registro voluntario en un solo paso)', () => {
     comp['registrarIgual']();
     const req = http.expectOne(`${base}/clientes`);
     expect(req.request.body.confirmadoSinCoincidencia).toBe(true);
-    req.flush({ id: 'c-10', nombre: 'Luis', mayorista: false, canalHabitual: 'PUBLICO' });
-    expect(close).toHaveBeenCalledWith({ tipo: 'CLIENTE', id: 'c-10', nombre: 'Luis', mayorista: false, canalHabitual: 'PUBLICO' });
+    req.flush({ id: 'c-10', nombre: 'Luis', mayorista: false, tiposHabilitados: [], canalHabitual: 'PUBLICO' });
+    expect(close).toHaveBeenCalledWith({ tipo: 'CLIENTE', id: 'c-10', nombre: 'Luis', mayorista: false, tiposHabilitados: [], canalHabitual: 'PUBLICO' });
     http.verify();
   });
 
@@ -189,7 +189,7 @@ describe('RegistroClienteDialog (registro voluntario en un solo paso)', () => {
     ]);
     f.detectChanges();
     boton(f, 'Es esta persona')!.click();
-    expect(close).toHaveBeenCalledWith({ tipo: 'PROVEEDOR', id: 'p-1', nombre: 'Juan Proveedor', mayorista: false, canalHabitual: null });
+    expect(close).toHaveBeenCalledWith({ tipo: 'PROVEEDOR', id: 'p-1', nombre: 'Juan Proveedor', mayorista: false, tiposHabilitados: [], canalHabitual: null });
     http.expectNone(`${base}/clientes`);
     http.verify();
   });

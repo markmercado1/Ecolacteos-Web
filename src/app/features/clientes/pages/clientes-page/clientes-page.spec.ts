@@ -17,7 +17,7 @@ const sinAutorizar = { vigente: false, estado: null, medios: [], forma: null, de
 function cliente(id: string, reservas: ClienteResponse['reservas']): ClienteResponse {
   return {
     id, tipoPersona: 'NATURAL', nombre: 'Cliente ' + id, razonSocial: null, dni: null, ruc: null, correo: null, telefonos: ['••• ••• 321'],
-    mayorista: false, activo: true, fusionadoEnId: null, creadoEn: '2026-10-24T10:00:00', datosCompletos: false,
+    mayorista: false, tiposHabilitados: [], activo: true, fusionadoEnId: null, creadoEn: '2026-10-24T10:00:00', datosCompletos: false,
     registro: { ...sinAutorizar, vigente: true }, comunicaciones: sinAutorizar, canalHabitual: 'PUBLICO', reservas
   };
 }

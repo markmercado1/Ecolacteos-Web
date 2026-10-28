@@ -109,7 +109,7 @@ export class CompradorSelectorComponent implements OnInit {
   }
 
   protected elegir(r: CompradorSugerencia): void {
-    this.elegido.emit({ tipo: r.tipo, id: r.id, nombre: r.nombre, mayorista: r.mayorista, canalHabitual: r.canalHabitual });
+    this.elegido.emit({ tipo: r.tipo, id: r.id, nombre: r.nombre, mayorista: r.mayorista, tiposHabilitados: r.tiposHabilitados ?? [], canalHabitual: r.canalHabitual });
   }
 
   protected registrar(): void {

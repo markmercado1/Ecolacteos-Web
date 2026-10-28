@@ -39,7 +39,7 @@ function crear(rol: UsuarioMeResponse['rolNombre'] = 'VENTAS', tipos: unknown[] 
 }
 
 const TIPOS_ACTIVOS = (['MAYORISTA', 'PROVEEDOR', 'PUBLICO'] as const).map((codigo) => ({
-  codigo, nombre: { MAYORISTA: 'Mayorista', PROVEEDOR: 'Proveedor', PUBLICO: 'Público' }[codigo], descripcion: '', activo: true, protegido: codigo === 'PUBLICO', ultimoCambio: null
+  codigo, nombre: { MAYORISTA: 'Mayorista', PROVEEDOR: 'Proveedor', PUBLICO: 'Público' }[codigo], descripcion: '', activo: true, protegido: false, reglaComprador: ({ MAYORISTA: 'CLIENTE_HABILITADO', PROVEEDOR: 'PROVEEDOR_PADRON', PUBLICO: 'CUALQUIERA' } as const)[codigo], ultimoCambio: null
 }));
 
 const PRODUCTO_YOGURT = {
@@ -304,7 +304,7 @@ describe('VentaFormDialog — precio y stock por línea', () => {
   });
 });
 
-const MAYORISTA_HABILITADO = { tipo: 'CLIENTE' as const, id: 'c-1', nombre: 'Bodega San Martín', mayorista: true };
+const MAYORISTA_HABILITADO = { tipo: 'CLIENTE' as const, id: 'c-1', nombre: 'Bodega San Martín', mayorista: true, tiposHabilitados: ['MAYORISTA'] };
 
 describe('VentaFormDialog — Fase H: comprador y canal', () => {
   it('sin comprador solo se puede vender al canal PÚBLICO («Cliente varios»)', () => {
@@ -338,9 +338,9 @@ describe('VentaFormDialog — Fase H: comprador y canal', () => {
     const { dialog } = crearConCatalogoListo();
     dialog['elegirComprador']({ ...MAYORISTA_HABILITADO, canalHabitual: 'MAYORISTA' });
     expect(dialog['form'].controls.tipoCliente.value).toBe('MAYORISTA');
-    // un canal habitual MAYORISTA sin la habilitación (dato viejo) no se propone
-    dialog['elegirComprador']({ tipo: 'CLIENTE', id: 'c-2', nombre: 'Rosa', mayorista: false, canalHabitual: 'MAYORISTA' });
-    expect(dialog['form'].controls.tipoCliente.value).toBe('PUBLICO');
+    // un tipo habitual sin la habilitación (dato viejo) no se propone ni se cambia en silencio: queda vacío y se pide elegir uno válido
+    dialog['elegirComprador']({ tipo: 'CLIENTE', id: 'c-2', nombre: 'Rosa', mayorista: false, tiposHabilitados: [], canalHabitual: 'MAYORISTA' });
+    expect(dialog['form'].controls.tipoCliente.value).toBe('');
   });
 });
 

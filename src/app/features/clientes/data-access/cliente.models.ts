@@ -9,8 +9,8 @@ export type MedioComercial = 'WHATSAPP' | 'SMS' | 'LLAMADA' | 'CORREO';
  * Canal que el panel PROPONE al vender a esta ficha (V34). No es el tipo de cliente: el tipo (regular o mayorista, este solo lo habilita
  * ADMIN) decide si puede comprar a precio MAYORISTA; el canal habitual solo preselecciona. PROVEEDOR nunca es de un cliente.
  */
-export type CanalHabitual = 'PUBLICO' | 'MAYORISTA';
-export const ETIQUETAS_CANAL_HABITUAL: Record<CanalHabitual, string> = { PUBLICO: 'Público', MAYORISTA: 'Mayorista' };
+export type CanalHabitual = string;   // código de un tipo de precio del catálogo
+export const ETIQUETAS_CANAL_HABITUAL: Record<string, string> = { PUBLICO: 'Público', MAYORISTA: 'Mayorista' };
 
 export const MEDIOS_COMERCIALES: MedioComercial[] = ['WHATSAPP', 'SMS', 'LLAMADA', 'CORREO'];
 export const ETIQUETAS_MEDIO: Record<MedioComercial, string> = { WHATSAPP: 'WhatsApp', SMS: 'SMS', LLAMADA: 'Llamada', CORREO: 'Correo' };
@@ -58,6 +58,8 @@ export interface ClienteResponse {
   comunicaciones: EstadoAutorizacion;
   canalHabitual: CanalHabitual;
   reservas: ResumenReservas;
+  /** Tipos de precio para los que la ficha está habilitada (la bandera `mayorista` es solo uno de ellos). */
+  tiposHabilitados: string[];
 }
 
 export interface ClienteRequest {
@@ -142,6 +144,8 @@ export interface CompradorSugerencia {
   telefono: string | null;
   documento: string | null;
   mayorista: boolean;
+  /** Tipos de precio (regla CLIENTE_HABILITADO) para los que la ficha está habilitada. Vacío para un proveedor. */
+  tiposHabilitados: string[];
   activo: boolean;
   coincidencia: TipoCoincidencia;
   /** null para un proveedor. */

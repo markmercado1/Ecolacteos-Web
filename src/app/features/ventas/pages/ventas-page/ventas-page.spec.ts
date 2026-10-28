@@ -44,6 +44,7 @@ describe('VentasPage', () => {
     });
     http = TestBed.inject(HttpTestingController);
     page = TestBed.createComponent(VentasPage).componentInstance;
+    http.expectOne((r) => r.url.endsWith('/tipos-precio')).flush([{ codigo: 'MAYORISTA', nombre: 'Mayorista', descripcion: '', activo: true, protegido: false, reglaComprador: 'CLIENTE_HABILITADO', ultimoCambio: null }, { codigo: 'PROVEEDOR', nombre: 'Proveedor', descripcion: '', activo: true, protegido: false, reglaComprador: 'PROVEEDOR_PADRON', ultimoCambio: null }, { codigo: 'PUBLICO', nombre: 'Público', descripcion: '', activo: true, protegido: false, reglaComprador: 'CUALQUIERA', ultimoCambio: null }]);
     http.expectOne((r) => r.url === `${base}/ventas`).flush(pagina0);
   });
 
@@ -132,6 +133,7 @@ describe('VentasPage — contenido real de cada columna y acciones sobre el ID c
     });
     http = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(VentasPage);
+    http.expectOne((r) => r.url.endsWith('/tipos-precio')).flush([{ codigo: 'MAYORISTA', nombre: 'Mayorista', descripcion: '', activo: true, protegido: false, reglaComprador: 'CLIENTE_HABILITADO', ultimoCambio: null }, { codigo: 'PROVEEDOR', nombre: 'Proveedor', descripcion: '', activo: true, protegido: false, reglaComprador: 'PROVEEDOR_PADRON', ultimoCambio: null }, { codigo: 'PUBLICO', nombre: 'Público', descripcion: '', activo: true, protegido: false, reglaComprador: 'CUALQUIERA', ultimoCambio: null }]);
     http.expectOne((r) => r.url === `${base}/ventas`).flush(pagina0);
     fixture.detectChanges();
   });

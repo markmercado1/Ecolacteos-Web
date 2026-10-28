@@ -31,6 +31,7 @@ function fila(datos: Partial<FilaPrecioPresentacionResponse> & { productoId: str
     mayorista: { estado: 'SIN_PRECIO', precio: null, vigenteDesde: null },
     proveedor: { estado: 'SIN_PRECIO', precio: null, vigenteDesde: null },
     publico: { estado: 'SIN_PRECIO', precio: null, vigenteDesde: null },
+    porTipo: {},
     ...datos
   };
 }
@@ -68,6 +69,7 @@ describe('PreciosPage', () => {
     TestBed.configureTestingModule({ providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] });
     http = TestBed.inject(HttpTestingController);
     page = TestBed.createComponent(PreciosPage).componentInstance;
+    http.expectOne((r) => r.url.endsWith('/tipos-precio')).flush([{ codigo: 'MAYORISTA', nombre: 'Mayorista', descripcion: '', activo: true, protegido: false, reglaComprador: 'CLIENTE_HABILITADO', ultimoCambio: null }, { codigo: 'PROVEEDOR', nombre: 'Proveedor', descripcion: '', activo: true, protegido: false, reglaComprador: 'PROVEEDOR_PADRON', ultimoCambio: null }, { codigo: 'PUBLICO', nombre: 'Público', descripcion: '', activo: true, protegido: false, reglaComprador: 'CUALQUIERA', ultimoCambio: null }]);
   });
 
   afterEach(() => http.verify());
