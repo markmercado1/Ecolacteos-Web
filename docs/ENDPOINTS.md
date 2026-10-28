@@ -17,6 +17,7 @@ Nuevos POST `/api/inventario/presentaciones/{id}/salidas` y `/api/inventario/ins
 ## Ampliación vigente 2026-10-24: Fase G (documentos del proveedor e IGV configurable)
 
 - `GET /api/admin/proveedores/revision-documentos` — ADMIN, solo lectura (`RevisionDocumentosController`).
+- `GET /api/tipos-precio?soloActivos=` (VENTAS, ADMIN), `PUT /api/tipos-precio/{codigo}/estado` (ADMIN, `{activo, motivo}`) — tipos de precio (`TipoPrecioController`).
 - `GET /api/admin/tributario/estado`, `GET|POST /api/admin/tributario/tasas-igv`, `GET /api/admin/tributario/afectaciones`, `GET|POST /api/admin/tributario/presentaciones/{id}/afectaciones`,
   `PUT /api/admin/tributario/calculo` (enciende/apaga el cálculo, con motivo), `POST /api/admin/tributario/afectaciones/lote` (clasifica de una vez) —
   ADMIN (`ConfiguracionIgvController`).

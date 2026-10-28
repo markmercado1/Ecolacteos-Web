@@ -33,9 +33,9 @@
       <label for="v-canal">Canal (tipo de cliente)</label>
       <select id="v-canal" formControlName="tipoCliente" required>
         <option value="" disabled>Selecciona un canal</option>
-        <option value="MAYORISTA" [disabled]="!canalPermitido('MAYORISTA')">Mayorista{{ canalPermitido('MAYORISTA') ? '' : ' (' + motivoCanal('MAYORISTA') + ')' }}</option>
-        <option value="PROVEEDOR" [disabled]="!canalPermitido('PROVEEDOR')">Proveedor{{ canalPermitido('PROVEEDOR') ? '' : ' (' + motivoCanal('PROVEEDOR') + ')' }}</option>
-        <option value="PUBLICO">Público</option>
+        @for (t of tiposActivos(); track t.codigo) {
+          <option [value]="t.codigo" [disabled]="!canalPermitido(t.codigo)">{{ t.nombre }}{{ canalPermitido(t.codigo) ? '' : ' (' + motivoCanal(t.codigo) + ')' }}</option>
+        }
       </select>
       @if (form.controls.tipoCliente.invalid && form.controls.tipoCliente.touched) {
         <span class="error">Selecciona el canal de la venta.</span>

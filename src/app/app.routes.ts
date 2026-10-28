@@ -127,6 +127,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/tributario/pages/igv-page/igv-page').then((m) => m.IgvPage)
       },
       {
+        path: 'tipos-precio',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] },
+        loadComponent: () => import('./features/tipos-precio/pages/tipos-precio-page/tipos-precio-page').then((m) => m.TiposPrecioPage)
+      },
+      {
         path: 'precios',
         canActivate: [roleGuard],
         data: { roles: ['ADMIN'] },

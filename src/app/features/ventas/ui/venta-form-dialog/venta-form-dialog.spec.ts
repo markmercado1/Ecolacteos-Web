@@ -14,7 +14,7 @@ function usuarioCon(rolNombre: UsuarioMeResponse['rolNombre']): UsuarioMeRespons
   return { id: 'u-1', nombre: 'Vendedor', email: 'v@ecolacteos.pe', rolNombre, activo: true, unidadesResponsable: [] };
 }
 
-function crear(rol: UsuarioMeResponse['rolNombre'] = 'VENTAS') {
+function crear(rol: UsuarioMeResponse['rolNombre'] = 'VENTAS', tipos: unknown[] = TIPOS_ACTIVOS) {
   TestBed.configureTestingModule({
     providers: [
       provideRouter([]),
@@ -34,8 +34,13 @@ function crear(rol: UsuarioMeResponse['rolNombre'] = 'VENTAS') {
   const http = TestBed.inject(HttpTestingController);
   const fixture = TestBed.createComponent(VentaFormDialog);
   const dialog = fixture.componentInstance;
+  http.expectOne((r) => r.url.endsWith('/tipos-precio')).flush(tipos);
   return { fixture, dialog, http };
 }
+
+const TIPOS_ACTIVOS = (['MAYORISTA', 'PROVEEDOR', 'PUBLICO'] as const).map((codigo) => ({
+  codigo, nombre: { MAYORISTA: 'Mayorista', PROVEEDOR: 'Proveedor', PUBLICO: 'Público' }[codigo], descripcion: '', activo: true, protegido: codigo === 'PUBLICO', ultimoCambio: null
+}));
 
 const PRODUCTO_YOGURT = {
   id: 'prod-1', nombre: 'Yogurt de fresa', familiaId: 'fam-1', familiaNombre: 'Yogurt',
@@ -528,5 +533,22 @@ describe('VentaFormDialog — resumen, envío y UUID estable', () => {
     dialog['verDetalle']();
     expect(cerrarSpy).toHaveBeenCalledWith({ venta, verDetalle: true });
     http.verify();
+  });
+});
+
+describe('VentaFormDialog — tipos de precio dinámicos', () => {
+  it('el selector de canal ofrece solo los tipos activos del servidor, sin lista fija', () => {
+    const soloPublico = TIPOS_ACTIVOS.filter((t) => t.codigo === 'PUBLICO');
+    const { fixture } = crear('VENTAS', soloPublico);
+    fixture.detectChanges();
+    const opciones = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('#v-canal option')).map((o) => (o as HTMLOptionElement).value);
+    expect(opciones).toEqual(['', 'PUBLICO']);
+  });
+
+  it('con todos activos ofrece los tres canales', () => {
+    const { fixture } = crear('VENTAS');
+    fixture.detectChanges();
+    const opciones = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('#v-canal option')).map((o) => (o as HTMLOptionElement).value);
+    expect(opciones).toEqual(['', 'MAYORISTA', 'PROVEEDOR', 'PUBLICO']);
   });
 });

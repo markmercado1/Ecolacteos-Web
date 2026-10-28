@@ -100,3 +100,16 @@ describe('PrecioQuesoFormDialog', () => {
     expect(dialogRef.close).toHaveBeenCalledWith();
   });
 });
+
+describe('PrecioQuesoFormDialog — tipos de precio dinámicos', () => {
+  it('la modalidad se elige entre los tipos activos que devuelve el servidor, no entre una lista fija', () => {
+    const { f, http } = crear({ presentacion: presentacion(), productoNombre: 'Yogurt' } as PrecioQuesoFormDialogData);
+    http.expectOne((r) => r.url.endsWith('/tipos-precio') && r.params.get('soloActivos') === 'true').flush([
+      { codigo: 'MAYORISTA', nombre: 'Mayorista', descripcion: '', activo: true, protegido: false, ultimoCambio: null },
+      { codigo: 'PUBLICO', nombre: 'Público', descripcion: '', activo: true, protegido: true, ultimoCambio: null }
+    ]);
+    f.detectChanges();
+    const opciones = Array.from((f.nativeElement as HTMLElement).querySelectorAll('#pq-modalidad option')).map((o) => (o as HTMLOptionElement).value);
+    expect(opciones).toEqual(['', 'MAYORISTA', 'PUBLICO']);
+  });
+});

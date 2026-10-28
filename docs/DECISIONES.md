@@ -288,6 +288,10 @@ Se sustituye el turno UNICO fijo por selector MAÑANA/TARDE/UNICO, conforme al m
 - **Tablas.** `jornadas-page` combina la búsqueda/paginación en el cliente (`ListaLocal`, orden FIFO de la bandeja) con las acciones de recepción.
 - **Mapa de contacto.** Es de la web pública (`projects/web-publica`). `deploy/panel` solo publica el panel, así que el mapa llega a producción con la rama desde la que se despliega la web pública (`main`), no con `deploy/panel`.
 
+## 2026-10-27 — Tipos de precio administrables (etapa 1)
+
+Se administran los tres tipos que ya existen (MAYORISTA, PROVEEDOR, PUBLICO) en `/tipos-precio` (solo ADMIN): activar o desactivar con motivo, registrado con quién y cuándo (V37). Los selectores de venta y de precio leen `GET /api/tipos-precio?soloActivos=true`; el servidor rechaza tipos desactivados en operaciones nuevas y no toca lo histórico. PUBLICO no se desactiva. **Crear tipos nuevos queda para la etapa 2**: requiere cambiar el enum `TipoClienteVenta` por texto con FK en precios y ventas y decidir las reglas de comprador de un tipo nuevo; no se dejó una solución híbrida.
+
 ## 2026-10-27 — Reorganización de módulos e inventario
 
 Solicitud explícita amplía alcance a retirar Producción diaria y revisiones, unificar gestión de insumos y registrar salidas físicas. Auditoría y fundamentos en REORGANIZACION.md. Se conservan libros, lotes, historia SQL y servicios compartidos; V36 añade documento de retiro asociado a un único movimiento existente. Bajas ADMIN; PRODUCCION conserva ingresos. Los dos procesos financieros son distintos: Liquidaciones de leche y Desembolsos a proveedores; se mantienen separados. Insumos no tienen lotes/fecha: solo retiro manual con motivo. Sin push ni integración automática.

@@ -66,6 +66,7 @@ export const GRUPOS_NAVEGACION: GrupoNavegacion[] = [
       { ruta: '/reservas', etiqueta: 'Reservas', icono: 'reservas', roles: ['ADMIN', 'VENTAS'] },
       { ruta: '/clientes', etiqueta: 'Clientes', icono: 'usuarios', roles: ['ADMIN', 'VENTAS'] },
       { ruta: '/precios', etiqueta: 'Precios', icono: 'precios', roles: ['ADMIN'] },
+      { ruta: '/tipos-precio', etiqueta: 'Tipos de precio', icono: 'precios', roles: ['ADMIN'] },
       { ruta: '/igv', etiqueta: 'IGV de las ventas', icono: 'precios', roles: ['ADMIN'] }
     ]
   },

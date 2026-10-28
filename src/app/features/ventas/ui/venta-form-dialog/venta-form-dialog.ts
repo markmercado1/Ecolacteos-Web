@@ -1,3 +1,5 @@
+import { TipoPrecioResponse } from '../../../tipos-precio/data-access/tipo-precio.models';
+import { TiposPrecioApi } from '../../../tipos-precio/data-access/tipos-precio.api';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
@@ -100,6 +102,7 @@ export class VentaFormDialog {
   private readonly productosApi = inject(ProductosApi);
   private readonly inventarioApi = inject(InventarioApi);
   private readonly auth = inject(AuthService);
+  private readonly tiposPrecioApi = inject(TiposPrecioApi);
   private readonly destroy = inject(DestroyRef);
 
   /** Una sola vez por operación; se conserva ante cualquier reintento (idempotencia del backend). */
@@ -150,8 +153,13 @@ export class VentaFormDialog {
     this.eligiendoComprador.set(false);
     // proveedor -> se propone PROVEEDOR; un cliente -> su canal habitual si lo puede usar (MAYORISTA solo habilitado); si no, PUBLICO
     const habitual = c?.tipo === 'CLIENTE' && c.canalHabitual === 'MAYORISTA' && c.mayorista ? 'MAYORISTA' : 'PUBLICO';
-    this.form.controls.tipoCliente.setValue(c?.tipo === 'PROVEEDOR' ? 'PROVEEDOR' : habitual);
+    const propuesto = c?.tipo === 'PROVEEDOR' ? 'PROVEEDOR' : habitual;
+    // un tipo desactivado no se propone (el servidor tampoco lo acepta)
+    this.form.controls.tipoCliente.setValue(this.tiposActivos().some((t) => t.codigo === propuesto) ? propuesto : 'PUBLICO');
   }
+
+  /** Tipos de precio activos: los únicos que se ofrecen para una venta nueva. Vienen del servidor, no de una lista fija. */
+  protected readonly tiposActivos = signal<TipoPrecioResponse[]>([]);
 
   protected readonly etiquetaCanal = computed(() => {
     const canal = this.tipoClienteValor();
@@ -216,6 +224,7 @@ export class VentaFormDialog {
   });
 
   constructor() {
+    this.tiposPrecioApi.listar(true).subscribe({ next: (t) => this.tiposActivos.set(t), error: () => this.tiposActivos.set([]) });
     this.cargarProductos();
     this.agregarLinea();
 

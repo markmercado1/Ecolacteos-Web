@@ -3,6 +3,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { mapHttpError } from '../../../../core/http/app-error';
 import { PresentacionResponse } from '../../../catalogos/data-access/producto.models';
+import { TipoPrecioResponse } from '../../../tipos-precio/data-access/tipo-precio.models';
+import { TiposPrecioApi } from '../../../tipos-precio/data-access/tipos-precio.api';
 import { PrecioQuesoResponse } from '../../data-access/precio-queso.models';
 import { PreciosQuesoApi } from '../../data-access/precios-queso.api';
 
@@ -37,9 +39,7 @@ export interface PrecioQuesoFormDialogData {
         <label for="pq-modalidad">Modalidad</label>
         <select id="pq-modalidad" formControlName="modalidad" required>
           <option value="" disabled>Selecciona una modalidad</option>
-          <option value="MAYORISTA">Mayorista</option>
-          <option value="PROVEEDOR">Proveedor</option>
-          <option value="PUBLICO">Público</option>
+          @for (t of tiposActivos(); track t.codigo) { <option [value]="t.codigo">{{ t.nombre }}</option> }
         </select>
         @if (invalido('modalidad')) { <span class="error">Selecciona una modalidad.</span> }
       </div>
@@ -91,9 +91,17 @@ export class PrecioQuesoFormDialog {
   protected readonly data = inject<PrecioQuesoFormDialogData>(DIALOG_DATA);
   private readonly fb = inject(FormBuilder);
   private readonly preciosQuesoApi = inject(PreciosQuesoApi);
+  private readonly tiposPrecioApi = inject(TiposPrecioApi);
+
+  /** Solo los tipos activos: un tipo desactivado no admite precios nuevos (el servidor también lo rechaza). */
+  protected readonly tiposActivos = signal<TipoPrecioResponse[]>([]);
 
   protected readonly enviando = signal(false);
   protected readonly errorServidor = signal<string | null>(null);
+  constructor() {
+    this.tiposPrecioApi.listar(true).subscribe({ next: (t) => this.tiposActivos.set(t), error: () => this.tiposActivos.set([]) });
+  }
+
   protected readonly form = this.fb.group({
     modalidad: this.fb.nonNullable.control<'' | 'MAYORISTA' | 'PROVEEDOR' | 'PUBLICO'>('', Validators.required),
     precio: this.fb.control<number | null>(null, [Validators.required, Validators.min(0.01)]),
