@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { Dialog } from '@angular/cdk/dialog';
 import { Observable, Subscription } from 'rxjs';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
@@ -22,7 +21,7 @@ type FiltroEstado = 'TODOS' | 'ACTIVOS' | 'INACTIVOS';
 
 @Component({
   selector: 'app-proveedores-page',
-  imports: [DataTableComponent, ExportarExcelComponent, RouterLink],
+  imports: [DataTableComponent, ExportarExcelComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './proveedores-page.html',
   styleUrl: './proveedores-page.css'

@@ -141,7 +141,7 @@ export class VentaDetalleDialog {
   }
 
   protected etiquetaCanal(canal: TipoClienteVenta): string {
-    return ETIQUETAS_CANAL[canal];
+    return ETIQUETAS_CANAL[canal] ?? canal;   // un tipo nuevo se muestra con su código estable
   }
 
   protected cargar(): void {

@@ -1,7 +1,7 @@
 import { CompradorRef, CompradorResumen } from '../../clientes/data-access/cliente.models';
 
-/** Fuente: docs/CONTRATOS.md, VentaRequest.java. Valores reales de tipoCliente. */
-export type TipoClienteVenta = 'MAYORISTA' | 'PROVEEDOR' | 'PUBLICO';
+/** Fuente: docs/CONTRATOS.md, VentaRequest.java. Código de un tipo de precio del catálogo (`/api/tipos-precio`): MAYORISTA, PROVEEDOR, PUBLICO u otro creado por ADMIN. */
+export type TipoClienteVenta = string;
 
 /**
  * Fase 4 (Venta multi-línea / carrito): una línea del carrito enviada al confirmar la venta. El precio se

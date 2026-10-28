@@ -1,5 +1,11 @@
 # Registro acumulativo
 
+## IGV encendible desde el panel — 2026-10-26
+
+Rama `feature/igv-activable` (backend y panel), sobre la integración de las fases A–H. Backend: V35 `cambio_calculo_igv`, `PUT /api/admin/tributario/calculo`, `POST
+/api/admin/tributario/afectaciones/lote`, `ultimoCambio` en el estado. Panel: tarjeta de estado con «Activar/Desactivar el cálculo del IGV» (diálogo de motivo), «Clasificar las N que faltan»
+(`ClasificarLoteDialog`), sin referencias al contador. Pruebas: ver el mensaje de cada commit.
+
 ## Refactor de UX de Clientes y Compradores — 2026-10-24
 
 Pedido del usuario («Refactor UX y mejoras funcionales — Clientes y Compradores»), en el árbol de `integration/7-fases` (worktrees

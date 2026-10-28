@@ -50,9 +50,11 @@ export interface FilaPrecioPresentacionResponse {
   productoNombre: string;
   presentacionId: string | null;
   presentacionNombre: string | null;
-  mayorista: PrecioModalidadResponse;
+  mayorista: PrecioModalidadResponse;   // compatibilidad: los tres tipos originales
   proveedor: PrecioModalidadResponse;
   publico: PrecioModalidadResponse;
+  /** Un resumen por cada tipo del catálogo, por código: la tabla no depende de columnas fijas. */
+  porTipo: Record<string, PrecioModalidadResponse>;
 }
 
 export interface FiltroPreciosPresentacion {

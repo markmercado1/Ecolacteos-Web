@@ -1,4 +1,13 @@
+# 2026-10-26 — Reorganización de módulos: TERMINADA (suites completas verdes, sin push)
+
+Rama exclusiva `feature/limpieza-modulos-inventario`, worktree `.worktrees/limpieza`. Origen frontend `2b4b4f53918422fed5efe65d1ed4b219d4411f57`; backend `a4904cd100b0b1dc182514b2c90a2fadc6523524`, ambos `feature/igv-activable`. Sin push. Auditoría y decisiones en `REORGANIZACION.md`.
+
 # Estado vigente
+
+## 2026-10-26 — IGV encendible desde el panel (rama `feature/igv-activable`)
+
+En `/igv` el ADMIN puede **activar o desactivar el cálculo** (con motivo; se muestra quién y cuándo lo cambió) y **clasificar de una vez** las presentaciones sin afectación. Backend V35
+(`cambio_calculo_igv`), `PUT /calculo` y `POST /afectaciones/lote`. Apagado por defecto; encenderlo solo afecta a las ventas nuevas. Ver `DECISIONES.md`.
 
 ## 2026-10-24 — Refactor de UX de Clientes (rama `feature/clientes-ventas`)
 
@@ -29,7 +38,8 @@ Sin push. Backend de referencia: `integration/7-fases` + `feature/ruc-igv` (V31 
   detalle con tipo, razón social, DNI y RUC. Excel: exportación con tipo, RUC y razón social; plantilla de importación **v2** con las mismas reglas. Boleta PDF con DNI/RUC/razón social.
 - **«Revisión de documentos»** (`/proveedores-revision`, solo ADMIN, solo lectura): lista lo que no cumple las reglas actuales; **no corrige nada**. En la copia de la base de desarrollo
   (42 proveedores) informa **un caso**: «Prueba1», DNI de 9 dígitos.
-- **IGV de las ventas** (`/igv`, solo ADMIN): **configuración preparada, cálculo APAGADO** (estado «Pendiente») hasta que el contador confirme. Se puede registrar la tasa con vigencia y la
+- **IGV de las ventas** (`/igv`, solo ADMIN): **configuración preparada, cálculo APAGADO** (estado «Pendiente») hasta que el administrador lo active desde la misma pantalla (2026-10-26, rama
+  `feature/igv-activable`: botón «Activar el cálculo del IGV» con motivo, «Clasificar las N que faltan»). Se puede registrar la tasa con vigencia y la
   afectación por presentación (con fecha y motivo); **ninguna presentación viene clasificada** y no hay tasa registrada. Mientras el cálculo esté apagado **las ventas se registran exactamente
   como antes** y el catálogo no dice «Incluye IGV».
 - **Detalle de venta:** si el servidor registró la foto tributaria, muestra el IGV incluido por línea y en total, lo exonerado/inafecto y lo «sin determinar». El total no cambia.

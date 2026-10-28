@@ -39,10 +39,6 @@ export const routes: Routes = [
         path: 'produccion', canActivate: [roleGuard], data: { roles: ['ADMIN', 'PRODUCCION'] },
         loadComponent: () => import('./features/produccion/pages/lotes-page/lotes-page').then(m => m.LotesPage)
       },
-      {
-        path: 'produccion-diaria', canActivate: [roleGuard], data: { roles: ['ADMIN', 'PRODUCCION'] },
-        loadComponent: () => import('./features/produccion-diaria/pages/informe-page/informe-page').then(m => m.InformePage)
-      },
       { path: '403', component: ForbiddenPage },
       {
         path: 'panel', canActivate: [roleGuard], data: { roles: ['ADMIN'] },
@@ -54,20 +50,6 @@ export const routes: Routes = [
         data: { roles: ['ADMIN'] },
         loadComponent: () =>
           import('./features/proveedores/pages/proveedores-page/proveedores-page').then((m) => m.ProveedoresPage)
-      },
-      {
-        path: 'proveedores-revision',
-        canActivate: [roleGuard],
-        data: { roles: ['ADMIN'] },
-        loadComponent: () =>
-          import('./features/proveedores/pages/revision-documentos-page/revision-documentos-page').then((m) => m.RevisionDocumentosPage)
-      },
-      {
-        path: 'zonas-revision',
-        canActivate: [roleGuard],
-        data: { roles: ['ADMIN'] },
-        loadComponent: () =>
-          import('./features/zonas/pages/revision-zonas-page/revision-zonas-page').then((m) => m.RevisionZonasPage)
       },
       {
         path: 'pagos',
@@ -143,6 +125,12 @@ export const routes: Routes = [
         canActivate: [roleGuard],
         data: { roles: ['ADMIN'] },
         loadComponent: () => import('./features/tributario/pages/igv-page/igv-page').then((m) => m.IgvPage)
+      },
+      {
+        path: 'tipos-precio',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] },
+        loadComponent: () => import('./features/tipos-precio/pages/tipos-precio-page/tipos-precio-page').then((m) => m.TiposPrecioPage)
       },
       {
         path: 'precios',

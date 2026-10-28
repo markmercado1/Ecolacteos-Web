@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { Dialog } from '@angular/cdk/dialog';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
 import { CampoUnicoDialog } from '../../../../shared/ui/dialog/campo-unico-dialog';
@@ -22,26 +22,24 @@ import { RecetasApi } from '../../data-access/recetas.api';
 import { ProductosApi } from '../../data-access/productos.api';
 import { ZonaResponse } from '../../data-access/zona.models';
 import { ZonasApi } from '../../data-access/zonas.api';
-import { InsumoFormDialog } from '../../ui/insumo-form-dialog/insumo-form-dialog';
 import { ProductoFormDialog, ProductoFormDialogResultado } from '../../ui/producto-form-dialog/producto-form-dialog';
 import { PresentacionesDialog } from '../../ui/presentaciones-dialog/presentaciones-dialog';
 import { RecetaFormDialog } from '../../ui/receta-form-dialog/receta-form-dialog';
 import { ControlVencimientoDialog } from '../../../vencimiento/ui/control-vencimiento-dialog/control-vencimiento-dialog';
 import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
-import { ImportarExcelDialog } from '../../../../shared/ui/importar-excel/importar-excel-dialog';
 
 /** Id del registro que devolvió el diálogo al guardar (para mostrarlo y resaltarlo en la tabla). */
 const idDe = (resultado: unknown): string | undefined => (resultado as { id?: string } | null)?.id;
 
-type Pestana = 'zonas' | 'motivos' | 'familias' | 'productos' | 'insumos' | 'recetas' | 'configuracion';
-const PESTANAS: Pestana[] = ['zonas', 'motivos', 'familias', 'productos', 'insumos', 'recetas', 'configuracion'];
+type Pestana = 'zonas' | 'motivos' | 'familias' | 'productos' | 'recetas' | 'configuracion';
+const PESTANAS: Pestana[] = ['zonas', 'motivos', 'familias', 'productos', 'recetas', 'configuracion'];
 
 const AVISO_LIMITACION_INACTIVOS =
   'Este catálogo solo lista registros activos. Al desactivar uno, desaparece de esta lista y no podrás reactivarlo desde aquí (la API no ofrece ver inactivos).';
 
 @Component({
   selector: 'app-catalogos-page',
-  imports: [ExportarExcelComponent, DataTableComponent],
+  imports: [RouterLink, ExportarExcelComponent, DataTableComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './catalogos-page.html',
   styleUrl: './catalogos-page.css'
@@ -107,9 +105,6 @@ export class CatalogosPage {
   protected readonly listaProductos = new ListaLocal(this.productos, {
     campos: (p) => [p.nombre, p.familiaNombre], id: (p) => p.id, destroyRef: this.destroyRef
   });
-  protected readonly listaInsumos = new ListaLocal(this.insumos, {
-    campos: (i) => [i.nombre, i.unidadMedida], id: (i) => i.id, destroyRef: this.destroyRef
-  });
   protected readonly listaRecetas = new ListaLocal(this.recetas, {
     campos: (r) => [r.nombre, r.productoNombre, r.presentacionNombre], id: (r) => r.id, destroyRef: this.destroyRef
   });
@@ -135,12 +130,6 @@ export class CatalogosPage {
     { clave: 'presentacionesCount', etiqueta: 'Presentaciones', alinearFin: true },
     { clave: 'acciones', etiqueta: '' }
   ];
-  protected readonly columnasInsumos: ColumnaTabla[] = [
-    { clave: 'nombre', etiqueta: 'Insumo' },
-    { clave: 'unidadMedida', etiqueta: 'Unidad de medida' },
-    { clave: 'stock', etiqueta: 'Stock', alinearFin: true },
-    { clave: 'acciones', etiqueta: '' }
-  ];
   protected readonly columnasRecetas: ColumnaTabla[] = [
     { clave: 'nombre', etiqueta: 'Receta' },
     { clave: 'productoNombre', etiqueta: 'Producto' },
@@ -157,6 +146,9 @@ export class CatalogosPage {
   ];
 
   constructor() {
+    if (this.route.snapshot.queryParamMap.get('pestana') === 'insumos') {
+      void inject(Router).navigate(['/inventario'], { queryParams: { seccion: 'insumos' }, replaceUrl: true });
+    }
     this.cargarZonas();
     this.cargarMotivos();
     this.cargarFamilias();
@@ -211,7 +203,7 @@ export class CatalogosPage {
     this.cargandoInsumos.set(true);
     this.errorInsumos.set(null);
     this.insumosApi.listar().subscribe({
-      next: (i) => { this.insumos.set(i); this.cargandoInsumos.set(false); if (revelarId) this.listaInsumos.revelar(revelarId); },
+      next: (i) => { this.insumos.set(i); this.cargandoInsumos.set(false); },
       error: (e) => { this.errorInsumos.set(mapHttpError(e)); this.cargandoInsumos.set(false); }
     });
   }
@@ -388,43 +380,6 @@ export class CatalogosPage {
     this.confirmarDesactivacion(producto.nombre, () =>
       this.productosApi.desactivar(producto.id).subscribe({
         next: () => { this.toast.exito('Producto desactivado.'); this.cargarProductos(); },
-        error: (e) => this.toast.error(mapHttpError(e).mensaje)
-      })
-    );
-  }
-
-  // --- Insumos ---
-  /** Importa insumos (con su stock inicial en el kardex) desde la plantilla oficial de Excel; solo crea, nunca actualiza. */
-  protected importarInsumos(): void {
-    const ref = this.dialog.open<number | undefined>(ImportarExcelDialog, {
-      ariaLabel: 'Importar insumos desde Excel',
-      data: { tipo: 'insumos', nombre: 'insumos' }
-    });
-    ref.closed.subscribe((creados) => {
-      if (creados) {
-        this.toast.exito(`Se importaron ${creados} ${creados === 1 ? 'insumo' : 'insumos'}.`);
-        this.cargarInsumos();
-      }
-    });
-  }
-
-  protected nuevoInsumo(): void {
-    const ref = this.dialog.open<InsumoResponse | undefined>(InsumoFormDialog, { ariaLabel: 'Nuevo insumo', data: {} });
-    ref.closed.subscribe((r) => { if (r) { this.toast.exito(`Insumo "${r.nombre}" creado.`); this.cargarInsumos(r.id); } });
-  }
-
-  protected editarInsumo(insumo: InsumoResponse): void {
-    const ref = this.dialog.open<InsumoResponse | undefined>(InsumoFormDialog, {
-      ariaLabel: 'Editar insumo',
-      data: { insumo }
-    });
-    ref.closed.subscribe((r) => { if (r) { this.toast.exito(`Insumo "${r.nombre}" actualizado.`); this.cargarInsumos(r.id); } });
-  }
-
-  protected desactivarInsumo(insumo: InsumoResponse): void {
-    this.confirmarDesactivacion(insumo.nombre, () =>
-      this.insumosApi.desactivar(insumo.id).subscribe({
-        next: () => { this.toast.exito('Insumo desactivado.'); this.cargarInsumos(); },
         error: (e) => this.toast.error(mapHttpError(e).mensaje)
       })
     );

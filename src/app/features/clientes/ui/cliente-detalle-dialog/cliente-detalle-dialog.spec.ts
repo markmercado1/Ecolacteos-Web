@@ -11,7 +11,7 @@ const base = environment.apiBaseUrl;
 const sinAutorizar = { vigente: false, estado: null, medios: [], forma: null, desde: null, avisoVersion: null, avisoCompleto: false };
 const cliente: ClienteResponse = {
   id: 'c-1', tipoPersona: 'NATURAL', nombre: 'Rosa Quispe', razonSocial: null, dni: null, ruc: null, correo: null,
-  telefonos: ['••• ••• 321'], mayorista: false, activo: true, fusionadoEnId: null, creadoEn: '2026-10-24T10:00:00', datosCompletos: false,
+  telefonos: ['••• ••• 321'], mayorista: false, tiposHabilitados: [], activo: true, fusionadoEnId: null, creadoEn: '2026-10-24T10:00:00', datosCompletos: false,
   registro: { ...sinAutorizar, vigente: true, estado: 'OTORGADO', forma: 'VERBAL_PRESENCIAL', desde: '2026-10-24T10:00:00', avisoVersion: '2026-10-24' },
   comunicaciones: { vigente: true, estado: 'OTORGADO', medios: ['WHATSAPP'], forma: 'VERBAL_PRESENCIAL', desde: '2026-10-24T10:00:00', avisoVersion: '2026-10-24', avisoCompleto: false },
   canalHabitual: 'PUBLICO',
@@ -24,6 +24,7 @@ function crear(esAdmin: boolean, c: ClienteResponse = cliente) {
   });
   const f = TestBed.createComponent(ClienteDetalleDialog);
   const http = TestBed.inject(HttpTestingController);
+  http.expectOne((r) => r.url.endsWith('/tipos-precio')).flush([{ codigo: 'MAYORISTA', nombre: 'Mayorista', descripcion: '', activo: true, protegido: false, reglaComprador: 'CLIENTE_HABILITADO', ultimoCambio: null }, { codigo: 'PROVEEDOR', nombre: 'Proveedor', descripcion: '', activo: true, protegido: false, reglaComprador: 'PROVEEDOR_PADRON', ultimoCambio: null }, { codigo: 'PUBLICO', nombre: 'Público', descripcion: '', activo: true, protegido: false, reglaComprador: 'CUALQUIERA', ultimoCambio: null }]);
   http.expectOne(`${base}/clientes/c-1`).flush(c);
   http.expectOne(`${base}/clientes/c-1/historial`).flush({
     compras: { anio: 2026, totalCompras: 2, montoTotal: 30, comprasAnio: 2, montoAnio: 30, ultimaCompra: '2026-10-20', desdeReserva: 1 },
@@ -67,11 +68,12 @@ describe('ClienteDetalleDialog (Fase H)', () => {
 
   it('ADMIN puede habilitar como mayorista con motivo', () => {
     const { f, http, comp } = crear(true);
-    expect(el(f).textContent).toContain('Habilitar mayorista');
+    expect(el(f).querySelector('[data-testid="habilitacion"]')?.textContent).toContain('Mayorista');
+    expect(el(f).querySelector('[data-testid="cambiar-habilitacion"]')?.textContent).toContain('Habilitar');
     comp['motivoMayorista'].set('Compra por mayor');
-    comp['cambiarMayorista'](cliente);
-    const req = http.expectOne(`${base}/clientes/c-1/mayorista`);
-    expect(req.request.body).toEqual({ mayorista: true, motivo: 'Compra por mayor' });
+    comp['cambiarHabilitacion'](cliente, 'MAYORISTA');
+    const req = http.expectOne(`${base}/clientes/c-1/tipos-precio/MAYORISTA`);
+    expect(req.request.body).toEqual({ habilitado: true, motivo: 'Compra por mayor' });
     req.flush({ ...cliente, mayorista: true });
     http.expectOne(`${base}/clientes/c-1/consentimientos`).flush([]);
     http.verify();

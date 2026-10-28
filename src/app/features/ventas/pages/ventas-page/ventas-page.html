@@ -47,9 +47,7 @@
       aria-label="Filtrar por canal"
     >
       <option value="">Todos los canales</option>
-      <option value="MAYORISTA">Mayorista</option>
-      <option value="PROVEEDOR">Proveedor</option>
-      <option value="PUBLICO">Público</option>
+      @for (t of tiposPrecio(); track t.codigo) { <option [value]="t.codigo">{{ t.nombre }}{{ t.activo ? '' : ' (desactivado)' }}</option> }
     </select>
     <ui-exportar-excel recurso="ventas" [filtro]="filtroExportacion()" />
   </div>

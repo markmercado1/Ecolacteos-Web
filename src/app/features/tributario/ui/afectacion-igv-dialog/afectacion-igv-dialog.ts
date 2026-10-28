@@ -22,7 +22,7 @@ export interface AfectacionIgvDialogData {
 
 /**
  * Fase G: historial de afectación al IGV de una presentación y registro de un cambio desde una fecha (append-only, con motivo).
- * El panel no clasifica nada por su cuenta: la afectación la decide el contador y la registra una persona.
+ * El panel no clasifica nada por su cuenta: la afectación la decide y la registra el administrador.
  */
 @Component({
   selector: 'app-afectacion-igv-dialog',
@@ -71,7 +71,7 @@ export interface AfectacionIgvDialogData {
         <div class="field" [class.has-error]="invalido('motivo')">
           <label for="motivoAfectacion">Motivo</label>
           <textarea id="motivoAfectacion" rows="2" maxlength="500" formControlName="motivo" required
-                    placeholder="Por ejemplo: confirmado por el contador"></textarea>
+                    placeholder="Por ejemplo: producto gravado según el contador"></textarea>
           @if (invalido('motivo')) { <span class="error">El motivo es obligatorio.</span> }
         </div>
         @if (errorServidor()) { <p class="server-error" role="alert">{{ errorServidor() }}</p> }

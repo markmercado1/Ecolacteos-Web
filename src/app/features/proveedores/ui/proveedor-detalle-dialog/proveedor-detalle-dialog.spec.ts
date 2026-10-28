@@ -134,7 +134,7 @@ describe('ProveedorDetalleDialog (perfil integral)', () => {
     expect(marcado).toContain('Pendiente de revisión'); // texto, no solo color
     expect(marcado).toContain('2026-09-30 → 2026-09-29'); // fechas tal cual vienen: no se reinterpretan
     expect(marcado).toContain('Periodo invertido');
-    expect(marcado).toContain('Revisión de zonas');
+    expect(marcado).toContain('No determina la zona histórica de las entregas.');
     expect(items[2].textContent!.replace(/\s+/g, ' ')).toContain('24/06/2024 19:00'.replace('24/06/2024 19:00', '25/06/2024 00:00 → 20/07/2026 00:00'));
     http.verify();
   });

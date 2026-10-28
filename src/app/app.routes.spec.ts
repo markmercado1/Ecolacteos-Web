@@ -12,22 +12,22 @@ function buscar(rutas: Route[], path: string): Route | undefined {
 }
 
 describe('rutas', () => {
-  it('«Revisión de zonas» es solo para ADMIN y pasa por el guard de roles', () => {
-    const ruta = buscar(routes, 'zonas-revision');
-    expect(ruta).toBeDefined();
-    expect(ruta!.canActivate).toContain(roleGuard);
-    expect(ruta!.data?.['roles']).toEqual(['ADMIN']);
+  it('retira las rutas exclusivas de módulos eliminados', () => {
+    for (const path of ['produccion-diaria', 'zonas-revision', 'proveedores-revision']) expect(buscar(routes, path)).toBeUndefined();
   });
 
-  it('«Revisión de documentos» es solo para ADMIN y pasa por el guard de roles', () => {
-    const ruta = buscar(routes, 'proveedores-revision');
-    expect(ruta).toBeDefined();
-    expect(ruta!.canActivate).toContain(roleGuard);
-    expect(ruta!.data?.['roles']).toEqual(['ADMIN']);
-  });
+
+
 
   it('«IGV de las ventas» es solo para ADMIN y pasa por el guard de roles', () => {
     const ruta = buscar(routes, 'igv');
+    expect(ruta).toBeDefined();
+    expect(ruta!.canActivate).toContain(roleGuard);
+    expect(ruta!.data?.['roles']).toEqual(['ADMIN']);
+  });
+
+  it('«Tipos de precio» es solo para ADMIN y pasa por el guard de roles', () => {
+    const ruta = buscar(routes, 'tipos-precio');
     expect(ruta).toBeDefined();
     expect(ruta!.canActivate).toContain(roleGuard);
     expect(ruta!.data?.['roles']).toEqual(['ADMIN']);

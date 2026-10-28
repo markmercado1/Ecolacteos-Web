@@ -5,7 +5,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { Subject } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { CatalogosPage } from '../../../features/catalogos/pages/catalogos-page/catalogos-page';
+import { InventarioPage } from '../../../features/inventario/pages/inventario-page/inventario-page';
+import { TokenStoreService } from '../../../core/auth/token-store.service';
 import { ProveedoresPage } from '../../../features/proveedores/pages/proveedores-page/proveedores-page';
 import { ToastService } from '../toast/toast.service';
 import { ImportarExcelDialog } from './importar-excel-dialog';
@@ -25,7 +26,7 @@ describe('Importar desde Excel en las pantallas', () => {
     abrir = vi.spyOn(TestBed.inject(Dialog), 'open').mockReturnValue({ closed } as never);
   });
 
-  afterEach(() => http.verify());
+  afterEach(() => { http.verify(); localStorage.clear(); });
 
   it('Proveedores: el botón abre el diálogo de proveedores y, si se importó algo, recarga la lista desde la primera página', () => {
     const fixture = TestBed.createComponent(ProveedoresPage);
@@ -62,11 +63,14 @@ describe('Importar desde Excel en las pantallas', () => {
     expect(TestBed.inject(ToastService).avisos().length).toBe(avisosAntes);
   });
 
-  it('Catálogos: importar insumos abre el diálogo de insumos y recarga solo los insumos al terminar', () => {
-    const fixture = TestBed.createComponent(CatalogosPage);
+  it('Inventario: importar insumos abre el diálogo de insumos y recarga solo los insumos al terminar', () => {
+    TestBed.inject(TokenStoreService).establecer({ token: 'test', refreshToken: 'test', expiraEn: 0, refreshExpiraEn: Date.now() + 100000, usuario: { id: 'u', nombre: 'Admin', email: 'test@example.test', rolNombre: 'ADMIN', activo: true, unidadesResponsable: [] } });
+    const fixture = TestBed.createComponent(InventarioPage);
     fixture.detectChanges();
-    http.match(() => true).forEach((r) => r.flush([]));
-    (fixture.componentInstance as unknown as { pestana: { set(p: string): void } }).pestana.set('insumos');
+    http.expectOne(`${base}/inventario/familias`).flush([]);
+    http.expectOne(r => r.url === `${base}/inventario/stock/presentaciones`).flush(vacia);
+    fixture.componentInstance['cambiarSeccion']('insumos');
+    http.expectOne(`${base}/inventario/insumos`).flush([]);
     fixture.detectChanges();
 
     const boton = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('button')).find((b) => b.textContent?.includes('Importar desde Excel'))!;
@@ -77,7 +81,7 @@ describe('Importar desde Excel en las pantallas', () => {
     expect(config.data).toEqual({ tipo: 'insumos', nombre: 'insumos' });
 
     closed.next(2);
-    http.expectOne(`${base}/admin/insumos`).flush([]);
+    http.expectOne(`${base}/inventario/insumos`).flush([]);
     http.expectNone(`${base}/admin/zonas`);
     expect(TestBed.inject(ToastService).avisos().at(-1)?.mensaje).toBe('Se importaron 2 insumos.');
   });

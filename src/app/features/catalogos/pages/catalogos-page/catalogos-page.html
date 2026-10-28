@@ -11,7 +11,7 @@
   <button type="button" class="tab" [class.active]="pestana() === 'motivos'" (click)="pestana.set('motivos')" role="tab">Motivos de observación</button>
   <button type="button" class="tab" [class.active]="pestana() === 'familias'" (click)="pestana.set('familias')" role="tab">Familias</button>
   <button type="button" class="tab" [class.active]="pestana() === 'productos'" (click)="pestana.set('productos')" role="tab">Productos</button>
-  <button type="button" class="tab" [class.active]="pestana() === 'insumos'" (click)="pestana.set('insumos')" role="tab">Insumos</button>
+  <a class="tab" routerLink="/inventario" [queryParams]="{ seccion: 'insumos' }">Insumos ↗</a>
   <button type="button" class="tab" [class.active]="pestana() === 'recetas'" (click)="pestana.set('recetas')" role="tab">Recetas</button>
   <button type="button" class="tab" [class.active]="pestana() === 'configuracion'" (click)="pestana.set('configuracion')" role="tab">Configuración</button>
 </div>
@@ -120,35 +120,6 @@
       </ng-template>
       <div toolbar>
         <ui-exportar-excel recurso="productos" [filtro]="{ busqueda: listaProductos.busqueda() }" />
-      </div>
-    </ui-data-table>
-    <div class="module-note">{{ avisoLimitacion }}</div>
-  }
-  @case ('insumos') {
-    <ui-data-table
-      [columnas]="columnasInsumos" [lista]="listaInsumos" unidad="insumos" placeholderBusqueda="Buscar insumo" etiquetaBusqueda="Buscar insumos por nombre" [cargando]="cargandoInsumos()" [error]="errorInsumos()"
-      mensajeVacio="No hay insumos activos." titulo="Insumos" subtitulo="Cuajo, sal, etc. El stock cambia solo por movimientos (ingresos, producción, ajustes): gestiónalo en Inventario → Insumos."
-      (reintentar)="cargarInsumos()"
-    >
-      <div toolbar>
-        <button type="button" class="btn small" (click)="importarInsumos()">Importar desde Excel</button>
-        <button type="button" class="btn primary small" (click)="nuevoInsumo()">Nuevo insumo</button>
-      </div>
-      <ng-template #celda let-fila let-columna="columna">
-        @switch (columna) {
-          @case ('nombre') { <strong>{{ fila.nombre }}</strong> }
-          @case ('unidadMedida') { {{ fila.unidadMedida }} }
-          @case ('stock') { {{ fila.stock ?? 0 }} {{ fila.unidadMedida }} }
-          @case ('acciones') {
-            <div class="acciones">
-              <button type="button" class="row-link" (click)="editarInsumo(fila)">Editar</button>
-              <button type="button" class="row-link" (click)="desactivarInsumo(fila)">Desactivar</button>
-            </div>
-          }
-        }
-      </ng-template>
-      <div toolbar>
-        <ui-exportar-excel recurso="insumos" [filtro]="{ busqueda: listaInsumos.busqueda() }" />
       </div>
     </ui-data-table>
     <div class="module-note">{{ avisoLimitacion }}</div>

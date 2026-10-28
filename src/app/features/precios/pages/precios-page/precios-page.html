@@ -63,7 +63,7 @@
     </p>
 
     <ui-data-table
-      [columnas]="columnasQueso"
+      [columnas]="columnasQueso()"
       [filas]="filas()"
       [identificarFila]="identificarFilaPresentacion"
       [cargando]="cargandoQueso()"
@@ -109,9 +109,6 @@
               <span class="hint">Sin presentaciones · agrégalas en Catálogos</span>
             }
           }
-          @case ('MAYORISTA') { <ng-container *ngTemplateOutlet="celdaModalidad; context: { fila, modalidad: fila.mayorista }" /> }
-          @case ('PROVEEDOR') { <ng-container *ngTemplateOutlet="celdaModalidad; context: { fila, modalidad: fila.proveedor }" /> }
-          @case ('PUBLICO') { <ng-container *ngTemplateOutlet="celdaModalidad; context: { fila, modalidad: fila.publico }" /> }
           @case ('acciones') {
             @if (fila.presentacionId) {
               <div class="acciones-fila">
@@ -120,6 +117,11 @@
               </div>
             } @else {
               <a class="btn small" routerLink="/catalogos">Gestionar presentaciones</a>
+            }
+          }
+          @default {
+            @if (esColumnaTipo(columna)) {
+              <ng-container *ngTemplateOutlet="celdaModalidad; context: { fila, modalidad: modalidadDe(fila, columna) }" />
             }
           }
         }

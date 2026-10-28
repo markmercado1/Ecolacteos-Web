@@ -1,3 +1,8 @@
+import { SalidaInventarioDialog, SalidaInventarioDialogData } from '../../ui/salida-inventario-dialog/salida-inventario-dialog';
+import { InsumosApi } from '../../../catalogos/data-access/insumos.api';
+import { InsumoFormDialog } from '../../../catalogos/ui/insumo-form-dialog/insumo-form-dialog';
+import { ImportarExcelDialog } from '../../../../shared/ui/importar-excel/importar-excel-dialog';
+import { ConfirmDialog } from '../../../../shared/ui/dialog/confirm-dialog';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -42,6 +47,7 @@ type Seccion = 'productos' | 'insumos' | 'leche';
   styleUrl: './inventario-page.css'
 })
 export class InventarioPage {
+  private readonly insumosApi = inject(InsumosApi);
   private readonly inventarioApi = inject(InventarioApi);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialog = inject(Dialog);
@@ -118,7 +124,7 @@ export class InventarioPage {
     if (seccion === 'insumos' && !this.insumosCargados) this.cargarInsumos();
   }
 
-  protected cargarInsumos(): void {
+  protected cargarInsumos(revelarId?: string): void {
     this.cargandoInsumos.set(true);
     this.errorInsumos.set(null);
     this.kardexApi
@@ -127,6 +133,7 @@ export class InventarioPage {
       .subscribe({
         next: (insumos) => {
           this.insumos.set(insumos);
+          if (revelarId) this.listaInsumos.revelar(revelarId);
           this.insumosCargados = true;
           this.cargandoInsumos.set(false);
         },
@@ -282,6 +289,15 @@ export class InventarioPage {
     });
   }
 
+  protected registrarSalida(data: SalidaInventarioDialogData): void {
+    const ref = this.dialog.open(SalidaInventarioDialog, { ariaLabel: `Registrar salida de ${data.nombre}`, data });
+    ref.closed.subscribe((r) => {
+      if (r) this.toast.exito('Salida registrada en el Kardex.');
+      // También refrescar si se cierra una respuesta incierta que pudo haberse registrado.
+      if (data.tipo === 'insumos') this.cargarInsumos(); else this.cargar();
+    });
+  }
+
   protected verAjustes(fila: FilaStockResponse): void {
     this.dialog.open(HistorialAjustesDialog, {
       ariaLabel: `Ajustes de ${fila.presentacionNombre}`,
@@ -292,4 +308,46 @@ export class InventarioPage {
       }
     });
   }
+  // --- Insumos ---
+  /** Importa insumos (con su stock inicial en el kardex) desde la plantilla oficial de Excel; solo crea, nunca actualiza. */
+  protected importarInsumos(): void {
+    const ref = this.dialog.open<number | undefined>(ImportarExcelDialog, {
+      ariaLabel: 'Importar insumos desde Excel',
+      data: { tipo: 'insumos', nombre: 'insumos' }
+    });
+    ref.closed.subscribe((creados) => {
+      if (creados) {
+        this.toast.exito(`Se importaron ${creados} ${creados === 1 ? 'insumo' : 'insumos'}.`);
+        this.cargarInsumos();
+      }
+    });
+  }
+
+  protected nuevoInsumo(): void {
+    const ref = this.dialog.open<InsumoResponse | undefined>(InsumoFormDialog, { ariaLabel: 'Nuevo insumo', data: {} });
+    ref.closed.subscribe((r) => { if (r) { this.toast.exito(`Insumo "${r.nombre}" creado.`); this.cargarInsumos(r.id); } });
+  }
+
+  protected editarInsumo(insumo: InsumoResponse): void {
+    const ref = this.dialog.open<InsumoResponse | undefined>(InsumoFormDialog, {
+      ariaLabel: 'Editar insumo',
+      data: { insumo }
+    });
+    ref.closed.subscribe((r) => { if (r) { this.toast.exito(`Insumo "${r.nombre}" actualizado.`); this.cargarInsumos(r.id); } });
+  }
+
+  protected desactivarInsumo(insumo: InsumoResponse): void {
+    const ref = this.dialog.open<boolean>(ConfirmDialog, {
+      ariaLabel: 'Desactivar insumo',
+      data: { titulo: 'Desactivar insumo', mensaje: `"${insumo.nombre}" dejará de estar disponible para nuevos ingresos y recetas. Su historial y el stock remanente se conservan.`, etiquetaConfirmar: 'Desactivar', peligroso: true }
+    });
+    ref.closed.subscribe((confirmado) => {
+      if (!confirmado) return;
+      this.insumosApi.desactivar(insumo.id).subscribe({
+        next: () => { this.toast.exito('Insumo desactivado.'); this.cargarInsumos(); },
+        error: (e) => this.toast.error(mapHttpError(e).mensaje)
+      });
+    });
+  }
+
 }

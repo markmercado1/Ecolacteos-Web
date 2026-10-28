@@ -56,6 +56,7 @@ describe('Exportar a Excel en las pantallas', () => {
 
   it('Ventas: el botón pide el archivo con fecha, canal y búsqueda vigentes, sin paginar', () => {
     const fixture = TestBed.createComponent(VentasPage);
+    http.expectOne((r) => r.url.endsWith('/tipos-precio')).flush([]);
     http.expectOne((r) => r.url === `${base}/ventas`).flush(vacia);
     const pagina = fixture.componentInstance as unknown as Record<string, (...a: unknown[]) => void>;
     pagina['cambiarFiltroFecha']('2026-09-17');

@@ -14,7 +14,7 @@ function usuarioCon(rolNombre: UsuarioMeResponse['rolNombre']): UsuarioMeRespons
   return { id: 'u-1', nombre: 'Vendedor', email: 'v@ecolacteos.pe', rolNombre, activo: true, unidadesResponsable: [] };
 }
 
-function crear(rol: UsuarioMeResponse['rolNombre'] = 'VENTAS') {
+function crear(rol: UsuarioMeResponse['rolNombre'] = 'VENTAS', tipos: unknown[] = TIPOS_ACTIVOS) {
   TestBed.configureTestingModule({
     providers: [
       provideRouter([]),
@@ -34,8 +34,13 @@ function crear(rol: UsuarioMeResponse['rolNombre'] = 'VENTAS') {
   const http = TestBed.inject(HttpTestingController);
   const fixture = TestBed.createComponent(VentaFormDialog);
   const dialog = fixture.componentInstance;
+  http.expectOne((r) => r.url.endsWith('/tipos-precio')).flush(tipos);
   return { fixture, dialog, http };
 }
+
+const TIPOS_ACTIVOS = (['MAYORISTA', 'PROVEEDOR', 'PUBLICO'] as const).map((codigo) => ({
+  codigo, nombre: { MAYORISTA: 'Mayorista', PROVEEDOR: 'Proveedor', PUBLICO: 'Público' }[codigo], descripcion: '', activo: true, protegido: false, reglaComprador: ({ MAYORISTA: 'CLIENTE_HABILITADO', PROVEEDOR: 'PROVEEDOR_PADRON', PUBLICO: 'CUALQUIERA' } as const)[codigo], ultimoCambio: null
+}));
 
 const PRODUCTO_YOGURT = {
   id: 'prod-1', nombre: 'Yogurt de fresa', familiaId: 'fam-1', familiaNombre: 'Yogurt',
@@ -299,7 +304,7 @@ describe('VentaFormDialog — precio y stock por línea', () => {
   });
 });
 
-const MAYORISTA_HABILITADO = { tipo: 'CLIENTE' as const, id: 'c-1', nombre: 'Bodega San Martín', mayorista: true };
+const MAYORISTA_HABILITADO = { tipo: 'CLIENTE' as const, id: 'c-1', nombre: 'Bodega San Martín', mayorista: true, tiposHabilitados: ['MAYORISTA'] };
 
 describe('VentaFormDialog — Fase H: comprador y canal', () => {
   it('sin comprador solo se puede vender al canal PÚBLICO («Cliente varios»)', () => {
@@ -333,9 +338,9 @@ describe('VentaFormDialog — Fase H: comprador y canal', () => {
     const { dialog } = crearConCatalogoListo();
     dialog['elegirComprador']({ ...MAYORISTA_HABILITADO, canalHabitual: 'MAYORISTA' });
     expect(dialog['form'].controls.tipoCliente.value).toBe('MAYORISTA');
-    // un canal habitual MAYORISTA sin la habilitación (dato viejo) no se propone
-    dialog['elegirComprador']({ tipo: 'CLIENTE', id: 'c-2', nombre: 'Rosa', mayorista: false, canalHabitual: 'MAYORISTA' });
-    expect(dialog['form'].controls.tipoCliente.value).toBe('PUBLICO');
+    // un tipo habitual sin la habilitación (dato viejo) no se propone ni se cambia en silencio: queda vacío y se pide elegir uno válido
+    dialog['elegirComprador']({ tipo: 'CLIENTE', id: 'c-2', nombre: 'Rosa', mayorista: false, tiposHabilitados: [], canalHabitual: 'MAYORISTA' });
+    expect(dialog['form'].controls.tipoCliente.value).toBe('');
   });
 });
 
@@ -528,5 +533,22 @@ describe('VentaFormDialog — resumen, envío y UUID estable', () => {
     dialog['verDetalle']();
     expect(cerrarSpy).toHaveBeenCalledWith({ venta, verDetalle: true });
     http.verify();
+  });
+});
+
+describe('VentaFormDialog — tipos de precio dinámicos', () => {
+  it('el selector de canal ofrece solo los tipos activos del servidor, sin lista fija', () => {
+    const soloPublico = TIPOS_ACTIVOS.filter((t) => t.codigo === 'PUBLICO');
+    const { fixture } = crear('VENTAS', soloPublico);
+    fixture.detectChanges();
+    const opciones = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('#v-canal option')).map((o) => (o as HTMLOptionElement).value);
+    expect(opciones).toEqual(['', 'PUBLICO']);
+  });
+
+  it('con todos activos ofrece los tres canales', () => {
+    const { fixture } = crear('VENTAS');
+    fixture.detectChanges();
+    const opciones = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('#v-canal option')).map((o) => (o as HTMLOptionElement).value);
+    expect(opciones).toEqual(['', 'MAYORISTA', 'PROVEEDOR', 'PUBLICO']);
   });
 });

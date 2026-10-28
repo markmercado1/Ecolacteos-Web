@@ -1,5 +1,16 @@
 # Decisiones de producto y alcance
 
+## 2026-10-26 — IGV encendible desde el panel
+
+Pedido del usuario: «el sistema debe ser dinámico, si el admin decide un día que lo incluya lo incluye y si no, no».
+- **El administrador enciende o apaga el cálculo desde `/igv`**, con un motivo obligatorio que queda registrado (quién, cuándo, por qué). No requiere el contador ni reiniciar el servidor. La
+  propiedad `TRIBUTARIO_IGV_CALCULO_HABILITADO` solo es el valor inicial (apagado) mientras nadie haya decidido.
+- **También clasifica el administrador**: afectación por presentación (gravado, exonerado o inafecto, con fecha y motivo), una a una o de una vez con «Clasificar las N que faltan». El servidor no
+  clasifica nada por su cuenta y el lote no pisa lo ya decidido.
+- **Precios finales:** el IGV está contenido en el precio, no se suma (118,00 ⇒ IGV 18,00). Por eso el cálculo no es «precio × 0,18», que cobraría de más.
+- **No se recalcula nada del pasado:** encender o apagar solo afecta a las ventas nuevas; las ventas y reservas ya registradas conservan su foto.
+- Apagado por defecto: hasta que alguien lo active, el sistema se comporta como antes.
+
 ## 2026-10-24 — Fase H, clientes y compradores
 
 **Del usuario:** teléfono = sugerencia (no identificador); DNI/RUC = identificador fuerte; el trabajador confirma; nunca fusionar solo; fusión
@@ -27,8 +38,7 @@ historial con indicadores reales; sin migrar reservas antiguas; aviso de datos e
 - Fuera: clientes identificados, facturación electrónica, detracciones, retenciones.
 
 **Técnicas (tomadas en esta fase, a confirmar con el contador donde se indica):**
-- El cálculo se enciende con una **propiedad del servidor** (`app.tributario.igv.calculo-habilitado`, `TRIBUTARIO_IGV_CALCULO_HABILITADO`), no con un botón del panel: activarlo exige un
-  cambio deliberado de configuración, igual que el control de vencimiento. El panel solo informa el estado.
+- ~~El cálculo se enciende con una propiedad del servidor, no con un botón del panel.~~ **Reemplazada el 2026-10-26:** ver «IGV encendible desde el panel» más abajo.
 - Validación de forma del RUC: 11 dígitos, dígito verificador módulo 11, prefijo **10** para persona natural (debe contener su DNI) y **20** para empresa. No se consulta a SUNAT.
 - Un DNI/RUC anterior fuera de formato **se conserva al editar** si no se cambia (no bloquea corregir el resto de la ficha).
 - Una empresa no lleva DNI (la base lo exige). Su `nombre` es opcional y, si falta, es la razón social.
@@ -277,3 +287,15 @@ Se sustituye el turno UNICO fijo por selector MAÑANA/TARDE/UNICO, conforme al m
 - **Recepción de jornadas.** El formulario vive en `RecepcionJornadaForm`. Regla de identificador: una solicitud con resultado incierto (sin respuesta, 5xx, 408, 409, 429, o HTTP 200 sin confirmación propia) se reintenta idéntica y con el mismo `uuidCliente`; un rechazo definitivo (error individual en HTTP 200 o 4xx) libera el formulario y la solicitud corregida estrena `uuidCliente`, porque es otra solicitud. El éxito se avisa con `ToastService`.
 - **Tablas.** `jornadas-page` combina la búsqueda/paginación en el cliente (`ListaLocal`, orden FIFO de la bandeja) con las acciones de recepción.
 - **Mapa de contacto.** Es de la web pública (`projects/web-publica`). `deploy/panel` solo publica el panel, así que el mapa llega a producción con la rama desde la que se despliega la web pública (`main`), no con `deploy/panel`.
+
+## 2026-10-28 — Tipos de precio dinámicos (etapa 2)
+
+Se pueden **crear, editar, activar y desactivar** tipos de precio y usarlos de extremo a extremo (precios, ventas, clientes, Excel de precios) sin tocar código. El código es el identificador estable; la regla de comprador (CUALQUIERA, CLIENTE_HABILITADO, PROVEEDOR_PADRON) se fija al crear. La habilitación de un cliente para un tipo vive en una sola tabla (`cliente_tipo_precio`); la bandera mayorista pasó a ser un derivado. Si el tipo habitual de un cliente deja de ser válido, el panel pide elegir otro y no se cambia nada guardado. Límite: el alta de cliente solo ofrece habilitar MAYORISTA; los demás tipos se habilitan en la ficha. Ver `API_DOCUMENTATION.md` (backend), sección V39.
+
+## 2026-10-27 — Tipos de precio administrables (etapa 1)
+
+(Etapa 1, superada por la etapa 2 de arriba.) Se administran los tres tipos que ya existen (MAYORISTA, PROVEEDOR, PUBLICO) en `/tipos-precio` (solo ADMIN): activar o desactivar con motivo, registrado con quién y cuándo (V37). Los selectores de venta y de precio leen `GET /api/tipos-precio?soloActivos=true`; el servidor rechaza tipos desactivados en operaciones nuevas y no toca lo histórico. Ningún tipo está protegido (V38): PUBLICO también se puede desactivar; con él apagado no entran ventas ni reservas nuevas a precio público, pero los retiros de reservas ya confirmadas se honran. Solo se impide desactivar el último tipo activo. **Crear tipos nuevos queda para la etapa 2**: requiere cambiar el enum `TipoClienteVenta` por texto con FK en precios y ventas y decidir las reglas de comprador de un tipo nuevo; no se dejó una solución híbrida.
+
+## 2026-10-27 — Reorganización de módulos e inventario
+
+Solicitud explícita amplía alcance a retirar Producción diaria y revisiones, unificar gestión de insumos y registrar salidas físicas. Auditoría y fundamentos en REORGANIZACION.md. Se conservan libros, lotes, historia SQL y servicios compartidos; V36 añade documento de retiro asociado a un único movimiento existente. Bajas ADMIN; PRODUCCION conserva ingresos. Los dos procesos financieros son distintos: Liquidaciones de leche y Desembolsos a proveedores; se mantienen separados. Insumos no tienen lotes/fecha: solo retiro manual con motivo. Sin push ni integración automática.

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 export type NombreIcono =
   | 'panel' | 'acopios' | 'calidad' | 'jornadas' | 'recepcion' | 'proveedores' | 'pagos' | 'rutas' | 'comunicados'
-  | 'usuarios' | 'acopiadores' | 'unidades' | 'catalogos' | 'precios' | 'ventas' | 'produccion' | 'produccion-diaria' | 'inventario' | 'reservas'
+  | 'usuarios' | 'acopiadores' | 'unidades' | 'catalogos' | 'precios' | 'ventas' | 'produccion' | 'inventario' | 'reservas'
   | 'flecha' | 'chevron' | 'candado' | 'salir' | 'menu' | 'cerrar' | 'alerta';
 
 @Component({
@@ -65,10 +65,6 @@ export type NombreIcono =
         @case ('produccion') {
           <path d="M3 18h18L12 4Z"/><circle cx="12" cy="13" r="1" fill="currentColor" stroke="none"/>
           <circle cx="9" cy="16" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="16" r="1" fill="currentColor" stroke="none"/>
-        }
-        @case ('produccion-diaria') {
-          <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>
-          <path d="M9 15l2 2 4-4"/>
         }
         @case ('reservas') {
           <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/>

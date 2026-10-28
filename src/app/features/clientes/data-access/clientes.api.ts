@@ -61,6 +61,11 @@ export class ClientesApi {
     return this.http.put<ClienteResponse>(`${this.baseUrl}/clientes/${id}/mayorista`, { mayorista, motivo });
   }
 
+  /** Habilita o quita a un cliente para un tipo de precio con regla CLIENTE_HABILITADO (solo ADMIN, con motivo). */
+  cambiarHabilitacion(id: string, codigo: string, habilitado: boolean, motivo: string): Observable<ClienteResponse> {
+    return this.http.put<ClienteResponse>(`${this.baseUrl}/clientes/${id}/tipos-precio/${codigo}`, { habilitado, motivo });
+  }
+
   desactivar(id: string): Observable<ClienteResponse> {
     return this.http.put<ClienteResponse>(`${this.baseUrl}/clientes/${id}/desactivar`, {});
   }

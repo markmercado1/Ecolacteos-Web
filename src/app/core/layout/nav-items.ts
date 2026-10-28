@@ -54,7 +54,6 @@ export const GRUPOS_NAVEGACION: GrupoNavegacion[] = [
     icono: 'produccion',
     items: [
       { ruta: '/produccion', etiqueta: 'Producción', icono: 'produccion', roles: ['ADMIN', 'PRODUCCION'] },
-      { ruta: '/produccion-diaria', etiqueta: 'Producción diaria', icono: 'produccion-diaria', roles: ['ADMIN', 'PRODUCCION'] },
       { ruta: '/inventario', etiqueta: 'Inventario', icono: 'inventario', roles: ['ADMIN', 'PRODUCCION', 'VENTAS'] }
     ]
   },
@@ -67,6 +66,7 @@ export const GRUPOS_NAVEGACION: GrupoNavegacion[] = [
       { ruta: '/reservas', etiqueta: 'Reservas', icono: 'reservas', roles: ['ADMIN', 'VENTAS'] },
       { ruta: '/clientes', etiqueta: 'Clientes', icono: 'usuarios', roles: ['ADMIN', 'VENTAS'] },
       { ruta: '/precios', etiqueta: 'Precios', icono: 'precios', roles: ['ADMIN'] },
+      { ruta: '/tipos-precio', etiqueta: 'Tipos de precio', icono: 'precios', roles: ['ADMIN'] },
       { ruta: '/igv', etiqueta: 'IGV de las ventas', icono: 'precios', roles: ['ADMIN'] }
     ]
   },
@@ -76,10 +76,8 @@ export const GRUPOS_NAVEGACION: GrupoNavegacion[] = [
     icono: 'proveedores',
     items: [
       { ruta: '/proveedores', etiqueta: 'Proveedores', icono: 'proveedores', roles: ['ADMIN'] },
-      { ruta: '/proveedores-revision', etiqueta: 'Revisión de documentos', icono: 'alerta', roles: ['ADMIN'] },
-      { ruta: '/zonas-revision', etiqueta: 'Revisión de zonas', icono: 'alerta', roles: ['ADMIN'] },
-      { ruta: '/pagos', etiqueta: 'Pagos', icono: 'pagos', roles: ['ADMIN', 'RECEPCION'] },
-      { ruta: '/pagos-efectivos', etiqueta: 'Pagos a proveedores', icono: 'pagos', roles: ['ADMIN', 'RECEPCION'] },
+      { ruta: '/pagos', etiqueta: 'Liquidaciones de leche', icono: 'pagos', roles: ['ADMIN', 'RECEPCION'] },
+      { ruta: '/pagos-efectivos', etiqueta: 'Desembolsos a proveedores', icono: 'pagos', roles: ['ADMIN', 'RECEPCION'] },
       { ruta: '/rutas', etiqueta: 'Rutas', icono: 'rutas', roles: ['ADMIN', 'ACOPIADOR'] },
       { ruta: '/comunicados', etiqueta: 'Comunicados', icono: 'comunicados', roles: ['ADMIN'] }
     ]

@@ -1,3 +1,5 @@
+import { TiposPrecioApi } from '../../../tipos-precio/data-access/tipos-precio.api';
+import { TipoPrecioResponse } from '../../../tipos-precio/data-access/tipo-precio.models';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
@@ -93,21 +95,26 @@ export interface ClienteDetalleDialogData {
 
         @if (data.esAdmin && !c.fusionadoEnId) {
           <section class="bloque">
-            <h3>Mayorista</h3>
-            <p>{{ c.mayorista ? 'Habilitado para comprar al precio MAYORISTA.' : 'No habilitado: compra a precio PÚBLICO.' }}</p>
-            <div class="fila-accion">
-              <input type="text" [value]="motivoMayorista()" (input)="motivoMayorista.set($any($event.target).value)" placeholder="Motivo (obligatorio)" aria-label="Motivo del cambio de mayorista">
-              <button type="button" class="btn small" [disabled]="ocupado() || !motivoMayorista().trim()" (click)="cambiarMayorista(c)">{{ c.mayorista ? 'Quitar mayorista' : 'Habilitar mayorista' }}</button>
-            </div>
-            @if (c.mayorista) {
+            <h3>Tipos de precio</h3>
+            @for (t of tiposHabilitables(); track t.codigo) {
+              <p data-testid="habilitacion">
+                <strong>{{ t.nombre }}</strong>{{ t.activo ? '' : ' (desactivado)' }}:
+                {{ habilitado(c, t.codigo) ? 'habilitado para comprar a este precio.' : 'no habilitado.' }}
+                <button type="button" class="btn small" data-testid="cambiar-habilitacion" [disabled]="ocupado() || !motivoMayorista().trim()" (click)="cambiarHabilitacion(c, t.codigo)">{{ habilitado(c, t.codigo) ? 'Quitar' : 'Habilitar' }}</button>
+              </p>
+            }
+            @if (tiposHabilitables().length) {
               <div class="fila-accion">
-                <label for="cd-canal" class="etiqueta-inline">Canal que se propone al venderle</label>
-                <select id="cd-canal" [value]="c.canalHabitual" [disabled]="ocupado()" (change)="cambiarCanal(c, $any($event.target).value)">
-                  <option value="PUBLICO">Público</option>
-                  <option value="MAYORISTA">Mayorista</option>
-                </select>
+                <input type="text" [value]="motivoMayorista()" (input)="motivoMayorista.set($any($event.target).value)" placeholder="Motivo (obligatorio)" aria-label="Motivo del cambio de habilitación">
               </div>
             }
+            <div class="fila-accion">
+              <label for="cd-canal" class="etiqueta-inline">Tipo que se propone al venderle</label>
+              <select id="cd-canal" [value]="c.canalHabitual" [disabled]="ocupado()" (change)="cambiarCanal(c, $any($event.target).value)">
+                @if (!canalValido(c)) { <option [value]="c.canalHabitual" disabled>{{ etiquetaCanal(c.canalHabitual) }} (ya no es válido: elige otro)</option> }
+                @for (t of opcionesCanal(c); track t.codigo) { <option [value]="t.codigo">{{ t.nombre }}</option> }
+              </select>
+            </div>
           </section>
         }
 
@@ -228,6 +235,8 @@ export class ClienteDetalleDialog {
   protected readonly errorAccion = signal<string | null>(null);
   protected readonly nuevoTelefono = signal('');
   protected readonly motivoMayorista = signal('');
+  private readonly tiposApi = inject(TiposPrecioApi);
+  protected readonly tipos = signal<TipoPrecioResponse[]>([]);
   protected readonly mediosElegidos = signal<MedioComercial[]>([]);
   protected readonly busquedaFusion = signal('');
   protected readonly destinos = signal<CompradorSugerencia[]>([]);
@@ -236,10 +245,13 @@ export class ClienteDetalleDialog {
   protected cambios = false;
 
   constructor() {
+    this.tiposApi.listar(false).subscribe({ next: (t) => this.tipos.set(t), error: () => this.tipos.set([]) });
     this.cargar();
   }
 
   protected etiquetaCanal(c: CanalHabitual): string {
+    const t = this.tipos().find((x) => x.codigo === c);
+    if (t) return t.nombre;
     return ETIQUETAS_CANAL_HABITUAL[c] ?? c;
   }
 
@@ -350,13 +362,33 @@ export class ClienteDetalleDialog {
     });
   }
 
-  protected cambiarMayorista(c: ClienteResponse): void {
+  /** Tipos de precio que exigen habilitar al cliente (regla CLIENTE_HABILITADO), activos o no: se puede quitar una habilitación vieja. */
+  protected tiposHabilitables(): TipoPrecioResponse[] {
+    return this.tipos().filter((t) => t.reglaComprador === 'CLIENTE_HABILITADO');
+  }
+
+  protected habilitado(c: ClienteResponse, codigo: string): boolean {
+    return (c.tiposHabilitados ?? []).includes(codigo);
+  }
+
+  protected cambiarHabilitacion(c: ClienteResponse, codigo: string): void {
     this.ocupado.set(true);
     this.errorAccion.set(null);
-    this.api.cambiarMayorista(c.id, !c.mayorista, this.motivoMayorista().trim()).subscribe({
-      next: (r) => { this.motivoMayorista.set(''); this.aplicar(r, r.mayorista ? 'Habilitado como mayorista.' : 'Ya no es mayorista.'); },
+    const habilitar = !this.habilitado(c, codigo);
+    this.api.cambiarHabilitacion(c.id, codigo, habilitar, this.motivoMayorista().trim()).subscribe({
+      next: (r) => { this.motivoMayorista.set(''); this.aplicar(r, habilitar ? 'Habilitado para ese tipo de precio.' : 'Habilitación quitada.'); },
       error: (e) => this.fallar(e)
     });
+  }
+
+  /** Tipos que el panel puede proponer a esta ficha: activos y que su regla admita a un cliente (si exige habilitación, que la tenga). */
+  protected opcionesCanal(c: ClienteResponse): TipoPrecioResponse[] {
+    return this.tipos().filter((t) => t.activo && t.reglaComprador !== 'PROVEEDOR_PADRON' && (t.reglaComprador !== 'CLIENTE_HABILITADO' || this.habilitado(c, t.codigo)));
+  }
+
+  /** Si el tipo habitual guardado dejó de ser válido (desactivado o sin habilitación) se avisa; no se cambia nada en silencio. */
+  protected canalValido(c: ClienteResponse): boolean {
+    return this.tipos().length === 0 || this.opcionesCanal(c).some((t) => t.codigo === c.canalHabitual);
   }
 
   /** ADMIN: el canal que se propone al venderle (MAYORISTA solo para mayoristas; el servidor lo vuelve a validar). */

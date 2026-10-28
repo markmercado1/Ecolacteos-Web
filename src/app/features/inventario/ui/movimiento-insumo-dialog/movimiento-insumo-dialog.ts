@@ -73,20 +73,7 @@ const CANTIDAD = /^\d{1,10}(\.\d{1,2})?$/;
       <p class="hint">Queda en el kardex del insumo con tu usuario, la fecha y hora{{ esIngreso ? '' : ' y el motivo' }}. Los movimientos no se editan ni se eliminan.</p>
     </form>
   `,
-  styles: `
-    :host { display: block; width: min(28rem, 100%); background: var(--color-surface); border-radius: var(--radius-dialog); box-shadow: var(--shadow-overlay); }
-    .dialog-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-3); padding: var(--space-6) var(--space-6) 0; }
-    .dialog-head h2 { font-size: var(--font-size-lg); margin: 0; }
-    .close { border: 1px solid var(--color-border); background: var(--color-surface); border-radius: var(--radius-control); width: 2rem; height: 2rem; font-size: 1.1rem; line-height: 1; flex-shrink: 0; }
-    .dialog-body { padding: var(--space-6); }
-    .stock { margin: 0 0 var(--space-4); font-size: var(--font-size-sm); }
-    .variacion { font-weight: 700; color: var(--color-success); font-size: var(--font-size-sm); }
-    .variacion.negativa { color: var(--color-danger); }
-    .server-error { background: var(--color-danger-bg); color: var(--color-danger); border-radius: var(--radius-control); padding: var(--space-3); font-size: var(--font-size-sm); }
-    .error { font-size: 0.6875rem; color: var(--color-danger); font-weight: 600; }
-    .hint { color: var(--color-text-muted); font-size: 0.75rem; margin: var(--space-3) 0 0; }
-    .dialog-foot { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-4); }
-  `
+  styleUrl: '../movimiento-inventario-dialog.css'
 })
 export class MovimientoInsumoDialog {
   protected readonly dialogRef = inject(DialogRef<MovimientoInsumoResponse | undefined>);

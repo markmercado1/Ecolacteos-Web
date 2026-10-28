@@ -1,3 +1,7 @@
+## Actualización 2026-10-27 — limpieza de módulos (rama sin integrar)
+
+Nuevos POST `/api/inventario/presentaciones/{id}/salidas` y `/api/inventario/insumos/{id}/salidas`, solo ADMIN, HTTP 200 e idempotencia por UUID. Request/response, validaciones, Kardex y V36 detallados en [REORGANIZACION.md](REORGANIZACION.md). Se retiran los endpoints de informes de producción diaria y revisiones de documentos/zonas, incluida su exportación exclusiva. Las referencias anteriores a esos endpoints en este documento son históricas y quedan sustituidas por esta actualización. Pagos e insumos conservan sus contratos previos.
+
 # Inventario de endpoints comprobados
 
 ## Ampliación 2026-10-24 (rama `feature/clientes-compradores`, sin integrar): Fase H
@@ -13,7 +17,9 @@
 ## Ampliación vigente 2026-10-24: Fase G (documentos del proveedor e IGV configurable)
 
 - `GET /api/admin/proveedores/revision-documentos` — ADMIN, solo lectura (`RevisionDocumentosController`).
-- `GET /api/admin/tributario/estado`, `GET|POST /api/admin/tributario/tasas-igv`, `GET /api/admin/tributario/afectaciones`, `GET|POST /api/admin/tributario/presentaciones/{id}/afectaciones` —
+- `GET /api/tipos-precio?soloActivos=` (VENTAS, ADMIN), `POST /api/tipos-precio` y `PUT /api/tipos-precio/{codigo}` (crear y editar nombre/descripción), `PUT /api/tipos-precio/{codigo}/estado` (ADMIN, `{activo, motivo}`), `PUT /api/clientes/{id}/tipos-precio/{codigo}` (habilitar un cliente, `{habilitado, motivo}`) — tipos de precio (`TipoPrecioController`).
+- `GET /api/admin/tributario/estado`, `GET|POST /api/admin/tributario/tasas-igv`, `GET /api/admin/tributario/afectaciones`, `GET|POST /api/admin/tributario/presentaciones/{id}/afectaciones`,
+  `PUT /api/admin/tributario/calculo` (enciende/apaga el cálculo, con motivo), `POST /api/admin/tributario/afectaciones/lote` (clasifica de una vez) —
   ADMIN (`ConfiguracionIgvController`).
 - Cambian sin romper: `POST|PUT /api/proveedores` (campos de documentos), `GET /api/proveedores`, `/api/pagos`, `/api/pagos-proveedor` y sus exportaciones (búsqueda por RUC y razón social),
   `GET /api/ventas`, `/api/ventas/{id}`, `POST /api/ventas/carrito` (foto tributaria y resumen de IGV), `GET /api/catalogo/productos` (`incluyeIgv`), plantilla de importación de proveedores (v2).
