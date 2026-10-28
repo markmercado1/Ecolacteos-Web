@@ -290,7 +290,7 @@ Se sustituye el turno UNICO fijo por selector MAÑANA/TARDE/UNICO, conforme al m
 
 ## 2026-10-27 — Tipos de precio administrables (etapa 1)
 
-Se administran los tres tipos que ya existen (MAYORISTA, PROVEEDOR, PUBLICO) en `/tipos-precio` (solo ADMIN): activar o desactivar con motivo, registrado con quién y cuándo (V37). Los selectores de venta y de precio leen `GET /api/tipos-precio?soloActivos=true`; el servidor rechaza tipos desactivados en operaciones nuevas y no toca lo histórico. PUBLICO no se desactiva. **Crear tipos nuevos queda para la etapa 2**: requiere cambiar el enum `TipoClienteVenta` por texto con FK en precios y ventas y decidir las reglas de comprador de un tipo nuevo; no se dejó una solución híbrida.
+Se administran los tres tipos que ya existen (MAYORISTA, PROVEEDOR, PUBLICO) en `/tipos-precio` (solo ADMIN): activar o desactivar con motivo, registrado con quién y cuándo (V37). Los selectores de venta y de precio leen `GET /api/tipos-precio?soloActivos=true`; el servidor rechaza tipos desactivados en operaciones nuevas y no toca lo histórico. Ningún tipo está protegido (V38): PUBLICO también se puede desactivar; con él apagado no entran ventas ni reservas nuevas a precio público, pero los retiros de reservas ya confirmadas se honran. Solo se impide desactivar el último tipo activo. **Crear tipos nuevos queda para la etapa 2**: requiere cambiar el enum `TipoClienteVenta` por texto con FK en precios y ventas y decidir las reglas de comprador de un tipo nuevo; no se dejó una solución híbrida.
 
 ## 2026-10-27 — Reorganización de módulos e inventario
 

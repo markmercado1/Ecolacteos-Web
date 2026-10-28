@@ -14,7 +14,7 @@ const TIPOS: TipoPrecioResponse[] = [
   { codigo: 'MAYORISTA', nombre: 'Mayorista', descripcion: 'Cliente habilitado', activo: true, protegido: false, ultimoCambio: null },
   { codigo: 'PROVEEDOR', nombre: 'Proveedor', descripcion: 'Proveedor del padrón', activo: false, protegido: false,
     ultimoCambio: { activo: false, motivo: 'Ya no vendemos a proveedores', usuarioNombre: 'Admin Planta', creadoEn: '2026-10-27T09:30:00' } },
-  { codigo: 'PUBLICO', nombre: 'Público', descripcion: 'Catálogo y reservas', activo: true, protegido: true, ultimoCambio: null }
+  { codigo: 'PUBLICO', nombre: 'Público', descripcion: 'Catálogo y reservas', activo: true, protegido: false, ultimoCambio: null }
 ];
 
 function crear() {
@@ -29,15 +29,15 @@ function crear() {
 const el = (f: ComponentFixture<unknown>) => f.nativeElement as HTMLElement;
 
 describe('TiposPrecioPage', () => {
-  it('lista todos los tipos con su estado y el último cambio, y protege a PUBLICO', () => {
+  it('lista todos los tipos con su estado y el último cambio; PUBLICO se administra como los demás', () => {
     const { f, http } = crear();
     const filas = Array.from(el(f).querySelectorAll('[data-testid="tipo-precio"]'));
     expect(filas.length).toBe(3);
     expect(Array.from(el(f).querySelectorAll('[data-testid="estado-tipo"]')).map((e) => e.textContent?.trim())).toEqual(['Activo', 'Desactivado', 'Activo']);
     expect(filas[1].textContent).toContain('Ya no vendemos a proveedores');
     expect(filas[1].textContent).toContain('27/10/2026 09:30');
-    expect(filas[2].querySelector('[data-testid="protegido"]')).not.toBeNull();
-    expect(filas[2].querySelector('[data-testid="cambiar-estado"]')).toBeNull();
+    expect(filas[2].querySelector('[data-testid="protegido"]')).toBeNull();
+    expect(filas[2].querySelector('[data-testid="cambiar-estado"]')).not.toBeNull();
     http.verify();
   });
 

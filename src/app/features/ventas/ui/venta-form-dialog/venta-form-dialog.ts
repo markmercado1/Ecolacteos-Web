@@ -155,7 +155,8 @@ export class VentaFormDialog {
     const habitual = c?.tipo === 'CLIENTE' && c.canalHabitual === 'MAYORISTA' && c.mayorista ? 'MAYORISTA' : 'PUBLICO';
     const propuesto = c?.tipo === 'PROVEEDOR' ? 'PROVEEDOR' : habitual;
     // un tipo desactivado no se propone (el servidor tampoco lo acepta)
-    this.form.controls.tipoCliente.setValue(this.tiposActivos().some((t) => t.codigo === propuesto) ? propuesto : 'PUBLICO');
+    const activos = this.tiposActivos();
+    this.form.controls.tipoCliente.setValue(activos.some((t) => t.codigo === propuesto) ? propuesto : (activos.find((t) => t.codigo === 'PUBLICO') ?? activos[0])?.codigo ?? '');
   }
 
   /** Tipos de precio activos: los únicos que se ofrecen para una venta nueva. Vienen del servidor, no de una lista fija. */
