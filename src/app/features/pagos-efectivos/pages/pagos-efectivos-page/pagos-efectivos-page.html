@@ -67,7 +67,7 @@
             <button type="button" class="row-link" (click)="aplicar(fila)">Aplicar</button>
           }
           @if (esAdmin() && fila.estado === 'REGISTRADO') {
-            <button type="button" class="row-link" (click)="anular(fila)">Anular</button>
+            <button type="button" class="row-link peligro" (click)="anular(fila)">Anular</button>
           }
         </div>
       }

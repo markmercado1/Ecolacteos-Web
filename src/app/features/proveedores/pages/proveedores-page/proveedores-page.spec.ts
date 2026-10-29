@@ -183,3 +183,53 @@ describe('ProveedoresPage (regresión: contenido real de cada columna en el DOM)
     expect((config?.data as { proveedor: ProveedorAdminResponse }).proveedor.nombre).toBe('Rosa Huamán');
   });
 });
+
+describe('ProveedoresPage — acciones por fila', () => {
+  let http: HttpTestingController;
+  let f: ComponentFixture<ProveedoresPage>;
+  const el = () => f.nativeElement as HTMLElement;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] });
+    http = TestBed.inject(HttpTestingController);
+    f = TestBed.createComponent(ProveedoresPage);
+    http.expectOne(`${base}/admin/zonas`).flush([]);
+    http.expectOne((r) => r.url === `${base}/proveedores`).flush(pagina0);
+    f.detectChanges();
+  });
+
+  afterEach(() => {
+    http.verify();
+    document.querySelectorAll('.cdk-overlay-container .ui-menu').forEach((m) => m.remove());
+  });
+
+  const filas = () => Array.from(el().querySelectorAll<HTMLElement>('tbody tr'));
+  const visibles = (fila: HTMLElement) => Array.from(fila.querySelectorAll('.acciones > button')).map((b) => b.textContent?.trim());
+  const abrirMas = (fila: HTMLElement) => {
+    fila.querySelector<HTMLButtonElement>('button[aria-haspopup="menu"]')!.click();
+    f.detectChanges();
+    return Array.from(document.querySelectorAll<HTMLButtonElement>('.ui-menu [cdkMenuItem]'));
+  };
+
+  it('deja a la vista Ver perfil y Editar, y agrupa Cambiar zona y Desactivar en «Más» con nombre accesible', () => {
+    const [primera] = filas();
+    expect(visibles(primera)).toEqual(['Ver perfil', 'Editar', 'Más ▾']);
+    expect(primera.querySelector('button[aria-haspopup="menu"]')?.getAttribute('aria-label')).toBe('Más acciones de Máximo Quispe');
+    expect(abrirMas(primera).map((i) => i.textContent?.trim())).toEqual(['Cambiar zona', 'Desactivar']);
+  });
+
+  it('Desactivar se distingue como acción destructiva y Reactivar (proveedor inactivo) no', () => {
+    const [activo, inactivo] = filas();
+    expect(abrirMas(activo).find((i) => i.textContent?.trim() === 'Desactivar')?.classList).toContain('peligro');
+    document.querySelectorAll('.ui-menu').forEach((m) => m.remove());
+    const items = abrirMas(inactivo);
+    expect(items.map((i) => i.textContent?.trim())).toEqual(['Cambiar zona', 'Reactivar']);
+    expect(items.find((i) => i.textContent?.trim() === 'Reactivar')?.classList).not.toContain('peligro');
+  });
+
+  it('elegir «Cambiar zona» del menú ejecuta la misma acción que antes tenía el enlace', () => {
+    const cambiar = vi.spyOn(f.componentInstance as unknown as { cambiarZona: (p: unknown) => void }, 'cambiarZona').mockImplementation(() => undefined);
+    abrirMas(filas()[0]).find((i) => i.textContent?.trim() === 'Cambiar zona')!.click();
+    expect(cambiar).toHaveBeenCalledWith(expect.objectContaining({ id: 'p-1' }));
+  });
+});

@@ -54,7 +54,7 @@
       @case ('acciones') {
         <div class="acciones">
           <button type="button" class="row-link" (click)="editarUsuario(fila)">Editar</button>
-          <button type="button" class="row-link" (click)="alternarEstado(fila)">
+          <button type="button" class="row-link" [class.peligro]="fila.activo" (click)="alternarEstado(fila)">
             {{ fila.activo ? 'Desactivar' : 'Reactivar' }}
           </button>
         </div>

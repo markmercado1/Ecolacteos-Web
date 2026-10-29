@@ -46,7 +46,7 @@
 
         <div class="tarjeta-acciones">
           <button type="button" class="row-link" (click)="editar(item.usuario)">Editar</button>
-          <button type="button" class="row-link" (click)="alternarEstado(item.usuario)">
+          <button type="button" class="row-link" [class.peligro]="item.usuario.activo" (click)="alternarEstado(item.usuario)">
             {{ item.usuario.activo ? 'Desactivar' : 'Reactivar' }}
           </button>
           <button type="button" class="row-link" (click)="asignarUnidad(item.usuario)">

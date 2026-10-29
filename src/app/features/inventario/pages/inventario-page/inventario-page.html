@@ -42,12 +42,19 @@
               <button type="button" class="btn primary small" (click)="movimientoInsumo(fila, 'INGRESO')">Registrar ingreso</button>
             }
             @if (esAdmin()) {
-              <button type="button" class="btn small" (click)="registrarSalida({ tipo: 'insumos', id: fila.id, nombre: fila.nombre, controlaVencimiento: false })">Registrar salida</button>
-              <button type="button" class="btn small" (click)="movimientoInsumo(fila, 'AJUSTE')">Ajustar</button>
-              @if (fila.activo) {
-                <button type="button" class="btn small" (click)="editarInsumo(fila)">Editar</button>
-                <button type="button" class="btn small" (click)="desactivarInsumo(fila)">Desactivar</button>
-              }
+              <!-- Principales a la vista (Kardex, Registrar ingreso); el resto, en «Más»; Desactivar al final y en rojo. -->
+              <button type="button" class="btn small" [cdkMenuTriggerFor]="masInsumo" [attr.aria-label]="'Más acciones de ' + fila.nombre">Más <span aria-hidden="true">▾</span></button>
+              <ng-template #masInsumo>
+                <div cdkMenu class="ui-menu" [attr.aria-label]="'Acciones de ' + fila.nombre">
+                  <button type="button" cdkMenuItem (click)="registrarSalida({ tipo: 'insumos', id: fila.id, nombre: fila.nombre, controlaVencimiento: false })">Registrar salida</button>
+                  <button type="button" cdkMenuItem (click)="movimientoInsumo(fila, 'AJUSTE')">Ajustar</button>
+                  @if (fila.activo) {
+                    <button type="button" cdkMenuItem (click)="editarInsumo(fila)">Editar</button>
+                    <div class="separador" role="separator"></div>
+                    <button type="button" cdkMenuItem class="peligro" (click)="desactivarInsumo(fila)">Desactivar</button>
+                  }
+                </div>
+              </ng-template>
             }
           </div>
         }
@@ -155,15 +162,21 @@
       @case ('acciones') {
         <div class="acciones-fila">
           <button type="button" class="btn small" (click)="verKardexPresentacion(fila)">Kardex</button>
-          @if (fila.controlaVencimiento) {
-            <button type="button" class="btn small" (click)="verLotes(fila)">Lotes y vencimientos</button>
-          }
           @if (esAdmin()) {
+            <!-- Principales a la vista (Kardex, Registrar salida); consultas y correcciones, en «Más». -->
             <button type="button" class="btn small" (click)="registrarSalida({ tipo: 'presentaciones', id: fila.presentacionId, nombre: fila.productoNombre + ' · ' + fila.presentacionNombre, controlaVencimiento: fila.controlaVencimiento })">Registrar salida</button>
-            <button type="button" class="btn small" (click)="verAjustes(fila)">Ver ajustes</button>
-            <button type="button" class="btn primary small" (click)="ajustarStock(fila)">
-              Ajustar stock
-            </button>
+            <button type="button" class="btn small" [cdkMenuTriggerFor]="masPresentacion" [attr.aria-label]="'Más acciones de ' + fila.productoNombre + ' · ' + fila.presentacionNombre">Más <span aria-hidden="true">▾</span></button>
+            <ng-template #masPresentacion>
+              <div cdkMenu class="ui-menu" [attr.aria-label]="'Acciones de ' + fila.productoNombre + ' · ' + fila.presentacionNombre">
+                @if (fila.controlaVencimiento) {
+                  <button type="button" cdkMenuItem (click)="verLotes(fila)">Lotes y vencimientos</button>
+                }
+                <button type="button" cdkMenuItem (click)="verAjustes(fila)">Ver ajustes</button>
+                <button type="button" cdkMenuItem (click)="ajustarStock(fila)">Ajustar stock</button>
+              </div>
+            </ng-template>
+          } @else if (fila.controlaVencimiento) {
+            <button type="button" class="btn small" (click)="verLotes(fila)">Lotes y vencimientos</button>
           }
         </div>
       }

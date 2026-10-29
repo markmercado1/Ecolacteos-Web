@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Dialog } from '@angular/cdk/dialog';
+import { CdkMenu, CdkMenuItem, CdkMenuTrigger } from '@angular/cdk/menu';
 import { Observable, Subscription } from 'rxjs';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ColumnaTabla, DataTableComponent } from '../../../../shared/ui/data-table/data-table';
@@ -21,7 +22,7 @@ type FiltroEstado = 'TODOS' | 'ACTIVOS' | 'INACTIVOS';
 
 @Component({
   selector: 'app-proveedores-page',
-  imports: [DataTableComponent, ExportarExcelComponent],
+  imports: [DataTableComponent, ExportarExcelComponent, CdkMenu, CdkMenuItem, CdkMenuTrigger],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './proveedores-page.html',
   styleUrl: './proveedores-page.css'

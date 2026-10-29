@@ -78,10 +78,17 @@
         <div class="acciones">
           <button type="button" class="row-link" (click)="abrirDetalle(fila)">Ver perfil</button>
           <button type="button" class="row-link" (click)="editar(fila)">Editar</button>
-          <button type="button" class="row-link" (click)="cambiarZona(fila)">Cambiar zona</button>
-          <button type="button" class="row-link" (click)="alternarEstado(fila)">
-            {{ fila.activo ? 'Desactivar' : 'Reactivar' }}
-          </button>
+          <!-- Ver perfil y Editar a la vista; Cambiar zona y Desactivar/Reactivar en «Más» (Desactivar, en rojo y al final). -->
+          <button type="button" class="row-link" [cdkMenuTriggerFor]="masProveedor" [attr.aria-label]="'Más acciones de ' + fila.nombre">Más <span aria-hidden="true">▾</span></button>
+          <ng-template #masProveedor>
+            <div cdkMenu class="ui-menu" [attr.aria-label]="'Acciones de ' + fila.nombre">
+              <button type="button" cdkMenuItem (click)="cambiarZona(fila)">Cambiar zona</button>
+              <div class="separador" role="separator"></div>
+              <button type="button" cdkMenuItem [class.peligro]="fila.activo" (click)="alternarEstado(fila)">
+                {{ fila.activo ? 'Desactivar' : 'Reactivar' }}
+              </button>
+            </div>
+          </ng-template>
         </div>
       }
       @default { {{ fila[columna] ?? '—' }} }

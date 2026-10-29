@@ -56,7 +56,7 @@ import { TiposPrecioApi } from '../../data-access/tipos-precio.api';
                   </td>
                   <td>
                     <button type="button" class="row-link" data-testid="editar-tipo" (click)="abrir(t)">Editar</button>
-                    <button type="button" class="row-link" data-testid="cambiar-estado" (click)="cambiar(t)">{{ t.activo ? 'Desactivar' : 'Activar' }}</button>
+                    <button type="button" class="row-link" [class.peligro]="t.activo" data-testid="cambiar-estado" (click)="cambiar(t)">{{ t.activo ? 'Desactivar' : 'Activar' }}</button>
                   </td>
                 </tr>
               }

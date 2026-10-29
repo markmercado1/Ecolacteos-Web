@@ -356,6 +356,59 @@ a {
   gap: var(--space-3);
   white-space: nowrap;
 }
+/* Acción que desactiva, anula o elimina: se distingue por color y se lee igual sin él (su texto dice qué hace). */
+.row-link.peligro {
+  color: var(--color-danger);
+}
+/* En pantallas táctiles el enlace de fila mide poco: se agranda solo el área de toque. */
+@media (pointer: coarse) {
+  .row-link {
+    padding: 0.55rem 0.25rem;
+  }
+}
+
+/* Menú «Más» de acciones por fila (CDK Menu: teclado, foco y Escape). Se dibuja en el overlay, fuera de la tabla, para que
+   el scroll de la tabla no lo corte. */
+.ui-menu {
+  display: flex;
+  flex-direction: column;
+  min-width: 12rem;
+  padding: var(--space-1);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-overlay);
+}
+.ui-menu [cdkMenuItem] {
+  display: flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: calc(var(--radius-control) - 2px);
+  background: transparent;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.ui-menu [cdkMenuItem]:hover,
+.ui-menu [cdkMenuItem]:focus-visible {
+  background: var(--color-surface-soft);
+}
+.ui-menu [cdkMenuItem].peligro {
+  color: var(--color-danger);
+}
+.ui-menu [cdkMenuItem].peligro:hover,
+.ui-menu [cdkMenuItem].peligro:focus-visible {
+  background: var(--color-danger-bg);
+}
+.ui-menu .separador {
+  height: 1px;
+  margin: var(--space-1) 0;
+  background: var(--color-border);
+}
 
 /* Marcadores del mapa de recorrido GPS (Acopios > Ver detalle). Leaflet los inserta directamente en el
    DOM del tile pane, fuera del árbol de plantillas de Angular -- no pueden vivir en los estilos

@@ -30,7 +30,7 @@
           @case ('acciones') {
             <div class="acciones">
               <button type="button" class="row-link" (click)="editarZona(fila)">Editar</button>
-              <button type="button" class="row-link" (click)="desactivarZona(fila)">Desactivar</button>
+              <button type="button" class="row-link peligro" (click)="desactivarZona(fila)">Desactivar</button>
             </div>
           }
         }
@@ -54,7 +54,7 @@
           @case ('acciones') {
             <div class="acciones">
               <button type="button" class="row-link" (click)="editarMotivo(fila)">Editar</button>
-              <button type="button" class="row-link" (click)="desactivarMotivo(fila)">Desactivar</button>
+              <button type="button" class="row-link peligro" (click)="desactivarMotivo(fila)">Desactivar</button>
             </div>
           }
         }
@@ -78,7 +78,7 @@
           @case ('acciones') {
             <div class="acciones">
               <button type="button" class="row-link" (click)="editarFamilia(fila)">Editar</button>
-              <button type="button" class="row-link" (click)="desactivarFamilia(fila)">Desactivar</button>
+              <button type="button" class="row-link peligro" (click)="desactivarFamilia(fila)">Desactivar</button>
             </div>
           }
         }
@@ -113,7 +113,7 @@
               <button type="button" class="row-link" (click)="editarProducto(fila)">Editar producto</button>
               <button type="button" class="row-link" (click)="abrirPresentaciones(fila)">Presentaciones</button>
               <button type="button" class="row-link" (click)="abrirControlVencimiento(fila)">Control de vencimiento</button>
-              <button type="button" class="row-link" (click)="desactivarProducto(fila)">Desactivar</button>
+              <button type="button" class="row-link peligro" (click)="desactivarProducto(fila)">Desactivar</button>
             </div>
           }
         }
@@ -145,7 +145,7 @@
             <div class="acciones">
               <button type="button" class="row-link" (click)="editarReceta(fila)">Editar</button>
               @if (fila.activo) {
-                <button type="button" class="row-link" (click)="desactivarReceta(fila)">Desactivar</button>
+                <button type="button" class="row-link peligro" (click)="desactivarReceta(fila)">Desactivar</button>
               } @else {
                 <button type="button" class="row-link" (click)="reactivarReceta(fila)">Reactivar</button>
               }

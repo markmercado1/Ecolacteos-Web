@@ -1,3 +1,4 @@
+import { CdkMenu, CdkMenuItem, CdkMenuTrigger } from '@angular/cdk/menu';
 import { SalidaInventarioDialog, SalidaInventarioDialogData } from '../../ui/salida-inventario-dialog/salida-inventario-dialog';
 import { InsumosApi } from '../../../catalogos/data-access/insumos.api';
 import { InsumoFormDialog } from '../../../catalogos/ui/insumo-form-dialog/insumo-form-dialog';
@@ -41,7 +42,7 @@ type Seccion = 'productos' | 'insumos' | 'leche';
 
 @Component({
   selector: 'app-inventario-page',
-  imports: [ExportarExcelComponent, DataTableComponent, DecimalPipe, KardexVistaComponent],
+  imports: [ExportarExcelComponent, DataTableComponent, DecimalPipe, KardexVistaComponent, CdkMenu, CdkMenuItem, CdkMenuTrigger],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './inventario-page.html',
   styleUrl: './inventario-page.css'

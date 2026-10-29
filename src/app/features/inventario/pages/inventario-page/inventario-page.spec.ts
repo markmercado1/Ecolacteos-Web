@@ -337,11 +337,58 @@ describe('InventarioPage — kardex e insumos', () => {
     for (const accion of ['Nuevo insumo', 'Editar', 'Desactivar', 'Registrar salida', 'Importar desde Excel']) expect(botones).not.toContain(accion);
   });
 
+  /** Abre el menú «Más» de la primera fila y devuelve los elementos del menú (viven en el overlay, fuera de la tabla). */
+  const abrirMenuMas = (f: { nativeElement: HTMLElement; detectChanges(): void }) => {
+    const disparador = f.nativeElement.querySelector<HTMLButtonElement>('button[aria-haspopup="menu"]')!;
+    disparador.click();
+    f.detectChanges();
+    return Array.from(document.querySelectorAll<HTMLButtonElement>('.ui-menu [cdkMenuItem]'));
+  };
+
   it('ADMIN también puede ajustar insumos por conteo', () => {
     const f = crear('ADMIN', { seccion: 'insumos' });
     http.expectOne(`${environment.apiBaseUrl}/inventario/insumos`).flush([insumoSal]);
     f.detectChanges();
-    for (const accion of ['Ajustar', 'Nuevo insumo', 'Editar', 'Desactivar', 'Registrar salida', 'Importar desde Excel']) expect(textoBotones(f)).toContain(accion);
+    // a la vista: las acciones principales; el resto, en el menú «Más»
+    for (const accion of ['Kardex', 'Registrar ingreso', 'Nuevo insumo', 'Importar desde Excel']) expect(textoBotones(f)).toContain(accion);
+    for (const accion of ['Ajustar', 'Editar', 'Desactivar', 'Registrar salida']) expect(textoBotones(f)).not.toContain(accion);
+    expect(abrirMenuMas(f).map((i) => i.textContent?.trim())).toEqual(['Registrar salida', 'Ajustar', 'Editar', 'Desactivar']);
+  });
+
+  it('el menú «Más» de un insumo es accesible: tiene nombre propio, roles de menú, distingue Desactivar y se cierra con Escape', () => {
+    const f = crear('ADMIN', { seccion: 'insumos' });
+    http.expectOne(`${environment.apiBaseUrl}/inventario/insumos`).flush([insumoSal]);
+    f.detectChanges();
+    const disparador = (f.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('button[aria-haspopup="menu"]')!;
+    expect(disparador.getAttribute('aria-label')).toBe(`Más acciones de ${insumoSal.nombre}`);
+
+    const items = abrirMenuMas(f);
+    expect(document.querySelector('.ui-menu')?.getAttribute('role')).toBe('menu');
+    expect(items.every((i) => i.getAttribute('role') === 'menuitem')).toBe(true);
+    expect(items.find((i) => i.textContent?.trim() === 'Desactivar')?.classList).toContain('peligro');
+    expect(items.find((i) => i.textContent?.trim() === 'Editar')?.classList).not.toContain('peligro');
+    expect(document.querySelector('.ui-menu [role="separator"]')).not.toBeNull();
+
+    document.querySelector('.ui-menu')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true }));
+    f.detectChanges();
+    expect(document.querySelector('.ui-menu')).toBeNull();
+  });
+
+  it('elegir una acción del menú hace lo mismo que antes el botón (Editar abre el diálogo del insumo)', () => {
+    const f = crear('ADMIN', { seccion: 'insumos' });
+    http.expectOne(`${environment.apiBaseUrl}/inventario/insumos`).flush([insumoSal]);
+    f.detectChanges();
+    const editar = vi.spyOn(f.componentInstance as unknown as { editarInsumo: (i: unknown) => void }, 'editarInsumo').mockImplementation(() => undefined);
+    abrirMenuMas(f).find((i) => i.textContent?.trim() === 'Editar')!.click();
+    expect(editar).toHaveBeenCalledTimes(1);
+  });
+
+  it('un rol que no es ADMIN no ve el menú «Más» en la tabla de insumos', () => {
+    const f = crear('PRODUCCION');
+    f.componentInstance['cambiarSeccion']('insumos');
+    http.expectOne(`${environment.apiBaseUrl}/inventario/insumos`).flush([insumoSal]);
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('button[aria-haspopup="menu"]')).toBeNull();
   });
 
   it('un ingreso registrado recarga el stock de insumos', () => {

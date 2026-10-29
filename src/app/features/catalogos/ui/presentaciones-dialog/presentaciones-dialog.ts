@@ -76,7 +76,7 @@ const ETIQUETAS_UNIDAD: Record<UnidadContenido, string> = {
                 </div>
                 <div class="acciones">
                   <button type="button" class="row-link" (click)="abrirEditar(p)">Editar</button>
-                  <button type="button" class="row-link" (click)="alternarActivo(p)">{{ p.activo ? 'Desactivar' : 'Reactivar' }}</button>
+                  <button type="button" class="row-link" [class.peligro]="p.activo" (click)="alternarActivo(p)">{{ p.activo ? 'Desactivar' : 'Reactivar' }}</button>
                 </div>
               </li>
             }
