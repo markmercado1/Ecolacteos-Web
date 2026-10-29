@@ -17,8 +17,8 @@ export interface MovimientoInsumoDialogData {
 const CANTIDAD = /^\d{1,10}(\.\d{1,2})?$/;
 
 /**
- * Ingreso (reposición, PRODUCCION o ADMIN) o ajuste por conteo físico (solo ADMIN) de un insumo. Solo
- * cantidades: no se piden costos. En el ajuste se ingresa el CONTEO REAL; la variación mostrada es una vista
+ * Ingreso (reposición, PRODUCCION o ADMIN) o conteo físico (solo ADMIN) de un insumo. Solo
+ * cantidades: no se piden costos. En el conteo se ingresa la cantidad REAL contada; la variación mostrada es una vista
  * previa con el stock leído al abrir: el backend la recalcula bajo bloqueo contra el stock vigente.
  */
 @Component({
@@ -27,7 +27,7 @@ const CANTIDAD = /^\d{1,10}(\.\d{1,2})?$/;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="dialog-head">
-      <h2 id="mov-insumo-titulo">{{ esIngreso ? 'Registrar ingreso' : 'Ajustar por conteo físico' }} · {{ data.insumo.nombre }}</h2>
+      <h2 id="mov-insumo-titulo">{{ esIngreso ? 'Registrar ingreso' : 'Conteo físico' }} · {{ data.insumo.nombre }}</h2>
       <button type="button" class="close" (click)="dialogRef.close()" aria-label="Cerrar">×</button>
     </div>
     <form class="dialog-body" [formGroup]="form" (ngSubmit)="enviar()" aria-labelledby="mov-insumo-titulo">
@@ -51,15 +51,16 @@ const CANTIDAD = /^\d{1,10}(\.\d{1,2})?$/;
           <textarea id="mov-observacion" rows="2" maxlength="500" formControlName="observacion"></textarea>
         </div>
       } @else {
+        <p class="hint">Úsalo para corregir la diferencia entre lo que contaste y lo que dice el sistema. Si conoces la causa (derrame, rotura, vencimiento), usa «Registrar salida».</p>
         @if (variacion() !== null) {
           <p class="variacion" [class.negativa]="variacion()! < 0">
             Variación estimada: {{ variacion()! > 0 ? '+' : '' }}{{ variacion() | number: '1.0-2' }} {{ data.insumo.unidadMedida }}
           </p>
         }
         <div class="field" [class.has-error]="invalido('texto')">
-          <label for="mov-motivo">Motivo (obligatorio)</label>
-          <textarea id="mov-motivo" rows="2" maxlength="500" formControlName="texto" required placeholder="Merma, rotura, error de conteo…"></textarea>
-          @if (invalido('texto')) { <span class="error">Indica el motivo del ajuste.</span> }
+          <label for="mov-motivo">Motivo de la diferencia (obligatorio)</label>
+          <textarea id="mov-motivo" rows="2" maxlength="500" formControlName="texto" required placeholder="Error de conteo, faltante sin causa conocida…"></textarea>
+          @if (invalido('texto')) { <span class="error">Indica el motivo de la diferencia.</span> }
         </div>
       }
 
@@ -67,7 +68,7 @@ const CANTIDAD = /^\d{1,10}(\.\d{1,2})?$/;
       <div class="dialog-foot">
         <button type="button" class="btn" (click)="dialogRef.close()">Cancelar</button>
         <button type="submit" class="btn primary" [disabled]="enviando()">
-          {{ enviando() ? 'Guardando…' : (esIngreso ? 'Registrar ingreso' : 'Registrar ajuste') }}
+          {{ enviando() ? 'Guardando…' : (esIngreso ? 'Registrar ingreso' : 'Registrar conteo') }}
         </button>
       </div>
       <p class="hint">Queda en el kardex del insumo con tu usuario, la fecha y hora{{ esIngreso ? '' : ' y el motivo' }}. Los movimientos no se editan ni se eliminan.</p>
@@ -91,7 +92,7 @@ export class MovimientoInsumoDialog {
       Validators.min(this.esIngreso ? 0.01 : 0),
       Validators.pattern(CANTIDAD)
     ]),
-    /** Ingreso: referencia (opcional). Ajuste: motivo (obligatorio). */
+    /** Ingreso: referencia (opcional). Conteo físico: motivo (obligatorio). */
     texto: this.fb.nonNullable.control('', this.esIngreso
       ? [Validators.maxLength(100)]
       : [Validators.required, Validators.maxLength(500), Validators.pattern(/\S/)]),

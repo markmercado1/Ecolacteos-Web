@@ -47,7 +47,7 @@
               <ng-template #masInsumo>
                 <div cdkMenu class="ui-menu" [attr.aria-label]="'Acciones de ' + fila.nombre">
                   <button type="button" cdkMenuItem (click)="registrarSalida({ tipo: 'insumos', id: fila.id, nombre: fila.nombre, controlaVencimiento: false })">Registrar salida</button>
-                  <button type="button" cdkMenuItem (click)="movimientoInsumo(fila, 'AJUSTE')">Ajustar</button>
+                  <button type="button" cdkMenuItem (click)="movimientoInsumo(fila, 'AJUSTE')">Conteo físico</button>
                   @if (fila.activo) {
                     <button type="button" cdkMenuItem (click)="editarInsumo(fila)">Editar</button>
                     <div class="separador" role="separator"></div>

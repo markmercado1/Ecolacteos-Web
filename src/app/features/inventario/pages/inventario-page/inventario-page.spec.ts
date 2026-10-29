@@ -325,7 +325,7 @@ describe('InventarioPage — kardex e insumos', () => {
     expect(botones).toContain('Kardex');
   });
 
-  it('PRODUCCION ve insumos (cargados al entrar a la pestaña), registra ingresos y no ve "Ajustar"', () => {
+  it('PRODUCCION ve insumos (cargados al entrar a la pestaña), registra ingresos y no ve "Conteo físico"', () => {
     const f = crear('PRODUCCION');
     f.componentInstance['cambiarSeccion']('insumos');
     http.expectOne(`${environment.apiBaseUrl}/inventario/insumos`).flush([insumoSal]);
@@ -333,7 +333,7 @@ describe('InventarioPage — kardex e insumos', () => {
     const botones = textoBotones(f);
     expect(botones).toContain('Registrar ingreso');
     expect(botones).toContain('Kardex');
-    expect(botones).not.toContain('Ajustar');
+    expect(botones).not.toContain('Conteo físico');
     for (const accion of ['Nuevo insumo', 'Editar', 'Desactivar', 'Registrar salida', 'Importar desde Excel']) expect(botones).not.toContain(accion);
   });
 
@@ -345,14 +345,14 @@ describe('InventarioPage — kardex e insumos', () => {
     return Array.from(document.querySelectorAll<HTMLButtonElement>('.ui-menu [cdkMenuItem]'));
   };
 
-  it('ADMIN también puede ajustar insumos por conteo', () => {
+  it('ADMIN también puede hacer el conteo físico de insumos', () => {
     const f = crear('ADMIN', { seccion: 'insumos' });
     http.expectOne(`${environment.apiBaseUrl}/inventario/insumos`).flush([insumoSal]);
     f.detectChanges();
     // a la vista: las acciones principales; el resto, en el menú «Más»
     for (const accion of ['Kardex', 'Registrar ingreso', 'Nuevo insumo', 'Importar desde Excel']) expect(textoBotones(f)).toContain(accion);
-    for (const accion of ['Ajustar', 'Editar', 'Desactivar', 'Registrar salida']) expect(textoBotones(f)).not.toContain(accion);
-    expect(abrirMenuMas(f).map((i) => i.textContent?.trim())).toEqual(['Registrar salida', 'Ajustar', 'Editar', 'Desactivar']);
+    for (const accion of ['Conteo físico', 'Editar', 'Desactivar', 'Registrar salida']) expect(textoBotones(f)).not.toContain(accion);
+    expect(abrirMenuMas(f).map((i) => i.textContent?.trim())).toEqual(['Registrar salida', 'Conteo físico', 'Editar', 'Desactivar']);
   });
 
   it('el menú «Más» de un insumo es accesible: tiene nombre propio, roles de menú, distingue Desactivar y se cierra con Escape', () => {

@@ -42,18 +42,21 @@ describe('MovimientoInsumoDialog', () => {
     http.expectNone(`${base}/ingresos`);
   });
 
-  it('ajuste: envía el CONTEO real y el motivo; muestra la variación estimada', () => {
+  it('conteo físico: envía el CONTEO real y el motivo; muestra la variación estimada', () => {
     const { f, c, http } = crear('AJUSTE');
     c['form'].controls.cantidad.setValue(4.5);
     f.detectChanges();
     expect(c['variacion']()).toBe(-1.5);
     expect(f.nativeElement.textContent).toContain('Variación estimada');
+    expect(f.nativeElement.textContent).toContain('Conteo físico');
+    expect(f.nativeElement.textContent).toContain('Registrar salida');
+    expect(f.nativeElement.textContent).not.toContain('Ajustar')
     c['form'].controls.texto.setValue('Merma');
     c['enviar']();
     expect(http.expectOne(`${base}/ajustes`).request.body).toEqual({ cantidadFisica: 4.5, motivo: 'Merma' });
   });
 
-  it('ajuste: el motivo es obligatorio y el conteo puede ser 0', () => {
+  it('conteo físico: el motivo es obligatorio y el conteo puede ser 0', () => {
     const { c, http } = crear('AJUSTE');
     c['form'].setValue({ cantidad: 0, texto: '   ', observacion: '' });
     c['enviar']();

@@ -166,13 +166,13 @@ export class InventarioPage {
 
   protected movimientoInsumo(insumo: InsumoResponse, modo: 'INGRESO' | 'AJUSTE'): void {
     const ref = this.dialog.open<MovimientoInsumoResponse | undefined>(MovimientoInsumoDialog, {
-      ariaLabel: `${modo === 'INGRESO' ? 'Registrar ingreso' : 'Ajustar'} ${insumo.nombre}`,
+      ariaLabel: `${modo === 'INGRESO' ? 'Registrar ingreso' : 'Conteo físico'} ${insumo.nombre}`,
       data: { modo, insumo }
     });
     ref.closed.subscribe((m) => {
       if (!m) return;
       this.toast.exito(
-        `${m.tipoMovimiento === 'INGRESO' ? 'Ingreso' : 'Ajuste'} registrado: ${m.insumoNombre} pasó de ` +
+        `${m.tipoMovimiento === 'INGRESO' ? 'Ingreso registrado' : 'Conteo físico registrado'}: ${m.insumoNombre} pasó de ` +
           `${m.saldoAnterior} a ${m.saldoResultante} ${m.unidadMedida}.`
       );
       this.cargarInsumos();

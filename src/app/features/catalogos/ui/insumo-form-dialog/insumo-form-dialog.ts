@@ -37,7 +37,7 @@ export interface InsumoFormDialogData {
         <div class="field">
           <span class="label-fijo">Stock actual</span>
           <p class="valor-fijo">{{ data.insumo?.stock ?? 0 }} {{ data.insumo?.unidadMedida }}</p>
-          <span class="hint">Para reponer o corregir el stock usa Inventario → Insumos (Registrar ingreso / Ajustar): así queda en el kardex.</span>
+          <span class="hint">Para reponer o corregir el stock usa Inventario → Insumos (Registrar ingreso / Conteo físico): así queda en el kardex.</span>
         </div>
       } @else {
         <div class="field" [class.has-error]="invalido('stock')">
