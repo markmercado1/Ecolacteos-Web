@@ -1,7 +1,7 @@
 /** Fuente: backend `importacion/*Response.java` (ImportacionController, /api/admin/importaciones). */
 
 /** Tipos de dato maestro que se pueden importar. Nunca movimientos operativos (acopios, pagos, ventas...). */
-export type TipoImportacion = 'proveedores' | 'insumos' | 'clientes';
+export type TipoImportacion = 'proveedores' | 'insumos' | 'clientes' | 'ingresos-insumo' | 'saldos-iniciales';
 
 export type EstadoFilaImportacion = 'VALIDA' | 'INVALIDA' | 'DUPLICADA' | 'OMITIDA' | 'CREADA';
 
@@ -32,6 +32,8 @@ export interface VistaPreviaImportacion {
   omitidas: number;
   expiraEn: string;
   puedeConfirmar: boolean;
+  /** true = con filas con error, confirmar exige elegir «importar solo las válidas» (los ingresos no se importan a medias por defecto). */
+  exigeConfirmarParcial?: boolean;
   columnas: ColumnaImportacion[];
   filas: FilaImportacion[];
 }

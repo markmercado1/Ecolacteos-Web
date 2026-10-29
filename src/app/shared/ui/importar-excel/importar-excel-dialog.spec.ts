@@ -173,7 +173,7 @@ describe('ImportarExcelDialog', () => {
     expect(boton('Importando')?.disabled).toBe(true);
     boton('Importando')!.click();
     expect(api['confirmar']).toHaveBeenCalledTimes(1);
-    expect(api['confirmar']).toHaveBeenCalledWith('imp-1');
+    expect(api['confirmar']).toHaveBeenCalledWith('imp-1', false);
 
     pendiente.next(resultado());
     pendiente.complete();
@@ -251,5 +251,46 @@ describe('ImportarExcelDialog', () => {
     expect(close).toHaveBeenCalledWith(undefined);
     expect(api['cancelar']).not.toHaveBeenCalled();
     void TestBed.inject(ToastService);
+  });
+
+  describe('tipos que no importan a medias (ingresos de insumos, saldos iniciales)', () => {
+    const conErrores = () => vistaPrevia({ tipo: 'ingresos-insumo', validas: 4, invalidas: 2, duplicadas: 1, totalFilas: 7, exigeConfirmarParcial: true });
+
+    function revisar(vista: VistaPreviaImportacion) {
+      api['previsualizar'].mockReturnValue(of(vista));
+      elegir(archivo('ingresos.xlsx'));
+      boton('Revisar archivo')!.click();
+      fixture.detectChanges();
+    }
+
+    it('con errores no se puede confirmar hasta marcar expresamente importar solo las válidas', () => {
+      revisar(conErrores());
+      expect(texto()).toContain('No se importa nada');
+      expect(boton('Confirmar e importar')?.disabled).toBe(true);
+      boton('Confirmar e importar')!.click();
+      expect(api['confirmar']).not.toHaveBeenCalled();
+
+      const casilla = (fixture.nativeElement as HTMLElement).querySelector('input[type=checkbox]') as HTMLInputElement;
+      casilla.checked = true;
+      casilla.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+      expect(boton('Confirmar e importar')?.disabled).toBe(false);
+      boton('Confirmar e importar')!.click();
+      expect(api['confirmar']).toHaveBeenCalledWith(expect.any(String), true);   // soloValidas=true, a pedido expreso
+    });
+
+    it('sin errores se confirma directo y sin pedir importación parcial', () => {
+      revisar(vistaPrevia({ tipo: 'ingresos-insumo', validas: 3, invalidas: 0, duplicadas: 0, totalFilas: 3, exigeConfirmarParcial: false }));
+      expect((fixture.nativeElement as HTMLElement).querySelector('input[type=checkbox]')).toBeNull();
+      expect(boton('Confirmar e importar')?.disabled).toBe(false);
+      boton('Confirmar e importar')!.click();
+      expect(api['confirmar']).toHaveBeenCalledWith(expect.any(String), false);
+    });
+
+    it('los tipos de datos maestros siguen importando lo válido y avisando de lo omitido', () => {
+      revisar(vistaPrevia({ validas: 2, invalidas: 1 }));
+      expect(texto()).toContain('se omitirán');
+      expect(boton('Confirmar e importar')?.disabled).toBe(false);
+    });
   });
 });

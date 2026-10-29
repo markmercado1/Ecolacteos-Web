@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -24,8 +24,10 @@ export class ImportacionExcelApi {
     return this.http.post<VistaPreviaImportacion>(`${this.baseUrl}/${tipo}/previsualizar`, formulario);
   }
 
-  confirmar(id: string): Observable<ResultadoImportacion> {
-    return this.http.post<ResultadoImportacion>(`${this.baseUrl}/${encodeURIComponent(id)}/confirmar`, {});
+  /** `soloValidas`: solo para los tipos que no importan a medias; confirma expresamente importar únicamente las filas válidas. */
+  confirmar(id: string, soloValidas = false): Observable<ResultadoImportacion> {
+    const params = soloValidas ? new HttpParams().set('soloValidas', 'true') : undefined;
+    return this.http.post<ResultadoImportacion>(`${this.baseUrl}/${encodeURIComponent(id)}/confirmar`, {}, { params });
   }
 
   /** Filas que NO se importaron (inválidas, duplicadas, omitidas) con su número de fila y motivo. */

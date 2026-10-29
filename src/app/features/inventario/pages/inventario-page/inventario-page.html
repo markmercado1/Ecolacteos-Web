@@ -76,6 +76,8 @@
       @if (esAdmin()) {
         <button type="button" class="btn small" (click)="fusionarDuplicados()">Insumos duplicados</button>
         <button type="button" class="btn small" (click)="importarInsumos()">Importar desde Excel</button>
+        <button type="button" class="btn small" (click)="importarMovimientos('ingresos-insumo', 'ingresos de insumos con lotes')">Importar ingresos</button>
+        <button type="button" class="btn small" (click)="importarMovimientos('saldos-iniciales', 'saldos iniciales por lote')">Importar saldos iniciales</button>
         <button type="button" class="btn primary small" (click)="nuevoInsumo()">Nuevo insumo</button>
       }
       <ui-exportar-excel recurso="inventario-insumos" [filtro]="filtroExportacionInsumos()" />

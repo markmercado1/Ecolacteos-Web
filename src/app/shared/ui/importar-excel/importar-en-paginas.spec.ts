@@ -71,6 +71,7 @@ describe('Importar desde Excel en las pantallas', () => {
     http.expectOne(r => r.url === `${base}/inventario/stock/presentaciones`).flush(vacia);
     fixture.componentInstance['cambiarSeccion']('insumos');
     http.expectOne(`${base}/inventario/insumos`).flush([]);
+    http.expectOne(`${base}/inventario/insumos/lotes/alertas`).flush({ diasAlerta: 15, porVencer: 0, vencidos: 0, lotes: [] });
     fixture.detectChanges();
 
     const boton = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('button')).find((b) => b.textContent?.includes('Importar desde Excel'))!;
@@ -82,6 +83,7 @@ describe('Importar desde Excel en las pantallas', () => {
 
     closed.next(2);
     http.expectOne(`${base}/inventario/insumos`).flush([]);
+    http.expectOne(`${base}/inventario/insumos/lotes/alertas`).flush({ diasAlerta: 15, porVencer: 0, vencidos: 0, lotes: [] });
     http.expectNone(`${base}/admin/zonas`);
     expect(TestBed.inject(ToastService).avisos().at(-1)?.mensaje).toBe('Se importaron 2 insumos.');
   });

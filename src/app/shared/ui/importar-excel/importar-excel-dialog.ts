@@ -87,11 +87,21 @@ const MAX_BYTES = 2 * 1024 * 1024;
               <span class="badge amber"><strong>{{ v.duplicadas }}</strong> duplicadas</span>
               @if (v.omitidas > 0) { <span class="badge gray"><strong>{{ v.omitidas }}</strong> en blanco</span> }
             </div>
-            @if (v.invalidas + v.duplicadas > 0) {
+            @if (v.invalidas + v.duplicadas > 0 && !v.exigeConfirmarParcial) {
               <p class="aviso">
                 Las {{ v.invalidas + v.duplicadas }} filas con error o duplicadas <strong>se omitirán</strong>; solo se crearán las {{ v.validas }} válidas.
                 Descarga el reporte para corregir las demás.
               </p>
+            }
+            @if (v.invalidas + v.duplicadas > 0 && v.exigeConfirmarParcial) {
+              <!-- Ingresos y saldos: nada se importa a medias sin que se confirme expresamente. -->
+              <div class="aviso" role="group" aria-label="Importación parcial">
+                <p>Hay <strong>{{ v.invalidas + v.duplicadas }}</strong> filas con error. <strong>No se importa nada</strong> hasta que corrijas el archivo o confirmes expresamente importar solo las filas válidas.</p>
+                <label class="parcial">
+                  <input type="checkbox" [checked]="soloValidas()" (change)="soloValidas.set($any($event.target).checked)">
+                  Importar solo las {{ v.validas }} filas válidas; las {{ v.invalidas + v.duplicadas }} con error quedan fuera.
+                </label>
+              </div>
             }
             @if (v.validas === 0) { <p class="server-error" role="alert">No hay ninguna fila válida para importar.</p> }
             <div class="tabs" role="tablist" aria-label="Filtrar filas">
@@ -109,7 +119,7 @@ const MAX_BYTES = 2 * 1024 * 1024;
               }
               <span class="espacio"></span>
               <button type="button" class="btn" (click)="cerrar()" [disabled]="trabajando()">Cancelar</button>
-              <button type="button" class="btn primary" [disabled]="!v.puedeConfirmar || trabajando()" (click)="confirmar()">
+              <button type="button" class="btn primary" [disabled]="!v.puedeConfirmar || trabajando() || (v.exigeConfirmarParcial && v.invalidas + v.duplicadas > 0 && !soloValidas())" (click)="confirmar()">
                 {{ trabajando() ? 'Importando…' : 'Confirmar e importar ' + v.validas + ' ' + (v.validas === 1 ? 'fila' : 'filas') }}
               </button>
             </div>
@@ -184,6 +194,7 @@ const MAX_BYTES = 2 * 1024 * 1024;
     .pasos li { margin-bottom: var(--space-2); }
     .pasos .btn { margin-left: var(--space-2); }
     .resumen { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
+    .parcial { display: flex; gap: var(--space-2); align-items: flex-start; font-weight: 600; margin-top: var(--space-2); }
     .aviso { background: var(--color-warning-bg); color: var(--color-warning); border-radius: var(--radius-control); padding: var(--space-3); font-size: var(--font-size-sm); margin: 0 0 var(--space-4); }
     .hint { color: var(--color-text-muted); font-size: var(--font-size-sm); margin: 0 0 var(--space-3); }
     .grande { font-size: var(--font-size-lg); margin: 0 0 var(--space-3); }
@@ -322,12 +333,14 @@ export class ImportarExcelDialog {
     });
   }
 
+  protected readonly soloValidas = signal(false);
+
   protected confirmar(): void {
     const vista = this.vista();
     if (!vista || !vista.puedeConfirmar || this.trabajando()) return;
     this.trabajando.set(true);
     this.errorServidor.set(null);
-    this.api.confirmar(vista.id).subscribe({
+    this.api.confirmar(vista.id, !!vista.exigeConfirmarParcial && this.soloValidas()).subscribe({
       next: (resultado) => {
         this.trabajando.set(false);
         this.confirmada = true;

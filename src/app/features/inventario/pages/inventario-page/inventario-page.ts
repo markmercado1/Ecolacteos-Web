@@ -362,6 +362,17 @@ export class InventarioPage {
     });
   }
 
+  /** Importación de movimientos (ingresos con lotes y saldos iniciales): mismo diálogo que el resto; no se importa a medias sin confirmación expresa. */
+  protected importarMovimientos(tipo: 'ingresos-insumo' | 'saldos-iniciales', nombre: string): void {
+    const ref = this.dialog.open<number | undefined>(ImportarExcelDialog, { ariaLabel: `Importar ${nombre} desde Excel`, data: { tipo, nombre } });
+    ref.closed.subscribe((creadas) => {
+      if (creadas) {
+        this.toast.exito(`Se importaron ${creadas} ${creadas === 1 ? 'fila' : 'filas'} de ${nombre}.`);
+        this.cargarInsumos();
+      }
+    });
+  }
+
   protected importarInsumos(): void {
     const ref = this.dialog.open<number | undefined>(ImportarExcelDialog, {
       ariaLabel: 'Importar insumos desde Excel',
