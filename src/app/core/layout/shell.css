@@ -62,7 +62,7 @@
   display: block;
   margin-top: 0.15rem;
   color: var(--color-on-brand-muted);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.1em;
   font-weight: 700;
   text-transform: uppercase;
@@ -153,7 +153,7 @@
   display: grid; place-items: center; font-weight: 800; font-size: 0.7rem; flex: none;
 }
 .account strong { display: block; font-size: 0.75rem; color: var(--color-on-brand); }
-.account small { font-size: 0.65rem; color: var(--color-on-brand-muted); }
+.account small { font-size: 0.6875rem; color: var(--color-on-brand-muted); }
 
 .account-actions { display: flex; flex-direction: column; gap: var(--space-2); }
 .account-actions .btn { justify-content: flex-start; background: transparent; color: var(--color-on-brand-soft); border-color: rgb(255 255 255 / 18%); }

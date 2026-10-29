@@ -161,7 +161,7 @@ export interface ListaParaTabla<T> {
     th {
       background: var(--color-surface-soft);
       color: var(--color-text-muted);
-      font-size: 0.65rem;
+      font-size: 0.6875rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       padding: var(--space-3) var(--space-4);

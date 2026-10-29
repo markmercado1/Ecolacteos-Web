@@ -28,7 +28,7 @@
 }
 .brand-mark svg { width: 1.5rem; height: 1.5rem; }
 .login-brand strong { display: block; font-weight: 800; font-size: 1rem; }
-.login-brand small { display: block; color: var(--color-text-muted); font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.login-brand small { display: block; color: var(--color-text-muted); font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; }
 
 h1 { font-size: 1.4rem; margin: 0 0 var(--space-1); }
 .login-sub { margin: 0 0 var(--space-6); color: var(--color-text-muted); font-size: var(--font-size-sm); }

@@ -46,7 +46,7 @@ interface DatosModuloPendiente {
   styles: `
     .page-heading { margin-bottom: var(--space-6); }
     .eyebrow {
-      font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase;
+      font-size: 0.6875rem; letter-spacing: 0.14em; text-transform: uppercase;
       color: var(--brand-500); font-weight: 800;
     }
     h1 { font-size: clamp(1.4rem, 2.2vw, 1.9rem); margin: var(--space-2) 0 var(--space-1); }

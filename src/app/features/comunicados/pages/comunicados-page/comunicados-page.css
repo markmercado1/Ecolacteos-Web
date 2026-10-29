@@ -3,7 +3,7 @@
   align-items: start;
 }
 .eyebrow {
-  font-size: 0.65rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--brand-500);
@@ -50,7 +50,7 @@
 }
 .preview span {
   color: var(--color-text-muted);
-  font-size: 0.6rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   font-weight: 800;

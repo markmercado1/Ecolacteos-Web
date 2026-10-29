@@ -1,7 +1,6 @@
 @import './styles/theme.css';
 @import '@angular/cdk/overlay-prebuilt.css';
 @import 'leaflet/dist/leaflet.css';
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 * {
   box-sizing: border-box;
@@ -173,7 +172,7 @@ a {
   background: var(--color-success-bg);
   color: var(--color-success);
   padding: 0.35rem 0.6rem;
-  font-size: 0.6rem;
+  font-size: 0.6875rem;
   font-weight: 800;
 }
 
@@ -200,7 +199,7 @@ a {
   flex-wrap: wrap;
 }
 .page-heading .eyebrow {
-  font-size: 0.65rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--brand-500);
