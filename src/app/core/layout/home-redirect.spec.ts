@@ -1,5 +1,6 @@
 import { RolNombre } from '../../shared/models/rol';
 import { rutaInicial } from './home-redirect';
+import { GRUPOS_NAVEGACION } from './nav-items';
 
 describe('rutaInicial — pantalla inicial por rol', () => {
   const esperadas: Record<RolNombre, string> = {
@@ -19,6 +20,15 @@ describe('rutaInicial — pantalla inicial por rol', () => {
 
   it('VENTAS ya no cae en Inventario, que es el primer ítem del menú que ve', () => {
     expect(rutaInicial('VENTAS')).not.toBe('/inventario');
+  });
+
+  it('la pantalla inicial de cada rol es un módulo que ese rol puede abrir', () => {
+    const items = GRUPOS_NAVEGACION.flatMap((g) => g.items);
+    for (const rol of Object.keys(esperadas) as RolNombre[]) {
+      const item = items.find((i) => i.ruta === rutaInicial(rol));
+      expect(item, rol).toBeDefined();
+      expect(item!.roles, rol).toContain(rol);
+    }
   });
 
   it('sin rol conocido usa el primer ítem del menú', () => {

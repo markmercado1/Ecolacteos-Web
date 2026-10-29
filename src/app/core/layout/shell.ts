@@ -8,28 +8,9 @@ import { ChangePasswordDialog } from '../../features/auth/ui/change-password-dia
 import { IconComponent } from '../../shared/ui/icon/icon';
 import { GRUPOS_NAVEGACION } from './nav-items';
 
-const CLAVE_ABIERTOS = 'ecolacteos.nav.seccionesAbiertas';
-
 /** "/produccion" coincide con "/produccion" y "/produccion?x", pero NO con "/produccion-diaria". */
 export function coincideRuta(url: string, ruta: string): boolean {
   return url === ruta || url.startsWith(ruta + '/') || url.startsWith(ruta + '?') || url.startsWith(ruta + '#');
-}
-
-function leerAbiertos(): ReadonlySet<string> {
-  try {
-    const valor = JSON.parse(localStorage.getItem(CLAVE_ABIERTOS) ?? '[]');
-    return new Set(Array.isArray(valor) ? valor.filter((v) => typeof v === 'string') : []);
-  } catch {
-    return new Set();
-  }
-}
-
-function guardarAbiertos(abiertos: ReadonlySet<string>): void {
-  try {
-    localStorage.setItem(CLAVE_ABIERTOS, JSON.stringify([...abiertos]));
-  } catch {
-    // Sin almacenamiento (modo privado, bloqueado): el menú sigue funcionando, solo no recuerda el estado.
-  }
 }
 
 @Component({
@@ -67,10 +48,10 @@ export class Shell {
   });
 
   // --- Secciones desplegables ---
-  // Abiertas: las que el usuario dejó abiertas (recordadas en este navegador) más, siempre, la sección de la
-  // página actual al navegar. Recordarlo es solo una comodidad: si el almacenamiento no está disponible, el
-  // menú funciona igual (abre la sección actual).
-  protected readonly abiertos = signal<ReadonlySet<string>>(leerAbiertos());
+  // Al entrar a una página queda abierta únicamente su sección y las demás, plegadas (así el menú se mantiene corto).
+  // Mientras se está en esa página, el usuario puede abrir o cerrar otras a mano para explorar; al navegar de nuevo
+  // se vuelve a abrir solo la de la página actual. No se recuerda nada entre visitas.
+  protected readonly abiertos = signal<ReadonlySet<string>>(new Set());
 
   /** Id de la sección que contiene la ruta actual (la que se resalta aunque esté plegada). */
   protected readonly grupoActivo = computed(() => {
@@ -78,9 +59,11 @@ export class Shell {
     return this.grupos().find((g) => g.items.some((i) => coincideRuta(url, i.ruta)))?.id ?? null;
   });
 
-  private readonly abrirGrupoActivo = effect(() => {
+  // Depende de la URL (no solo del grupo): navegar entre páginas del mismo grupo también pliega lo que se abrió a mano.
+  private readonly abrirSoloGrupoActivo = effect(() => {
+    this.urlActual();
     const activo = this.grupoActivo();
-    if (activo) untracked(() => this.fijarAbierto(activo, true));
+    untracked(() => this.abiertos.set(activo ? new Set([activo]) : new Set()));
   });
 
   protected estaAbierto(id: string): boolean {
@@ -88,16 +71,9 @@ export class Shell {
   }
 
   protected alternarGrupo(id: string): void {
-    this.fijarAbierto(id, !this.abiertos().has(id));
-  }
-
-  private fijarAbierto(id: string, abierto: boolean): void {
-    if (this.abiertos().has(id) === abierto) return;
     const siguiente = new Set(this.abiertos());
-    if (abierto) siguiente.add(id);
-    else siguiente.delete(id);
+    if (!siguiente.delete(id)) siguiente.add(id);
     this.abiertos.set(siguiente);
-    guardarAbiertos(siguiente);
   }
 
   protected readonly tituloActual = computed(() => {

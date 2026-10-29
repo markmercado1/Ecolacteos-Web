@@ -9,7 +9,7 @@ export interface ItemNavegacion {
 }
 
 export interface GrupoNavegacion {
-  /** Clave estable: se usa para recordar qué secciones dejó abiertas el usuario. */
+  /** Clave estable de la sección (la usa Shell para saber cuál está abierta). */
   id: string;
   titulo: string;
   icono: NombreIcono;
@@ -18,17 +18,18 @@ export interface GrupoNavegacion {
 
 /**
  * Roles tomados de docs/ENDPOINTS.md (@PreAuthorize real de cada controlador),
- * no de una suposición de producto. Ver docs/REGISTRO.md para el detalle.
+ * no de una suposición de producto. Ver docs/REGISTRO.md para el detalle. nav-items.spec.ts comprueba que cada ítem
+ * tenga exactamente los mismos roles que su ruta en app.routes.ts: reagrupar no cambia quién puede entrar a qué.
  *
- * Secciones (rediseño de navegación): antes "Operación" era una sola lista de 12 items sin dividir; se
- * partió en subgrupos temáticos para que sea escaneable. Shell.grupos() ya filtra por rol y oculta
- * secciones vacías, así que dividir en más grupos no muestra secciones en blanco a ningún usuario.
+ * Secciones (reagrupación UX 5): el trabajo diario va primero y la configuración de uso poco frecuente (precios,
+ * impuestos, catálogos, usuarios, flota) queda reunida en «Configuración», solo para ADMIN. Shell.grupos() filtra por
+ * rol y oculta las secciones vacías, así que ningún rol ve secciones en blanco.
+ *
+ * Secciones desplegables: cada grupo es un acordeón en Shell y solo queda abierta la de la página actual. Un grupo
+ * con un solo ítem visible para el rol se muestra como enlace directo (sin desplegable). «Visión general» queda como
+ * enlace directo al panel.
  *
  * "Supervisión" se eliminó: apuntaba a PendingFeaturePage (sin implementar), no era una función real.
- *
- * Secciones desplegables (2026-10-02): cada grupo es un acordeón en Shell. Un grupo con un solo ítem visible
- * para el rol se muestra como enlace directo (sin desplegable). "Precios" se movió a Comercial (son precios
- * de venta) y "Visión general" queda como enlace directo al panel.
  */
 export const GRUPOS_NAVEGACION: GrupoNavegacion[] = [
   {
@@ -45,7 +46,8 @@ export const GRUPOS_NAVEGACION: GrupoNavegacion[] = [
       { ruta: '/acopios', etiqueta: 'Acopios', icono: 'acopios', roles: ['ADMIN'] },
       { ruta: '/calidad', etiqueta: 'Calidad', icono: 'calidad', roles: ['ADMIN', 'CALIDAD'] },
       { ruta: '/jornadas', etiqueta: 'Jornadas', icono: 'jornadas', roles: ['ADMIN', 'RECEPCION'] },
-      { ruta: '/recepcion', etiqueta: 'Recepción', icono: 'recepcion', roles: ['ADMIN', 'RECEPCION'] }
+      { ruta: '/recepcion', etiqueta: 'Recepción', icono: 'recepcion', roles: ['ADMIN', 'RECEPCION'] },
+      { ruta: '/rutas', etiqueta: 'Rutas', icono: 'rutas', roles: ['ADMIN', 'ACOPIADOR'] }
     ]
   },
   {
@@ -58,39 +60,38 @@ export const GRUPOS_NAVEGACION: GrupoNavegacion[] = [
     ]
   },
   {
-    id: 'comercial',
-    titulo: 'Comercial',
+    id: 'ventas',
+    titulo: 'Ventas',
     icono: 'ventas',
     items: [
       { ruta: '/ventas', etiqueta: 'Ventas', icono: 'ventas', roles: ['ADMIN', 'VENTAS'] },
       { ruta: '/reservas', etiqueta: 'Reservas', icono: 'reservas', roles: ['ADMIN', 'VENTAS'] },
-      { ruta: '/clientes', etiqueta: 'Clientes', icono: 'usuarios', roles: ['ADMIN', 'VENTAS'] },
-      { ruta: '/precios', etiqueta: 'Precios', icono: 'precios', roles: ['ADMIN'] },
-      { ruta: '/tipos-precio', etiqueta: 'Tipos de precio', icono: 'precios', roles: ['ADMIN'] },
-      { ruta: '/igv', etiqueta: 'IGV de las ventas', icono: 'precios', roles: ['ADMIN'] }
+      { ruta: '/clientes', etiqueta: 'Clientes', icono: 'usuarios', roles: ['ADMIN', 'VENTAS'] }
     ]
   },
   {
     id: 'proveedores',
-    titulo: 'Proveedores y logística',
+    titulo: 'Proveedores y pagos',
     icono: 'proveedores',
     items: [
       { ruta: '/proveedores', etiqueta: 'Proveedores', icono: 'proveedores', roles: ['ADMIN'] },
       { ruta: '/pagos', etiqueta: 'Liquidaciones de leche', icono: 'pagos', roles: ['ADMIN', 'RECEPCION'] },
       { ruta: '/pagos-efectivos', etiqueta: 'Desembolsos a proveedores', icono: 'pagos', roles: ['ADMIN', 'RECEPCION'] },
-      { ruta: '/rutas', etiqueta: 'Rutas', icono: 'rutas', roles: ['ADMIN', 'ACOPIADOR'] },
       { ruta: '/comunicados', etiqueta: 'Comunicados', icono: 'comunicados', roles: ['ADMIN'] }
     ]
   },
   {
-    id: 'administracion',
-    titulo: 'Administración',
-    icono: 'usuarios',
+    id: 'configuracion',
+    titulo: 'Configuración',
+    icono: 'catalogos',
     items: [
+      { ruta: '/precios', etiqueta: 'Precios', icono: 'precios', roles: ['ADMIN'] },
+      { ruta: '/tipos-precio', etiqueta: 'Tipos de precio', icono: 'precios', roles: ['ADMIN'] },
+      { ruta: '/igv', etiqueta: 'IGV de las ventas', icono: 'precios', roles: ['ADMIN'] },
+      { ruta: '/catalogos', etiqueta: 'Catálogos', icono: 'catalogos', roles: ['ADMIN'] },
       { ruta: '/usuarios', etiqueta: 'Usuarios', icono: 'usuarios', roles: ['ADMIN'] },
       { ruta: '/acopiadores', etiqueta: 'Acopiadores', icono: 'acopiadores', roles: ['ADMIN'] },
-      { ruta: '/unidades', etiqueta: 'Unidades', icono: 'unidades', roles: ['ADMIN'] },
-      { ruta: '/catalogos', etiqueta: 'Catálogos', icono: 'catalogos', roles: ['ADMIN'] }
+      { ruta: '/unidades', etiqueta: 'Unidades', icono: 'unidades', roles: ['ADMIN'] }
     ]
   }
 ];

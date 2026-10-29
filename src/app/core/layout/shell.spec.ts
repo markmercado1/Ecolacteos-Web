@@ -10,6 +10,7 @@ import { Shell, coincideRuta } from './shell';
 @Component({ template: '' })
 class Vacia {}
 
+/** Clave que guardaban versiones anteriores del menú: ya no se lee, pero hay navegadores que aún la tienen. */
 const CLAVE = 'ecolacteos.nav.seccionesAbiertas';
 
 function usuarioCon(rolNombre: UsuarioMeResponse['rolNombre']): UsuarioMeResponse {
@@ -50,7 +51,7 @@ describe('Shell — navegación desplegable', () => {
     expect(produccion.getAttribute('aria-expanded')).toBe('true');
     expect(toggles(f).filter((b) => b.getAttribute('aria-expanded') === 'true')).toHaveLength(1);
     expect(enlaces(f)).toContain('Inventario');
-    expect(enlaces(f)).not.toContain('Usuarios'); // Administración plegada
+    expect(enlaces(f)).not.toContain('Usuarios'); // Configuración plegada
     expect(f.componentInstance['tituloActual']()).toBe('Producción');
   });
 
@@ -60,9 +61,9 @@ describe('Shell — navegación desplegable', () => {
     expect(toggles(f).some((b) => b.textContent?.includes('Visión general'))).toBe(false);
   });
 
-  it('VENTAS ve Inventario como enlace directo y Ventas, Reservas y Clientes dentro de Comercial', async () => {
+  it('VENTAS ve Inventario como enlace directo y Ventas, Reservas y Clientes dentro de Ventas', async () => {
     const f = await crear('VENTAS', '/ventas');
-    expect(toggles(f).map((b) => b.textContent?.trim())).toEqual(['Comercial']);
+    expect(toggles(f).map((b) => b.textContent?.trim())).toEqual(['Ventas']);
     expect(enlaces(f)).toEqual(['Inventario', 'Ventas', 'Reservas', 'Clientes']);
   });
 
@@ -97,26 +98,54 @@ describe('Shell — navegación desplegable', () => {
     }
   });
 
-  it('alternar abre/cierra una sección, actualiza aria-expanded y lo recuerda en este navegador', async () => {
+  it('alternar abre/cierra una sección y actualiza aria-expanded, sin guardar nada en el navegador', async () => {
     const f = await crear('ADMIN', '/produccion');
-    const admin = toggles(f).find((b) => b.textContent?.includes('Administración'))!;
-    admin.click();
+    const configuracion = toggles(f).find((b) => b.textContent?.includes('Configuración'))!;
+    configuracion.click();
     f.detectChanges();
-    expect(admin.getAttribute('aria-expanded')).toBe('true');
+    expect(configuracion.getAttribute('aria-expanded')).toBe('true');
     expect(enlaces(f)).toContain('Usuarios');
-    expect(JSON.parse(localStorage.getItem(CLAVE)!)).toContain('administracion');
+    expect(localStorage.getItem(CLAVE)).toBeNull();
 
-    admin.click();
+    configuracion.click();
     f.detectChanges();
-    expect(admin.getAttribute('aria-expanded')).toBe('false');
-    expect(JSON.parse(localStorage.getItem(CLAVE)!)).not.toContain('administracion');
+    expect(configuracion.getAttribute('aria-expanded')).toBe('false');
+    expect(enlaces(f)).not.toContain('Usuarios');
   });
 
-  it('restaura las secciones abiertas guardadas', async () => {
-    localStorage.setItem(CLAVE, JSON.stringify(['proveedores']));
+  it('no restaura secciones guardadas por versiones anteriores: solo se abre la de la página actual', async () => {
+    localStorage.setItem(CLAVE, JSON.stringify(['proveedores', 'comercial']));
     const f = await crear('ADMIN', '/produccion');
-    expect(enlaces(f)).toContain('Liquidaciones de leche');     // recordada
-    expect(enlaces(f)).toContain('Inventario'); // la actual, siempre abierta al entrar
+    expect(enlaces(f)).not.toContain('Liquidaciones de leche');
+    expect(enlaces(f)).toContain('Inventario');
+    expect(toggles(f).filter((b) => b.getAttribute('aria-expanded') === 'true')).toHaveLength(1);
+  });
+
+  it('al navegar a otra sección se abre solo la nueva y se pliegan las demás', async () => {
+    const f = await crear('ADMIN', '/produccion');
+    await TestBed.inject(Router).navigateByUrl('/ventas');
+    f.detectChanges();
+    const abiertas = toggles(f).filter((b) => b.getAttribute('aria-expanded') === 'true').map((b) => b.textContent?.trim());
+    expect(abiertas).toEqual(['Ventas']);
+    expect(enlaces(f)).toContain('Reservas');
+    expect(enlaces(f)).not.toContain('Inventario');
+  });
+
+  it('navegar dentro de la misma sección también pliega lo que se abrió a mano', async () => {
+    const f = await crear('ADMIN', '/ventas');
+    toggles(f).find((b) => b.textContent?.includes('Configuración'))!.click();
+    f.detectChanges();
+    expect(toggles(f).filter((b) => b.getAttribute('aria-expanded') === 'true')).toHaveLength(2);
+
+    await TestBed.inject(Router).navigateByUrl('/reservas');
+    f.detectChanges();
+    const abiertas = toggles(f).filter((b) => b.getAttribute('aria-expanded') === 'true').map((b) => b.textContent?.trim());
+    expect(abiertas).toEqual(['Ventas']);
+  });
+
+  it('en una página sin sección (p. ej. /403) todas las secciones quedan plegadas', async () => {
+    const f = await crear('ADMIN', '/403');
+    expect(toggles(f).filter((b) => b.getAttribute('aria-expanded') === 'true')).toHaveLength(0);
   });
 
   it('si la sección actual se pliega, su encabezado queda marcado', async () => {
@@ -128,10 +157,54 @@ describe('Shell — navegación desplegable', () => {
     expect(produccion.classList).toContain('contiene-activo');
   });
 
-  it('un valor corrupto en el almacenamiento no rompe el menú', async () => {
+  it('un valor corrupto en el almacenamiento no afecta al menú', async () => {
     localStorage.setItem(CLAVE, '{no-es-json');
     const f = await crear('ADMIN', '/ventas');
     expect(enlaces(f)).toContain('Ventas');
+  });
+
+  describe('agrupación por rol (los permisos no cambian al reagrupar)', () => {
+    async function todo(rol: UsuarioMeResponse['rolNombre']) {
+      const f = await crear(rol, '/');
+      for (const b of toggles(f)) if (b.getAttribute('aria-expanded') !== 'true') b.click();
+      f.detectChanges();
+      return { secciones: toggles(f).map((b) => b.textContent?.trim()), enlaces: enlaces(f) };
+    }
+
+    const esperado: Record<UsuarioMeResponse['rolNombre'], { secciones: string[]; enlaces: string[] }> = {
+      ADMIN: {
+        secciones: ['Acopio y calidad', 'Producción', 'Ventas', 'Proveedores y pagos', 'Configuración'],
+        enlaces: [
+          'Panel económico',
+          'Acopios', 'Calidad', 'Jornadas', 'Recepción', 'Rutas',
+          'Producción', 'Inventario',
+          'Ventas', 'Reservas', 'Clientes',
+          'Proveedores', 'Liquidaciones de leche', 'Desembolsos a proveedores', 'Comunicados',
+          'Precios', 'Tipos de precio', 'IGV de las ventas', 'Catálogos', 'Usuarios', 'Acopiadores', 'Unidades'
+        ]
+      },
+      RECEPCION: {
+        secciones: ['Acopio y calidad', 'Proveedores y pagos'],
+        enlaces: ['Jornadas', 'Recepción', 'Liquidaciones de leche', 'Desembolsos a proveedores']
+      },
+      CALIDAD: { secciones: [], enlaces: ['Calidad'] },
+      PRODUCCION: { secciones: ['Producción'], enlaces: ['Producción', 'Inventario'] },
+      VENTAS: { secciones: ['Ventas'], enlaces: ['Inventario', 'Ventas', 'Reservas', 'Clientes'] },
+      ACOPIADOR: { secciones: [], enlaces: ['Rutas'] }
+    };
+
+    for (const rol of Object.keys(esperado) as UsuarioMeResponse['rolNombre'][]) {
+      it(`${rol} ve exactamente sus secciones y módulos`, async () => {
+        expect(await todo(rol)).toEqual(esperado[rol]);
+      });
+    }
+
+    it('solo ADMIN ve «Configuración»', async () => {
+      for (const rol of ['RECEPCION', 'CALIDAD', 'PRODUCCION', 'VENTAS', 'ACOPIADOR'] as const) {
+        expect((await todo(rol)).secciones, rol).not.toContain('Configuración');
+        TestBed.resetTestingModule();
+      }
+    });
   });
 
   it('el icono del botón de menú tiene tamaño propio: sin él se encogía a 0×0 y el botón se veía vacío', async () => {
