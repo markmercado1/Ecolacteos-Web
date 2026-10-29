@@ -34,7 +34,8 @@ import { HistorialAjustesDialog } from '../../ui/historial-ajustes-dialog/histor
 import { KardexDialog } from '../../ui/kardex-dialog/kardex-dialog';
 import { LotesPresentacionDialog } from '../../ui/lotes-presentacion-dialog/lotes-presentacion-dialog';
 import { KardexVistaComponent } from '../../ui/kardex-vista/kardex-vista';
-import { MovimientoInsumoDialog } from '../../ui/movimiento-insumo-dialog/movimiento-insumo-dialog';
+import { ConteoInsumoDialog } from '../../ui/conteo-insumo-dialog/conteo-insumo-dialog';
+import { ConteoInsumoResponse } from '../../data-access/lotes.models';
 import { FusionInsumosDialog } from '../../ui/fusion-insumos-dialog/fusion-insumos-dialog';
 import { IngresoDocumentoDialog } from '../../ui/ingreso-documento-dialog/ingreso-documento-dialog';
 import { DocumentoIngresoResponse } from '../../data-access/ingresos.models';
@@ -186,16 +187,14 @@ export class InventarioPage {
       this.registrarIngreso(insumo);
       return;
     }
-    const ref = this.dialog.open<MovimientoInsumoResponse | undefined>(MovimientoInsumoDialog, {
+    // Conteo físico por lote (con atajo cuando el insumo tiene un solo lote).
+    const ref = this.dialog.open<ConteoInsumoResponse | undefined>(ConteoInsumoDialog, {
       ariaLabel: `Conteo físico ${insumo.nombre}`,
-      data: { modo, insumo }
+      data: { insumo }
     });
-    ref.closed.subscribe((m) => {
-      if (!m) return;
-      this.toast.exito(
-        `${m.tipoMovimiento === 'INGRESO' ? 'Ingreso registrado' : 'Conteo físico registrado'}: ${m.insumoNombre} pasó de ` +
-          `${m.saldoAnterior} a ${m.saldoResultante} ${m.unidadMedida}.`
-      );
+    ref.closed.subscribe((r) => {
+      if (!r) return;
+      this.toast.exito(`Conteo físico registrado: ${r.insumoNombre} pasó de ${r.saldoAnterior} a ${r.saldoResultante} ${r.unidadMedida}.`);
       this.cargarInsumos();
     });
   }

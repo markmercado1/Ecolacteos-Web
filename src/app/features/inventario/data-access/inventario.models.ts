@@ -112,12 +112,25 @@ export interface SaldoLecheResponse {
   litrosDisponibles: number;
 }
 
+/** VENCIMIENTO, DETERIORO y OTRA valen para insumos y producto terminado; los demás, solo para insumos. */
+export type MotivoSalida = 'VENCIMIENTO' | 'DETERIORO' | 'OTRA' | 'MERMA' | 'DERRAME' | 'DEVOLUCION_PROVEEDOR' | 'CONSUMO_MANUAL';
+
+export const MOTIVOS_INSUMO: { valor: MotivoSalida; etiqueta: string }[] = [
+  { valor: 'MERMA', etiqueta: 'Merma' },
+  { valor: 'DERRAME', etiqueta: 'Derrame' },
+  { valor: 'VENCIMIENTO', etiqueta: 'Vencido' },
+  { valor: 'DEVOLUCION_PROVEEDOR', etiqueta: 'Devolución a proveedor' },
+  { valor: 'CONSUMO_MANUAL', etiqueta: 'Consumo manual' },
+  { valor: 'OTRA', etiqueta: 'Otra salida justificada' }
+];
+
 export interface SalidaInventarioRequest {
   uuidCliente: string;
   cantidad: number;
-  tipo: 'VENCIMIENTO' | 'DETERIORO' | 'OTRA';
+  tipo: MotivoSalida;
   motivo: string;
-  origenLote: 'LOTE' | 'REGULARIZACION' | null;
+  /** LOTE o REGULARIZACION: lote de producto terminado. INSUMO: lote de insumo (loteId); sin lote = se reparte en FEFO. */
+  origenLote: 'LOTE' | 'REGULARIZACION' | 'INSUMO' | null;
   loteId: string | null;
 }
 export interface SalidaInventarioResponse {

@@ -10,7 +10,6 @@ import { InventarioPage } from './inventario-page';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { KardexDialog } from '../../ui/kardex-dialog/kardex-dialog';
 import { IngresoDocumentoDialog } from '../../ui/ingreso-documento-dialog/ingreso-documento-dialog';
-import { MovimientoInsumoDialog } from '../../ui/movimiento-insumo-dialog/movimiento-insumo-dialog';
 
 const url = `${environment.apiBaseUrl}/inventario/stock/presentaciones`;
 const fila = { familiaId: 'f', familiaNombre: 'Yogurt', productoId: 'p', productoNombre: 'Natural', productoActivo: true, presentacionId: 'pr', presentacionNombre: 'Botella 1 L', unidadConteo: 'botella', presentacionActivo: true, stock: 12, controlaVencimiento: false, stockVendible: 12, stockComprometido: 0, stockLibre: 12 };
