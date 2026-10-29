@@ -17,7 +17,7 @@ const items = GRUPOS_NAVEGACION.flatMap((g) => g.items);
 /** Módulos que existen hoy en el menú: reorganizar los grupos no debe sumar ni quitar ninguno. */
 const RUTAS_DEL_MENU = [
   '/acopios', '/acopiadores', '/calidad', '/catalogos', '/clientes', '/comunicados', '/igv', '/inventario', '/jornadas',
-  '/pagos', '/pagos-efectivos', '/panel', '/precios', '/produccion', '/proveedores', '/recepcion', '/reservas', '/rutas',
+  '/pagos', '/pagos-efectivos', '/panel', '/precios', '/produccion', '/proveedores', '/proveedores-compra', '/recepcion', '/reservas', '/rutas',
   '/tipos-precio', '/unidades', '/usuarios', '/ventas'
 ];
 

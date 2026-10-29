@@ -179,7 +179,7 @@ describe('Shell — navegación desplegable', () => {
           'Acopios', 'Calidad', 'Jornadas', 'Recepción', 'Rutas',
           'Producción', 'Inventario',
           'Ventas', 'Reservas', 'Clientes',
-          'Proveedores', 'Liquidaciones de leche', 'Desembolsos a proveedores', 'Comunicados',
+          'Proveedores', 'Proveedores de compra', 'Liquidaciones de leche', 'Desembolsos a proveedores', 'Comunicados',
           'Precios', 'Tipos de precio', 'IGV de las ventas', 'Catálogos', 'Usuarios', 'Acopiadores', 'Unidades'
         ]
       },
