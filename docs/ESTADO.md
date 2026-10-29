@@ -4,6 +4,11 @@ Rama exclusiva `feature/limpieza-modulos-inventario`, worktree `.worktrees/limpi
 
 # Estado vigente
 
+## 2026-10-29 — Trazabilidad por lote, proveedores de compra y documentos de ingreso (rama `feature/trazabilidad-lotes-proveedores`, SIN MERGE NI PUSH)
+
+Fase 2 completa en backend y web (migraciones V40–V47, aditivas y con reversa documentada). Probada la cadena V39→V47 sobre una **copia** de la base real; la base real sigue
+en V39 hasta que se migre. **Antes de producción: respaldo y prueba de migración sobre datos reales.** Detalle en `TRAZABILIDAD_LOTES.md`.
+
 ## 2026-10-26 — IGV encendible desde el panel (rama `feature/igv-activable`)
 
 En `/igv` el ADMIN puede **activar o desactivar el cálculo** (con motivo; se muestra quién y cuándo lo cambió) y **clasificar de una vez** las presentaciones sin afectación. Backend V35

@@ -1,3 +1,17 @@
+## Actualización 2026-10-29 — trazabilidad por lote (rama `feature/trazabilidad-lotes-proveedores`, sin integrar)
+
+Detalle, reglas y migraciones V40–V47 en [TRAZABILIDAD_LOTES.md](TRAZABILIDAD_LOTES.md). Endpoints nuevos o cambiados:
+
+- `GET /api/admin/insumos/duplicados`, `POST /api/admin/insumos/fusion/vista-previa`, `POST /api/admin/insumos/fusion`, `GET /api/admin/insumos/fusiones` (ADMIN).
+- `/api/proveedores-compra` (CRUD, RUC único, categorías `LECHE` / `OTROS_INSUMOS`, alta rápida).
+- `POST /api/inventario/ingresos` (documento con líneas = lotes, UUID idempotente), `GET /api/inventario/ingresos/{id}`, `POST` y `GET /api/inventario/ingresos/{documentoId}/adjuntos` (multipart).
+- `GET /api/inventario/insumos/{id}/lotes`, `GET /api/inventario/insumos/lotes/alertas`, `POST /api/inventario/insumos/lotes/{loteId}/anulacion` (ADMIN), `POST /api/inventario/insumos/{id}/conteos` (conteo físico por lote, ADMIN). El `/ajustes` anterior se conserva por compatibilidad.
+- `GET /api/inventario/trazabilidad/lotes?q=`, `GET /api/adjuntos/{id}/contenido` (PRODUCCION, CALIDAD, ADMIN).
+- `GET /api/lotes-produccion/{id}/plan-lotes`; `POST /api/lotes-produccion/{id}/iniciar` acepta un cuerpo opcional con los lotes elegidos a mano.
+- Kardex de insumos: parámetro `loteId` y columnas lote, proveedor, vencimiento y documento.
+- Exportar: `GET /api/exportaciones/kardex-insumo/{id}`, `GET /api/exportaciones/lotes-insumo`. Importar: tipos `ingresos-insumo` y `saldos-iniciales`; la confirmación admite `soloValidas`.
+- Salidas de insumo: nuevos motivos `MERMA`, `DERRAME`, `DEVOLUCION_PROVEEDOR`, `CONSUMO_MANUAL`, con lote opcional.
+
 ## Actualización 2026-10-27 — limpieza de módulos (rama sin integrar)
 
 Nuevos POST `/api/inventario/presentaciones/{id}/salidas` y `/api/inventario/insumos/{id}/salidas`, solo ADMIN, HTTP 200 e idempotencia por UUID. Request/response, validaciones, Kardex y V36 detallados en [REORGANIZACION.md](REORGANIZACION.md). Se retiran los endpoints de informes de producción diaria y revisiones de documentos/zonas, incluida su exportación exclusiva. Las referencias anteriores a esos endpoints en este documento son históricas y quedan sustituidas por esta actualización. Pagos e insumos conservan sus contratos previos.
