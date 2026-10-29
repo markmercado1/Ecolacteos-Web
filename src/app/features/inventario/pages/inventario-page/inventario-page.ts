@@ -34,6 +34,9 @@ import { HistorialAjustesDialog } from '../../ui/historial-ajustes-dialog/histor
 import { KardexDialog } from '../../ui/kardex-dialog/kardex-dialog';
 import { LotesPresentacionDialog } from '../../ui/lotes-presentacion-dialog/lotes-presentacion-dialog';
 import { KardexVistaComponent } from '../../ui/kardex-vista/kardex-vista';
+import { InsumoDetalleDialog } from '../../ui/insumo-detalle-dialog/insumo-detalle-dialog';
+import { LotesInsumoApi } from '../../data-access/lotes.api';
+import { AlertasLotes } from '../../data-access/lotes.models';
 import { ConteoInsumoDialog } from '../../ui/conteo-insumo-dialog/conteo-insumo-dialog';
 import { ConteoInsumoResponse } from '../../data-access/lotes.models';
 import { FusionInsumosDialog } from '../../ui/fusion-insumos-dialog/fusion-insumos-dialog';
@@ -66,6 +69,20 @@ export class InventarioPage {
     return rol === 'ADMIN' || rol === 'PRODUCCION';
   });
   private readonly kardexApi = inject(KardexApi);
+  private readonly lotesApi = inject(LotesInsumoApi);
+  /** Lotes con existencia por vencer o vencidos: aviso sobre la tabla y marca en la fila del insumo. */
+  protected readonly alertas = signal<AlertasLotes | null>(null);
+  private readonly estadoPorInsumo = computed(() => {
+    const m = new Map<string, 'VENCIDO' | 'POR_VENCER'>();
+    for (const l of this.alertas()?.lotes ?? []) {
+      if (l.estado === 'VENCIDO') m.set(l.insumoId, 'VENCIDO');
+      else if (!m.has(l.insumoId)) m.set(l.insumoId, 'POR_VENCER');
+    }
+    return m;
+  });
+  protected estadoAlerta(insumoId: string): 'VENCIDO' | 'POR_VENCER' | undefined {
+    return this.estadoPorInsumo().get(insumoId);
+  }
   private readonly route = inject(ActivatedRoute, { optional: true });
   protected readonly seccion = signal<Seccion>('productos');
 
@@ -141,6 +158,7 @@ export class InventarioPage {
           if (revelarId) this.listaInsumos.revelar(revelarId);
           this.insumosCargados = true;
           this.cargandoInsumos.set(false);
+          this.lotesApi.alertas().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({ next: (a) => this.alertas.set(a), error: () => this.alertas.set(null) });
         },
         error: (error) => {
           this.errorInsumos.set(mapHttpError(error));
@@ -161,11 +179,13 @@ export class InventarioPage {
     });
   }
 
-  protected verKardexInsumo(insumo: InsumoResponse): void {
-    this.dialog.open(KardexDialog, {
-      ariaLabel: `Kardex de ${insumo.nombre}`,
-      data: { tipo: 'INSUMO', itemId: insumo.id, titulo: insumo.nombre, subtitulo: `Insumo, en ${insumo.unidadMedida}` }
+  /** Kardex (con lote, proveedor y vencimiento) y Lotes del insumo en un solo modal. */
+  protected verKardexInsumo(insumo: InsumoResponse, pestana: 'kardex' | 'lotes' = 'kardex'): void {
+    const ref = this.dialog.open<boolean | undefined>(InsumoDetalleDialog, {
+      ariaLabel: `Kardex y lotes de ${insumo.nombre}`,
+      data: { insumo, pestana, esAdmin: this.esAdmin() }
     });
+    ref.closed.subscribe((huboCambios) => { if (huboCambios) this.cargarInsumos(); });
   }
 
   /** Ingreso con documento (proveedor, tipo, número) y una línea por lote. Desde la fila de un insumo, la primera línea ya lo trae. */

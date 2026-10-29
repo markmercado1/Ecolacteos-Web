@@ -19,6 +19,12 @@ function usuarioCon(rolNombre: UsuarioMeResponse['rolNombre']): UsuarioMeRespons
   return { id: 'u-1', nombre: 'Ana', email: 'ana@ecolacteos.pe', rolNombre, activo: true, unidadesResponsable: [] };
 }
 
+/** Cada carga de insumos dispara tambien la consulta de alertas de vencimiento (sin alertas por defecto). */
+function flushInsumos(h: HttpTestingController, datos: unknown, alertas: unknown = { diasAlerta: 15, porVencer: 0, vencidos: 0, lotes: [] }): void {
+  h.expectOne(`${environment.apiBaseUrl}/inventario/insumos`).flush(datos as never);
+  h.expectOne(`${environment.apiBaseUrl}/inventario/insumos/lotes/alertas`).flush(alertas as never);
+}
+
 describe('InventarioPage', () => {
   let http: HttpTestingController;
   let page: InventarioPage;
@@ -328,11 +334,11 @@ describe('InventarioPage — kardex e insumos', () => {
   it('PRODUCCION ve insumos (cargados al entrar a la pestaña), registra ingresos y no ve "Conteo físico"', () => {
     const f = crear('PRODUCCION');
     f.componentInstance['cambiarSeccion']('insumos');
-    http.expectOne(`${environment.apiBaseUrl}/inventario/insumos`).flush([insumoSal]);
+    flushInsumos(http, [insumoSal]);
     f.detectChanges();
     const botones = textoBotones(f);
     expect(botones).toContain('Registrar ingreso');
-    expect(botones).toContain('Kardex');
+    expect(botones).toContain('Kardex y lotes');
     expect(botones).not.toContain('Conteo físico');
     for (const accion of ['Nuevo insumo', 'Editar', 'Desactivar', 'Registrar salida', 'Importar desde Excel']) expect(botones).not.toContain(accion);
   });
@@ -347,17 +353,17 @@ describe('InventarioPage — kardex e insumos', () => {
 
   it('ADMIN también puede hacer el conteo físico de insumos', () => {
     const f = crear('ADMIN', { seccion: 'insumos' });
-    http.expectOne(`${environment.apiBaseUrl}/inventario/insumos`).flush([insumoSal]);
+    flushInsumos(http, [insumoSal]);
     f.detectChanges();
     // a la vista: las acciones principales; el resto, en el menú «Más»
-    for (const accion of ['Kardex', 'Registrar ingreso', 'Nuevo insumo', 'Importar desde Excel']) expect(textoBotones(f)).toContain(accion);
+    for (const accion of ['Kardex y lotes', 'Registrar ingreso', 'Nuevo insumo', 'Importar desde Excel']) expect(textoBotones(f)).toContain(accion);
     for (const accion of ['Conteo físico', 'Editar', 'Desactivar', 'Registrar salida']) expect(textoBotones(f)).not.toContain(accion);
     expect(abrirMenuMas(f).map((i) => i.textContent?.trim())).toEqual(['Registrar salida', 'Conteo físico', 'Editar', 'Desactivar']);
   });
 
   it('el menú «Más» de un insumo es accesible: tiene nombre propio, roles de menú, distingue Desactivar y se cierra con Escape', () => {
     const f = crear('ADMIN', { seccion: 'insumos' });
-    http.expectOne(`${environment.apiBaseUrl}/inventario/insumos`).flush([insumoSal]);
+    flushInsumos(http, [insumoSal]);
     f.detectChanges();
     const disparador = (f.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('button[aria-haspopup="menu"]')!;
     expect(disparador.getAttribute('aria-label')).toBe(`Más acciones de ${insumoSal.nombre}`);
@@ -376,7 +382,7 @@ describe('InventarioPage — kardex e insumos', () => {
 
   it('elegir una acción del menú hace lo mismo que antes el botón (Editar abre el diálogo del insumo)', () => {
     const f = crear('ADMIN', { seccion: 'insumos' });
-    http.expectOne(`${environment.apiBaseUrl}/inventario/insumos`).flush([insumoSal]);
+    flushInsumos(http, [insumoSal]);
     f.detectChanges();
     const editar = vi.spyOn(f.componentInstance as unknown as { editarInsumo: (i: unknown) => void }, 'editarInsumo').mockImplementation(() => undefined);
     abrirMenuMas(f).find((i) => i.textContent?.trim() === 'Editar')!.click();
@@ -386,14 +392,14 @@ describe('InventarioPage — kardex e insumos', () => {
   it('un rol que no es ADMIN no ve el menú «Más» en la tabla de insumos', () => {
     const f = crear('PRODUCCION');
     f.componentInstance['cambiarSeccion']('insumos');
-    http.expectOne(`${environment.apiBaseUrl}/inventario/insumos`).flush([insumoSal]);
+    flushInsumos(http, [insumoSal]);
     f.detectChanges();
     expect(f.nativeElement.querySelector('button[aria-haspopup="menu"]')).toBeNull();
   });
 
   it('un ingreso registrado recarga el stock de insumos', () => {
     const f = crear('PRODUCCION', { seccion: 'insumos' });
-    http.expectOne(`${environment.apiBaseUrl}/inventario/insumos`).flush([insumoSal]);
+    flushInsumos(http, [insumoSal]);
     const dialog = TestBed.inject(Dialog);
     let cerrar!: (v: unknown) => void;
     const spy = vi.spyOn(dialog, 'open').mockReturnValue({ closed: { subscribe: (fn: typeof cerrar) => (cerrar = fn) } } as never);
@@ -403,7 +409,7 @@ describe('InventarioPage — kardex e insumos', () => {
     expect(spy.mock.calls[0][0]).toBe(IngresoDocumentoDialog);
     expect(spy.mock.calls[0][1]?.data).toEqual({ insumos: [insumoSal], insumoInicial: insumoSal });
     cerrar({ numeroDocumento: 'F001-1', lineas: [{ loteCodigo: 'SAL-20261029-01' }] });
-    http.expectOne(`${environment.apiBaseUrl}/inventario/insumos`).flush([{ ...insumoSal, stock: 20 }]);
+    flushInsumos(http, [{ ...insumoSal, stock: 20 }]);
     expect(f.componentInstance['insumos']()[0].stock).toBe(20);
   });
 

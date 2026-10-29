@@ -57,3 +57,7 @@ small {
   justify-content: flex-end;
   flex-wrap: wrap;
 }
+
+.alerta-lotes { background: var(--color-warning-bg); color: var(--color-warning); border-radius: var(--radius-control); padding: var(--space-3); font-size: var(--font-size-sm); font-weight: 600; margin: 0 0 var(--space-3); }
+.alerta-fila { display: block; border: 0; background: transparent; padding: 0; margin-top: 0.15rem; font: inherit; font-size: 0.75rem; font-weight: 700; color: var(--color-warning); cursor: pointer; text-decoration: underline; }
+.alerta-fila[data-estado='VENCIDO'] { color: var(--color-danger); }

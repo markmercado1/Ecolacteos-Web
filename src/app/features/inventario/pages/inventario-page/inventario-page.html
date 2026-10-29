@@ -14,6 +14,14 @@
 }
 @switch (seccion()) {
 @case ('insumos') {
+  @if (alertas(); as a) {
+    @if (a.lotes.length > 0) {
+      <p class="alerta-lotes" role="status">
+        ⚠ {{ a.porVencer }} {{ a.porVencer === 1 ? 'lote por vencer' : 'lotes por vencer' }} en {{ a.diasAlerta }} días ·
+        {{ a.vencidos }} {{ a.vencidos === 1 ? 'vencido' : 'vencidos' }} con stock (no se consumen en producción).
+      </p>
+    }
+  }
   <ui-data-table
     [columnas]="columnasInsumos()"
     [lista]="listaInsumos"
@@ -33,11 +41,14 @@
         @case ('nombre') {
           <strong>{{ fila.nombre }}</strong>
           @if (!fila.activo) { <small>Insumo inactivo</small> }
+          @if (estadoAlerta(fila.id); as e) {
+            <button type="button" class="alerta-fila" [attr.data-estado]="e" (click)="verKardexInsumo(fila, 'lotes')">⚠ {{ e === 'VENCIDO' ? 'Lote vencido con stock' : 'Lote por vencer' }}</button>
+          }
         }
         @case ('stock') { {{ (fila.stock ?? 0) | number: '1.0-2' }} <small>{{ fila.unidadMedida }}</small> }
         @case ('acciones') {
           <div class="acciones-fila">
-            <button type="button" class="btn small" (click)="verKardexInsumo(fila)">Kardex</button>
+            <button type="button" class="btn small" (click)="verKardexInsumo(fila)">Kardex y lotes</button>
             @if (fila.activo) {
               <button type="button" class="btn primary small" (click)="movimientoInsumo(fila, 'INGRESO')">Registrar ingreso</button>
             }

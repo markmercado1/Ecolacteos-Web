@@ -6,6 +6,7 @@ import { ErrorStateComponent } from '../../../../shared/ui/state/error-state';
 import { LoadingStateComponent } from '../../../../shared/ui/state/loading-state';
 import { fechaHoyLima } from '../../../../shared/util/fecha';
 import { ETIQUETA_MOVIMIENTO, Kardex, TipoItemKardex } from '../../data-access/kardex.models';
+import { LoteInsumoResponse } from '../../data-access/lotes.models';
 import { KardexApi } from '../../data-access/kardex.api';
 
 const TAMANO_PAGINA = 50;
@@ -34,6 +35,15 @@ function inicioDeMes(): string {
         <label [for]="idBase + '-hasta'">Hasta</label>
         <input [id]="idBase + '-hasta'" type="date" [value]="hasta()" (change)="hasta.set($any($event.target).value)">
       </div>
+      @if (tipo() === 'INSUMO' && lotes().length > 1) {
+        <div class="field">
+          <label [for]="idBase + '-lote'">Lote</label>
+          <select [id]="idBase + '-lote'" [value]="loteId()" (change)="loteId.set($any($event.target).value)">
+            <option value="">Todos los lotes</option>
+            @for (l of lotes(); track l.id) { <option [value]="l.id">{{ l.codigo }}</option> }
+          </select>
+        </div>
+      }
       <button type="submit" class="btn small">Aplicar</button>
       <button type="button" class="btn small ghost" (click)="todoElHistorial()">Todo el historial</button>
     </form>
@@ -63,6 +73,11 @@ function inicioDeMes(): string {
                 <th scope="col">Fecha</th>
                 <th scope="col">Movimiento</th>
                 <th scope="col">Documento</th>
+                @if (tipo() === 'INSUMO') {
+                  <th scope="col">Lote</th>
+                  <th scope="col">Proveedor</th>
+                  <th scope="col">Vence</th>
+                }
                 <th scope="col" class="num">Entrada</th>
                 <th scope="col" class="num">Salida</th>
                 <th scope="col" class="num">Saldo</th>
@@ -79,6 +94,11 @@ function inicioDeMes(): string {
                     @if (m.documentoFecha) { <small>{{ m.documentoFecha | date: 'dd/MM/yyyy' }}</small> }
                     @if (m.motivo) { <small>Motivo: {{ m.motivo }}</small> }
                   </td>
+                  @if (tipo() === 'INSUMO') {
+                    <td>{{ m.loteCodigo ?? '—' }}</td>
+                    <td>{{ m.proveedorNombre ?? '—' }}</td>
+                    <td class="fecha">{{ m.fechaVencimiento ? (m.fechaVencimiento | date: 'dd/MM/yyyy') : '—' }}</td>
+                  }
                   <td class="num entrada">{{ m.entrada === null ? '' : (m.entrada | number: '1.0-2') }}</td>
                   <td class="num salida">{{ m.salida === null ? '' : (m.salida | number: '1.0-2') }}</td>
                   <td class="num saldo">{{ m.saldo | number: '1.0-2' }}</td>
@@ -124,6 +144,9 @@ function inicioDeMes(): string {
 export class KardexVistaComponent implements OnInit {
   readonly tipo = input.required<TipoItemKardex>();
   readonly itemId = input<string | null>(null);
+  /** Solo insumos: sus lotes, para poder filtrar el kardex por lote. */
+  readonly lotes = input<LoteInsumoResponse[]>([]);
+  protected readonly loteId = signal('');
 
   private readonly api = inject(KardexApi);
   private readonly destroyRef = inject(DestroyRef);
@@ -191,6 +214,7 @@ export class KardexVistaComponent implements OnInit {
       .kardex(this.tipo(), this.itemId(), {
         desde: this.desde() || undefined,
         hasta: this.hasta() || undefined,
+        loteId: this.loteId() || undefined,
         page: this.pagina(),
         size: TAMANO_PAGINA
       })

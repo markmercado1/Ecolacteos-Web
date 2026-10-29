@@ -30,6 +30,14 @@ export interface LoteInsumoResponse {
   diasParaVencer: number | null;
 }
 
+/** Lotes con existencia que vencen pronto o ya vencieron (para avisar en Inventario). */
+export interface AlertasLotes {
+  diasAlerta: number;
+  porVencer: number;
+  vencidos: number;
+  lotes: LoteInsumoResponse[];
+}
+
 export interface ConteoInsumoRequest {
   motivo: string;
   lotes: { loteId: string; cantidadContada: number }[];

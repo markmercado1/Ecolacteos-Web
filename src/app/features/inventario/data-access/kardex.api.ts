@@ -26,6 +26,7 @@ export class KardexApi {
     let params = new HttpParams().set('page', filtro.page).set('size', filtro.size);
     if (filtro.desde) params = params.set('desde', filtro.desde);
     if (filtro.hasta) params = params.set('hasta', filtro.hasta);
+    if (filtro.loteId && tipo === 'INSUMO') params = params.set('loteId', filtro.loteId);
     const ruta =
       tipo === 'LECHE'
         ? 'kardex/leche'

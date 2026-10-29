@@ -25,6 +25,13 @@ export interface MovimientoKardex {
   referencia: string | null;
   usuarioNombre: string | null;
   motivo: string | null;
+  /** Solo el kardex de insumos (V43/V44): lote al que afecta, su proveedor y vencimiento, y el documento de ingreso del lote. */
+  loteId?: string | null;
+  loteCodigo?: string | null;
+  proveedorNombre?: string | null;
+  fechaVencimiento?: string | null;
+  ingresoDocumentoTipo?: string | null;
+  ingresoDocumentoNumero?: string | null;
 }
 
 export interface Kardex {
@@ -44,6 +51,8 @@ export interface Kardex {
 export interface FiltroKardex {
   desde?: string;
   hasta?: string;
+  /** Solo kardex de insumos: los movimientos, el saldo y los totales de ESE lote. */
+  loteId?: string;
   page: number;
   size: number;
 }
