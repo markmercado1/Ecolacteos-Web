@@ -9,6 +9,7 @@ import { UsuarioMeResponse } from '../../../../core/auth/auth.models';
 import { InventarioPage } from './inventario-page';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { KardexDialog } from '../../ui/kardex-dialog/kardex-dialog';
+import { IngresoDocumentoDialog } from '../../ui/ingreso-documento-dialog/ingreso-documento-dialog';
 import { MovimientoInsumoDialog } from '../../ui/movimiento-insumo-dialog/movimiento-insumo-dialog';
 
 const url = `${environment.apiBaseUrl}/inventario/stock/presentaciones`;
@@ -399,9 +400,10 @@ describe('InventarioPage — kardex e insumos', () => {
     const spy = vi.spyOn(dialog, 'open').mockReturnValue({ closed: { subscribe: (fn: typeof cerrar) => (cerrar = fn) } } as never);
 
     f.componentInstance['movimientoInsumo'](insumoSal, 'INGRESO');
-    expect(spy.mock.calls[0][0]).toBe(MovimientoInsumoDialog);
-    expect(spy.mock.calls[0][1]?.data).toEqual({ modo: 'INGRESO', insumo: insumoSal });
-    cerrar({ tipoMovimiento: 'INGRESO', insumoNombre: 'Sal', saldoAnterior: 6, saldoResultante: 20, unidadMedida: 'kg' });
+    // El ingreso por insumo es el modal de ingreso con documento, con la primera línea ya cargada.
+    expect(spy.mock.calls[0][0]).toBe(IngresoDocumentoDialog);
+    expect(spy.mock.calls[0][1]?.data).toEqual({ insumos: [insumoSal], insumoInicial: insumoSal });
+    cerrar({ numeroDocumento: 'F001-1', lineas: [{ loteCodigo: 'SAL-20261029-01' }] });
     http.expectOne(`${environment.apiBaseUrl}/inventario/insumos`).flush([{ ...insumoSal, stock: 20 }]);
     expect(f.componentInstance['insumos']()[0].stock).toBe(20);
   });

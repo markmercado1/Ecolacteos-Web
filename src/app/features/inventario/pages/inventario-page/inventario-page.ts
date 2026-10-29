@@ -36,6 +36,8 @@ import { LotesPresentacionDialog } from '../../ui/lotes-presentacion-dialog/lote
 import { KardexVistaComponent } from '../../ui/kardex-vista/kardex-vista';
 import { MovimientoInsumoDialog } from '../../ui/movimiento-insumo-dialog/movimiento-insumo-dialog';
 import { FusionInsumosDialog } from '../../ui/fusion-insumos-dialog/fusion-insumos-dialog';
+import { IngresoDocumentoDialog } from '../../ui/ingreso-documento-dialog/ingreso-documento-dialog';
+import { DocumentoIngresoResponse } from '../../data-access/ingresos.models';
 import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 /** Producto terminado: PRODUCCION, VENTAS y ADMIN. Insumos y leche: solo PRODUCCION y ADMIN (V19). */
@@ -165,9 +167,27 @@ export class InventarioPage {
     });
   }
 
+  /** Ingreso con documento (proveedor, tipo, número) y una línea por lote. Desde la fila de un insumo, la primera línea ya lo trae. */
+  protected registrarIngreso(insumoInicial?: InsumoResponse): void {
+    const ref = this.dialog.open<DocumentoIngresoResponse | undefined>(IngresoDocumentoDialog, {
+      ariaLabel: insumoInicial ? `Registrar ingreso ${insumoInicial.nombre}` : 'Registrar ingreso',
+      data: { insumos: this.insumos().filter((i) => i.activo), insumoInicial }
+    });
+    ref.closed.subscribe((doc) => {
+      if (!doc) return;
+      const lotes = doc.lineas.length;
+      this.toast.exito(`Ingreso registrado: ${lotes} ${lotes === 1 ? 'lote' : 'lotes'}${doc.numeroDocumento ? ' (' + doc.numeroDocumento + ')' : ''}.`);
+      this.cargarInsumos();
+    });
+  }
+
   protected movimientoInsumo(insumo: InsumoResponse, modo: 'INGRESO' | 'AJUSTE'): void {
+    if (modo === 'INGRESO') {
+      this.registrarIngreso(insumo);
+      return;
+    }
     const ref = this.dialog.open<MovimientoInsumoResponse | undefined>(MovimientoInsumoDialog, {
-      ariaLabel: `${modo === 'INGRESO' ? 'Registrar ingreso' : 'Conteo físico'} ${insumo.nombre}`,
+      ariaLabel: `Conteo físico ${insumo.nombre}`,
       data: { modo, insumo }
     });
     ref.closed.subscribe((m) => {
