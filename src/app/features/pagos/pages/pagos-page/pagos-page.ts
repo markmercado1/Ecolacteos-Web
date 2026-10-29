@@ -20,6 +20,7 @@ import { PagosApi } from '../../data-access/pagos.api';
 import { GenerarPagoDialog } from '../../ui/generar-pago-dialog/generar-pago-dialog';
 import { PagoDetalleDialog } from '../../ui/pago-detalle-dialog/pago-detalle-dialog';
 import { HistorialConsolidadoDialog } from '../../../historial-proveedor/ui/historial-consolidado-dialog/historial-consolidado-dialog';
+import { formatearFecha } from '../../../../shared/util/fecha';
 
 type Pestana = 'liquidaciones' | 'ajustes';
 
@@ -31,6 +32,7 @@ type Pestana = 'liquidaciones' | 'ajustes';
   styleUrl: './pagos-page.css'
 })
 export class PagosPage {
+  protected readonly formatearFecha = formatearFecha;
   private readonly pagosApi = inject(PagosApi);
   private readonly proveedoresApi = inject(ProveedoresApi);
   private readonly auth = inject(AuthService);

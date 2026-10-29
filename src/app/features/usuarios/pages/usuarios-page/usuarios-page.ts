@@ -10,6 +10,7 @@ import { RolResponse, UsuarioResponse } from '../../data-access/usuario.models';
 import { UsuariosApi } from '../../data-access/usuarios.api';
 import { UsuarioFormDialog } from '../../ui/usuario-form-dialog/usuario-form-dialog';
 import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
+import { etiquetaRol } from '../../../../shared/models/rol';
 
 type FiltroEstado = 'TODOS' | 'ACTIVOS' | 'INACTIVOS';
 
@@ -21,6 +22,7 @@ type FiltroEstado = 'TODOS' | 'ACTIVOS' | 'INACTIVOS';
   styleUrl: './usuarios-page.css'
 })
 export class UsuariosPage {
+  protected readonly etiquetaRol = etiquetaRol;
   private readonly usuariosApi = inject(UsuariosApi);
   private readonly dialog = inject(Dialog);
   private readonly toast = inject(ToastService);

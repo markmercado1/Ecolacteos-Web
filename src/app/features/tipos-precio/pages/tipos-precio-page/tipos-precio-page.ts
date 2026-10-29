@@ -22,7 +22,7 @@ import { TiposPrecioApi } from '../../data-access/tipos-precio.api';
   template: `
     <header class="page-heading">
       <div>
-        <div class="eyebrow">COMERCIAL</div>
+        <div class="eyebrow">CONFIGURACIÓN</div>
         <h1>Tipos de precio</h1>
         <p>Un tipo desactivado deja de ofrecerse en ventas y precios nuevos. Lo ya registrado conserva su tipo y no cambia.</p>
       </div>

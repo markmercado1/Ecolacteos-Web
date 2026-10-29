@@ -1,6 +1,6 @@
 <div class="page-heading">
   <div>
-    <div class="eyebrow">OPERACIÓN</div>
+    <div class="eyebrow">ACOPIO Y CALIDAD</div>
     <h1>Recepción</h1>
     <p>Conciliación de litros de campo contra litros pesados en planta, por unidad y fecha. La recepción se registra desde el móvil/planta; aquí solo se consulta.</p>
   </div>
@@ -48,7 +48,7 @@
 
   <ng-template #celda let-fila let-columna="columna">
     @switch (columna) {
-      @case ('fecha') { {{ fila.fecha }} · {{ fila.turno }} }
+      @case ('fecha') { {{ formatearFecha(fila.fecha) }} · {{ fila.turno }} }
       @case ('unidad') { {{ placa(fila.unidadId) }} }
       @case ('litrosCampo') { {{ fila.litrosCampo }} L }
       @case ('litrosPlanta') { {{ fila.litrosPlanta }} L }

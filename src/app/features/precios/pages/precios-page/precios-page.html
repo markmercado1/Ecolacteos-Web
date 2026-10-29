@@ -1,6 +1,6 @@
 <div class="page-heading">
   <div>
-    <div class="eyebrow">POLÍTICA COMERCIAL</div>
+    <div class="eyebrow">CONFIGURACIÓN</div>
     <h1>Precios</h1>
     <p>Precios de leche como materia prima y tarifas de productos por presentación y modalidad.</p>
   </div>
@@ -17,7 +17,7 @@
       <div class="card card-pad precio-hero">
         <div class="eyebrow">PRECIO VIGENTE</div>
         <div class="valor">S/ {{ precioVigente()!.precio }} <small>/ litro</small></div>
-        <p>Vigente desde el {{ precioVigente()!.vigenteDesde }}</p>
+        <p>Vigente desde el {{ formatearFecha(precioVigente()!.vigenteDesde) }}</p>
       </div>
     }
 
@@ -42,7 +42,7 @@
       <div toolbar><button type="button" class="btn primary small" (click)="registrarPrecio()">Registrar nuevo precio</button></div>
       <ng-template #celda let-fila let-columna="columna">
         @switch (columna) {
-          @case ('vigenteDesde') { <strong>{{ fila.vigenteDesde }}</strong> }
+          @case ('vigenteDesde') { <strong>{{ formatearFecha(fila.vigenteDesde) }}</strong> }
           @case ('precio') { S/ {{ fila.precio }} }
           @case ('estado') {
             <span class="badge" [class.blue]="estadoDe(fila) === 'Programado'" [class.gray]="estadoDe(fila) === 'Anterior'">

@@ -1,6 +1,6 @@
 <div class="page-heading">
   <div>
-    <div class="eyebrow">OPERACIÓN</div>
+    <div class="eyebrow">VENTAS</div>
     <h1>Ventas</h1>
     <p>Registro de venta (una o varias líneas) y consulta de tu historial. No se emiten facturas y las ventas registradas no se pueden editar ni anular.</p>
   </div>
@@ -54,7 +54,7 @@
 
   <ng-template #celda let-fila let-columna="columna">
     @switch (columna) {
-      @case ('fecha') { {{ fila.fecha }} }
+      @case ('fecha') { {{ formatearFecha(fila.fecha) }} }
       @case ('canal') { {{ etiquetaCanal(fila.tipoCliente) }} }
       @case ('lineas') { {{ resumenLineas(fila) }} }
       @case ('total') { <strong>S/ {{ fila.total.toFixed(2) }}</strong> }

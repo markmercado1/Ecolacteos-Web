@@ -56,7 +56,7 @@
         <div class="avatar">{{ iniciales() }}</div>
         <div>
           <strong>{{ usuario()?.nombre ?? 'Sesión activa' }}</strong>
-          <small>{{ usuario()?.rolNombre }}</small>
+          <small>{{ etiquetaRol(usuario()?.rolNombre) }}</small>
         </div>
       </div>
       <div class="account-actions">
@@ -78,7 +78,8 @@
         <button type="button" class="top-circle mobile-menu" (click)="alternarMenu()" aria-label="Abrir menú">
           <ui-icon name="menu" />
         </button>
-        <div class="crumb">Centro de gestión <b>/</b> <strong>{{ tituloActual() }}</strong></div>
+        <!-- Sección › página (el nombre de la aplicación ya está en el logo del menú). -->
+        <div class="crumb">@if (seccionActual(); as seccion) { {{ seccion }} <b>/</b> }<strong>{{ tituloActual() }}</strong></div>
       </div>
     </header>
     <main id="contenido" class="content">

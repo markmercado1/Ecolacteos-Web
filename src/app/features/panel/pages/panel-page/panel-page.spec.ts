@@ -42,12 +42,16 @@ const ZONAS = [
   { id: 'z3', nombre: 'Zona Vieja', activa: false },
 ];
 
+/** Tipos de precio que el panel consulta para poner nombre a los canales del gráfico de ventas. */
+const TIPOS_PRECIO = [{ codigo: 'RESTAURANT_111', nombre: 'Restaurante' }] as never[];
+
 /** Crea la página y responde las zonas. Al abrir, la vista inicial es el consolidado: una petición por zona ACTIVA. */
 function abrir() {
   TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
   const http = TestBed.inject(HttpTestingController);
   const f = TestBed.createComponent(PanelPage);
   http.expectOne(`${base}/admin/zonas`).flush(ZONAS);
+  http.expectOne((r) => r.url === `${base}/tipos-precio`).flush(TIPOS_PRECIO);
   return { f, http, c: f.componentInstance };
 }
 
@@ -73,6 +77,17 @@ describe('PanelPage · vista consolidada (inicial)', () => {
     expect(c['esConsolidado']()).toBe(true);
     reqs.forEach((r) => r.flush(panelCompleto));
     http.verify();
+  });
+
+  it('el gráfico de ventas muestra el nombre del tipo de precio y no su código interno (RESTAURANT_111 → Restaurante)', () => {
+    const { f, http, c } = abrir();
+    const conTipoNuevo = { ...panelCompleto, margenPorCanal: [...panelCompleto.margenPorCanal, { tipoCliente: 'RESTAURANT_111', totalVentas: 11 }] };
+    peticion(http, 'z1').flush(conTipoNuevo);
+    peticion(http, 'z2').flush(conTipoNuevo);
+    f.detectChanges();
+    const etiquetas = (c['datosVentasConsolidado']() as { etiqueta: string }[]).map((d) => d.etiqueta);
+    expect(etiquetas).toContain('Restaurante');
+    expect(etiquetas).not.toContain('RESTAURANT_111');
   });
 
   it('suma riesgo, litros estimados y flujo de caja de las zonas con datos y cuenta las alertas de capacidad', () => {
@@ -184,6 +199,7 @@ describe('PanelPage · vista consolidada (inicial)', () => {
     const http = TestBed.inject(HttpTestingController);
     const f = TestBed.createComponent(PanelPage);
     http.expectOne(`${base}/admin/zonas`).flush([{ id: 'z3', nombre: 'Zona Vieja', activa: false }]);
+    http.expectOne((r) => r.url === `${base}/tipos-precio`).flush([]);
     f.detectChanges();
     http.expectNone(urlPanel);
     expect(texto(f)).toContain('No hay zonas activas para consolidar');
@@ -222,6 +238,7 @@ describe('PanelPage · vista consolidada (inicial)', () => {
     const http = TestBed.inject(HttpTestingController);
     const f = TestBed.createComponent(PanelPage);
     http.expectOne(`${base}/admin/zonas`).flush({}, { status: 500, statusText: 'Server Error' });
+    http.expectOne((r) => r.url === `${base}/tipos-precio`).flush([]);
     f.detectChanges();
     expect(texto(f)).toContain('No se pudieron cargar las zonas');
     http.verify();

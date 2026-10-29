@@ -1,6 +1,6 @@
 <div class="page-heading">
   <div>
-    <div class="eyebrow">OPERACIÓN</div>
+    <div class="eyebrow">PRODUCCIÓN</div>
     <h1>Producción</h1>
     <p>Planifica producciones desde una receta, valida el stock, inicia la fabricación y registra el resultado real.</p>
   </div>
@@ -64,7 +64,7 @@
 
   <ng-template #celda let-fila let-columna="columna">
     @switch (columna) {
-      @case ('fecha') { {{ fila.fecha }} }
+      @case ('fecha') { {{ formatearFecha(fila.fecha) }} }
       @case ('productoNombre') {
         <strong>{{ fila.productoNombre }}</strong>
         @if (fila.recetaNombre) { <span class="sub">{{ fila.recetaNombre }}</span> }

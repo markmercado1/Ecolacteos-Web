@@ -11,6 +11,7 @@ import { UsuarioResponse } from '../../../usuarios/data-access/usuario.models';
 import { UnidadRequest, UnidadResponse } from '../../data-access/unidad.models';
 import { UnidadesApi } from '../../data-access/unidades.api';
 import { pendientesDe, resumenPendientes } from '../../../../shared/util/validacion';
+import { etiquetaRol } from '../../../../shared/models/rol';
 
 const ETIQUETAS: Record<string, string> = {"placa":"Placa","capacidadTon":"Capacidad","responsableId":"Responsable"};
 
@@ -103,7 +104,7 @@ interface ZonaConRuta {
         @if (data.responsableActual) {
           <p class="warning-inline">
             El responsable actual, <strong>{{ data.responsableActual.nombre }}</strong>,
-            tiene rol {{ data.responsableActual.rolNombre }}{{ data.responsableActual.activo ? '' : ' e inactivo' }}
+            tiene rol {{ etiquetaRol(data.responsableActual.rolNombre) }}{{ data.responsableActual.activo ? '' : ' e inactivo' }}
             y no aparece en la lista de acopiadores activos. Puedes conservarlo o elegir otro.
           </p>
         } @else if (data.unidad && sinCoincidenciaDeResponsable()) {
@@ -117,7 +118,7 @@ interface ZonaConRuta {
           @if (data.responsableActual) {
             <optgroup label="Responsable actual (revisar)">
               <option [value]="data.responsableActual.id">
-                {{ data.responsableActual.nombre }} — {{ data.responsableActual.rolNombre }}{{ data.responsableActual.activo ? '' : ', inactivo' }}
+                {{ data.responsableActual.nombre }} — {{ etiquetaRol(data.responsableActual.rolNombre) }}{{ data.responsableActual.activo ? '' : ', inactivo' }}
               </option>
             </optgroup>
           } @else if (data.unidad && sinCoincidenciaDeResponsable()) {
@@ -168,6 +169,7 @@ interface ZonaConRuta {
   `
 })
 export class UnidadFormDialog {
+  protected readonly etiquetaRol = etiquetaRol;
   protected readonly dialogRef = inject(DialogRef<UnidadResponse | undefined>);
   protected readonly data = inject<UnidadFormDialogData>(DIALOG_DATA);
   private readonly fb = inject(FormBuilder);

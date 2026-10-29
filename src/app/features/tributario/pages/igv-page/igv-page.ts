@@ -35,7 +35,7 @@ import { TasaIgvDialog } from '../../ui/tasa-igv-dialog/tasa-igv-dialog';
   template: `
     <div class="page-heading">
       <div>
-        <div class="eyebrow">COMERCIAL</div>
+        <div class="eyebrow">CONFIGURACIÓN</div>
         <h1>IGV de las ventas</h1>
         <p>
           Los precios son <strong>finales</strong>: lo publicado es lo que paga el cliente. Cuando una venta está gravada, el IGV se

@@ -23,6 +23,7 @@ import { LoteDetalleDialog } from '../../ui/lote-detalle-dialog/lote-detalle-dia
 import { ProduccionMultipleDialog, ProduccionMultipleResultado } from '../../ui/produccion-multiple-dialog/produccion-multiple-dialog';
 import { RegistrarLoteDialog, RegistrarLoteDialogResultado } from '../../ui/registrar-lote-dialog/registrar-lote-dialog';
 import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
+import { formatearFecha } from '../../../../shared/util/fecha';
 
 
 @Component({
@@ -33,6 +34,7 @@ import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exp
   styleUrl: './lotes-page.css'
 })
 export class LotesPage {
+  protected readonly formatearFecha = formatearFecha;
   private readonly lotesApi = inject(LotesProduccionApi);
   private readonly productosApi = inject(ProductosApi);
   private readonly inventarioApi = inject(InventarioApi);

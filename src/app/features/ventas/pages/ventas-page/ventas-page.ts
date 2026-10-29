@@ -12,6 +12,7 @@ import { TipoClienteVenta, VentaResumenResponse } from '../../data-access/venta.
 import { VentasApi } from '../../data-access/ventas.api';
 import { VentaDetalleDialog } from '../../ui/venta-detalle-dialog/venta-detalle-dialog';
 import { VentaFormDialog, VentaFormDialogResultado } from '../../ui/venta-form-dialog/venta-form-dialog';
+import { formatearFecha } from '../../../../shared/util/fecha';
 
 @Component({
   selector: 'app-ventas-page',
@@ -21,6 +22,7 @@ import { VentaFormDialog, VentaFormDialogResultado } from '../../ui/venta-form-d
   styleUrl: './ventas-page.css'
 })
 export class VentasPage {
+  protected readonly formatearFecha = formatearFecha;
   private readonly ventasApi = inject(VentasApi);
   private readonly dialog = inject(Dialog);
   private readonly toast = inject(ToastService);

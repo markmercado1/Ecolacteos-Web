@@ -5,6 +5,7 @@ import { mapHttpError } from '../../../../core/http/app-error';
 import { RolResponse, UsuarioResponse } from '../../data-access/usuario.models';
 import { UsuariosApi } from '../../data-access/usuarios.api';
 import { pendientesDe, resumenPendientes } from '../../../../shared/util/validacion';
+import { etiquetaRol } from '../../../../shared/models/rol';
 
 const ETIQUETAS: Record<string, string> = {"nombre":"Nombre completo","email":"Correo electrónico","rolNombre":"Rol","password":"Contraseña"};
 
@@ -46,7 +47,7 @@ export interface UsuarioFormDialogData {
           <select id="rolNombre" formControlName="rolNombre" required>
             <option value="" disabled>Selecciona un rol</option>
             @for (rol of data.roles; track rol.id) {
-              <option [value]="rol.nombre">{{ rol.nombre }}</option>
+              <option [value]="rol.nombre">{{ etiquetaRol(rol.nombre) }}</option>
             }
           </select>
           @if (invalido('rolNombre')) { <span class="error">Elige un rol.</span> }
@@ -104,6 +105,7 @@ export interface UsuarioFormDialogData {
   `
 })
 export class UsuarioFormDialog {
+  protected readonly etiquetaRol = etiquetaRol;
   protected readonly dialogRef = inject(DialogRef<UsuarioResponse | undefined>);
   protected readonly data = inject<UsuarioFormDialogData>(DIALOG_DATA);
   private readonly fb = inject(FormBuilder);

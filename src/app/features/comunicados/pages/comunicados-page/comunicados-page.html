@@ -1,6 +1,6 @@
 <div class="page-heading">
   <div>
-    <div class="eyebrow">COMUNICACIÓN TERRITORIAL</div>
+    <div class="eyebrow">PROVEEDORES Y PAGOS</div>
     <h1>Comunicados</h1>
     <p>Publica un mensaje a una o varias zonas. La confirmación la registra el acopiador desde el móvil al comunicarlo.</p>
   </div>
@@ -69,7 +69,7 @@
     <div class="card card-pad comunicado-item">
       <div>
         <strong>{{ comunicado.mensaje }}</strong>
-        <p>{{ comunicado.zonasNombres.join(', ') }} · {{ comunicado.fecha }}</p>
+        <p>{{ comunicado.zonasNombres.join(', ') }} · {{ formatearFechaHora(comunicado.fecha) }}</p>
       </div>
       <button type="button" class="row-link" (click)="verConfirmaciones(comunicado)">Ver confirmaciones</button>
     </div>

@@ -140,17 +140,17 @@ describe('UsuariosPage (regresión: contenido real de cada columna en el DOM)', 
     const [c1, c2, c3] = [celdas(filas[0]), celdas(filas[1]), celdas(filas[2])];
     expect(c1[0]).toBe('Ana Torres');
     expect(c1[1]).toBe('ana@ecolacteos.pe');
-    expect(c1[2]).toBe('ADMIN');
+    expect(c1[2]).toBe('Administrador'); // el rol se muestra con su nombre legible; el valor técnico solo viaja a la API
     expect(c1[3]).toBe('Activo');
 
     expect(c2[0]).toBe('Jorge Palomino');
     expect(c2[1]).toBe('jorge@ecolacteos.pe');
-    expect(c2[2]).toBe('ACOPIADOR');
+    expect(c2[2]).toBe('Acopiador');
     expect(c2[3]).toBe('Activo');
 
     expect(c3[0]).toBe('Mónica Rojas');
     expect(c3[1]).toBe('monica@ecolacteos.pe');
-    expect(c3[2]).toBe('PRODUCCION');
+    expect(c3[2]).toBe('Producción');
     expect(c3[3]).toBe('Inactivo');
   });
 

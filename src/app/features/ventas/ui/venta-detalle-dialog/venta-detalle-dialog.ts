@@ -71,7 +71,7 @@ const ETIQUETAS_CANAL: Record<TipoClienteVenta, string> = {
             }
           </tbody>
         </table>
-        <p class="total">Total confirmado por el servidor: S/ {{ v.total | number: '1.2-2' }}</p>
+        <p class="total">Total de la venta: S/ {{ v.total | number: '1.2-2' }}</p>
         @if (conDesglose(v) && v.igv; as igv) {
           <div class="desglose" data-testid="desglose-igv">
             @if (igv.incluyeIgv) { <p><strong>Incluye IGV: S/ {{ igv.igvTotal | number: '1.2-2' }}</strong> · Op. gravadas S/ {{ igv.operacionesGravadas | number: '1.2-2' }}</p> }

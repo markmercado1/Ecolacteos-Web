@@ -150,7 +150,7 @@ describe('UnidadFormDialog — responsable actual fuera de la lista de acopiador
 
     const html = fixture.nativeElement as HTMLElement;
     expect(html.textContent).toContain('Luis Ventas');
-    expect(html.textContent).toContain('VENTAS');
+    expect(html.textContent).toContain('Ventas');
     http.verify();
   });
 

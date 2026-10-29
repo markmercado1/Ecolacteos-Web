@@ -148,12 +148,12 @@ describe('VentasPage — contenido real de cada columna y acciones sobre el ID c
 
     const [c1, c2] = [celdas(filas[0]), celdas(filas[1])];
     // columnas: Fecha, Canal, Líneas, Total, Acciones
-    expect(c1[0]).toBe('2026-09-17');
+    expect(c1[0]).toBe('17/09/2026'); // se muestra dd/MM/yyyy; la API sigue recibiendo y entregando ISO
     expect(c1[1]).toBe('Mayorista');
     expect(c1[2]).toBe('10 × Botella 1 L');
     expect(c1[3]).toBe('S/ 125.00');
 
-    expect(c2[0]).toBe('2026-09-16');
+    expect(c2[0]).toBe('16/09/2026');
     expect(c2[1]).toBe('Público');
     expect(c2[2]).toBe('2 líneas');
     expect(c2[3]).toBe('S/ 36.00');

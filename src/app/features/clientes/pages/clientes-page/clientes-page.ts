@@ -30,7 +30,7 @@ type Filtro = 'TODOS' | 'MAYORISTAS' | 'CON_PROMOCIONES' | 'INACTIVOS';
   template: `
     <div class="page-heading">
       <div>
-        <div class="eyebrow">COMERCIAL</div>
+        <div class="eyebrow">VENTAS</div>
         <h1>Clientes</h1>
         <p>Compradores que <strong>aceptaron registrarse</strong>. Registrarse es voluntario: quien no quiere compra igual como «Cliente varios».
           Los proveedores que compran se identifican con su ficha de proveedor.</p>

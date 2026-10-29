@@ -21,6 +21,7 @@ import { TiposPrecioApi } from '../../../tipos-precio/data-access/tipos-precio.a
 import { TipoPrecioResponse } from '../../../tipos-precio/data-access/tipo-precio.models';
 import { PrecioFormDialog } from '../../ui/precio-form-dialog/precio-form-dialog';
 import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
+import { formatearFecha as fechaCorta } from '../../../../shared/util/fecha';
 
 type Pestana = 'leche' | 'queso';
 type TipoCliente = PrecioQuesoResponse['modalidad'];
@@ -133,8 +134,7 @@ export class PreciosPage {
 
   /** "2026-09-18" -> "18/09/2026", solo para mostrar; el dato que viaja y se guarda sigue siendo ISO. */
   protected formatearFecha(iso: string): string {
-    const [anio, mes, dia] = iso.split('-');
-    return `${dia}/${mes}/${anio}`;
+    return fechaCorta(iso);
   }
 
   protected cargar(): void {

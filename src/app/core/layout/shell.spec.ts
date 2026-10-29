@@ -207,6 +207,21 @@ describe('Shell — navegación desplegable', () => {
     });
   });
 
+  it('la barra superior muestra sección › página, sin repetir el nombre de la aplicación ni el de la sección', async () => {
+    const f = await crear('ADMIN', '/reservas');
+    const crumb = (f.nativeElement as HTMLElement).querySelector('.crumb')!.textContent!.replace(/\s+/g, ' ').trim();
+    expect(crumb).toMatch(/^Ventas\s*\/\s*Reservas$/); // sección › página
+    TestBed.resetTestingModule();
+
+    const g = await crear('ADMIN', '/ventas'); // la sección y la página se llaman igual: solo la página
+    expect((g.nativeElement as HTMLElement).querySelector('.crumb')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('Ventas');
+  });
+
+  it('el rol de la cuenta se muestra con su nombre legible', async () => {
+    const f = await crear('RECEPCION', '/jornadas');
+    expect((f.nativeElement as HTMLElement).querySelector('.account small')?.textContent?.trim()).toBe('Recepción');
+  });
+
   it('el icono del botón de menú tiene tamaño propio: sin él se encogía a 0×0 y el botón se veía vacío', async () => {
     const f = await crear('ADMIN', '/panel');
     const icono = (f.nativeElement as HTMLElement).querySelector<HTMLElement>('.mobile-menu ui-icon')!;

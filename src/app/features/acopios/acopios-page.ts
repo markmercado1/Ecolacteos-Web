@@ -32,7 +32,7 @@ import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../.
   template: `
     <div class="page-heading">
       <div>
-        <div class="eyebrow">OPERACIÓN</div>
+        <div class="eyebrow">ACOPIO Y CALIDAD</div>
         <h1>Acopios</h1>
         <p>Entregas de leche registradas en campo. Consulta su fecha, ubicación y fotografía.</p>
       </div>
@@ -74,8 +74,8 @@ import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../.
       <button class="btn primary" [disabled]="cargando()" (click)="actualizar()">Actualizar</button>
     </div>
     <p>
-      Solo se muestran acopios enviados al servidor. Los pendientes del móvil aparecerán después de
-      sincronizarse. Sin marcar "Solo entregas sin análisis" se listan todas las entregas del filtro, no
+      Solo se muestran los acopios que el móvil ya envió. Los pendientes aparecerán cuando se
+      sincronicen. Sin marcar "Solo entregas sin análisis" se listan todas las entregas del filtro, no
       solo las ya analizadas.
     </p>
     @if (errorUnidades()) {

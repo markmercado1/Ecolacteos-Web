@@ -11,6 +11,7 @@ import { RecepcionPlanta } from '../../data-access/recepcion.models';
 import { RecepcionApi } from '../../data-access/recepcion.api';
 import { RecepcionDetalleDialog } from '../../ui/recepcion-detalle-dialog/recepcion-detalle-dialog';
 import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
+import { formatearFecha } from '../../../../shared/util/fecha';
 
 
 @Component({
@@ -21,6 +22,7 @@ import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exp
   styleUrl: './recepcion-page.css',
 })
 export class RecepcionPage {
+  protected readonly formatearFecha = formatearFecha;
   private readonly api = inject(RecepcionApi);
   private readonly unidadesApi = inject(UnidadesApi);
   private readonly dialog = inject(Dialog);

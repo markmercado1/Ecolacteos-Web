@@ -451,7 +451,7 @@ export class VentaFormDialog {
           this.incierto.set(true);
           this.errorEnvio.set(
             'No se pudo confirmar si la venta quedó registrada por un problema de conexión. ' +
-              'Presiona "Reintentar" sin cambiar los datos: el identificador de esta venta se conserva y el servidor no la duplicará.'
+              'Presiona "Reintentar" sin cambiar los datos: esta venta conserva su identificador, así que no se registrará dos veces.'
           );
         } else {
           this.incierto.set(false);

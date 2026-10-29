@@ -16,6 +16,7 @@ import { ZonasApi } from '../../../catalogos/data-access/zonas.api';
 import { ComunicadoResponse } from '../../data-access/comunicado.models';
 import { ComunicadosApi } from '../../data-access/comunicados.api';
 import { ConfirmacionesDialog } from '../../ui/confirmaciones-dialog/confirmaciones-dialog';
+import { formatearFechaHora } from '../../../../shared/util/fecha';
 
 @Component({
   selector: 'app-comunicados-page',
@@ -25,6 +26,7 @@ import { ConfirmacionesDialog } from '../../ui/confirmaciones-dialog/confirmacio
   styleUrl: './comunicados-page.css'
 })
 export class ComunicadosPage {
+  protected readonly formatearFechaHora = formatearFechaHora;
   private readonly comunicadosApi = inject(ComunicadosApi);
   private readonly zonasApi = inject(ZonasApi);
   private readonly dialog = inject(Dialog);

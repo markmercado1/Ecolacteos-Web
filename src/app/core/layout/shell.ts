@@ -7,6 +7,7 @@ import { AuthService } from '../auth/auth.service';
 import { ChangePasswordDialog } from '../../features/auth/ui/change-password-dialog/change-password-dialog';
 import { IconComponent } from '../../shared/ui/icon/icon';
 import { GRUPOS_NAVEGACION } from './nav-items';
+import { etiquetaRol } from '../../shared/models/rol';
 
 /** "/produccion" coincide con "/produccion" y "/produccion?x", pero NO con "/produccion-diaria". */
 export function coincideRuta(url: string, ruta: string): boolean {
@@ -21,6 +22,7 @@ export function coincideRuta(url: string, ruta: string): boolean {
   styleUrl: './shell.css'
 })
 export class Shell {
+  protected readonly etiquetaRol = etiquetaRol;
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly dialog = inject(Dialog);
@@ -57,6 +59,12 @@ export class Shell {
   protected readonly grupoActivo = computed(() => {
     const url = this.urlActual();
     return this.grupos().find((g) => g.items.some((i) => coincideRuta(url, i.ruta)))?.id ?? null;
+  });
+
+  /** Título de la sección de la página actual para la barra superior; null si no hay o si repetiría el título de la página. */
+  protected readonly seccionActual = computed(() => {
+    const titulo = this.grupos().find((g) => g.id === this.grupoActivo())?.titulo ?? null;
+    return titulo && titulo !== this.tituloActual() ? titulo : null;
   });
 
   // Depende de la URL (no solo del grupo): navegar entre páginas del mismo grupo también pliega lo que se abrió a mano.

@@ -12,6 +12,8 @@ import { ZonaResponse } from '../../../catalogos/data-access/zona.models';
 import { ZonasApi } from '../../../catalogos/data-access/zonas.api';
 import { PanelEconomico } from '../../../calidad/data-access/calidad.models';
 import { CalidadApi } from '../../../calidad/data-access/calidad.api';
+import { TipoPrecioResponse } from '../../../tipos-precio/data-access/tipo-precio.models';
+import { TiposPrecioApi } from '../../../tipos-precio/data-access/tipos-precio.api';
 import { ResultadoZonaPanel, clasificarErrorPanel, consolidar } from '../../util/panel-consolidado';
 
 const ETIQUETAS_CANAL: Record<string, string> = {
@@ -50,7 +52,11 @@ export const TODAS_LAS_ZONAS = 'todas';
 export class PanelPage {
   private readonly calidadApi = inject(CalidadApi);
   private readonly zonasApi = inject(ZonasApi);
+  private readonly tiposPrecioApi = inject(TiposPrecioApi);
   private readonly destroy = inject(DestroyRef);
+
+  /** El gráfico de ventas llega con el código del tipo de precio (p. ej. «RESTAURANT_111»); aquí se obtienen sus nombres. Si la consulta falla se muestra el código. */
+  private readonly tiposPrecio = signal<TipoPrecioResponse[]>([]);
 
   protected readonly TODAS = TODAS_LAS_ZONAS;
 
@@ -93,10 +99,18 @@ export class PanelPage {
 
   constructor() {
     this.cargarZonas();
+    this.tiposPrecioApi
+      .listar()
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({ next: (tipos) => this.tiposPrecio.set(tipos), error: () => this.tiposPrecio.set([]) });
+  }
+
+  private nombreCanal(codigo: string): string {
+    return ETIQUETAS_CANAL[codigo] ?? this.tiposPrecio().find((t) => t.codigo === codigo)?.nombre ?? codigo;
   }
 
   private aBarras(margen: { tipoCliente: string; totalVentas: number }[]): BarraChart[] {
-    return margen.map((m) => ({ etiqueta: ETIQUETAS_CANAL[m.tipoCliente] ?? m.tipoCliente, valor: m.totalVentas }));
+    return margen.map((m) => ({ etiqueta: this.nombreCanal(m.tipoCliente), valor: m.totalVentas }));
   }
 
   protected cargarZonas(): void {
