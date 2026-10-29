@@ -62,6 +62,7 @@
     </ng-template>
     <div toolbar>
       @if (esAdmin()) {
+        <button type="button" class="btn small" (click)="fusionarDuplicados()">Insumos duplicados</button>
         <button type="button" class="btn small" (click)="importarInsumos()">Importar desde Excel</button>
         <button type="button" class="btn primary small" (click)="nuevoInsumo()">Nuevo insumo</button>
       }

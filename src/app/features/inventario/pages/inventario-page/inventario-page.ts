@@ -35,6 +35,7 @@ import { KardexDialog } from '../../ui/kardex-dialog/kardex-dialog';
 import { LotesPresentacionDialog } from '../../ui/lotes-presentacion-dialog/lotes-presentacion-dialog';
 import { KardexVistaComponent } from '../../ui/kardex-vista/kardex-vista';
 import { MovimientoInsumoDialog } from '../../ui/movimiento-insumo-dialog/movimiento-insumo-dialog';
+import { FusionInsumosDialog } from '../../ui/fusion-insumos-dialog/fusion-insumos-dialog';
 import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 /** Producto terminado: PRODUCCION, VENTAS y ADMIN. Insumos y leche: solo PRODUCCION y ADMIN (V19). */
@@ -311,6 +312,17 @@ export class InventarioPage {
   }
   // --- Insumos ---
   /** Importa insumos (con su stock inicial en el kardex) desde la plantilla oficial de Excel; solo crea, nunca actualiza. */
+  /** Herramienta de fusión de insumos duplicados (solo ADMIN): al fusionar algo se recarga la lista. */
+  protected fusionarDuplicados(): void {
+    const ref = this.dialog.open<boolean>(FusionInsumosDialog, { ariaLabel: 'Insumos duplicados' });
+    ref.closed.subscribe((huboFusion) => {
+      if (huboFusion) {
+        this.toast.exito('Insumos fusionados: el stock y el kardex quedaron unificados.');
+        this.cargarInsumos();
+      }
+    });
+  }
+
   protected importarInsumos(): void {
     const ref = this.dialog.open<number | undefined>(ImportarExcelDialog, {
       ariaLabel: 'Importar insumos desde Excel',
