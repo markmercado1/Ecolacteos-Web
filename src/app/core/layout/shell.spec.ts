@@ -177,7 +177,7 @@ describe('Shell — navegación desplegable', () => {
         enlaces: [
           'Panel económico',
           'Acopios', 'Calidad', 'Jornadas', 'Recepción', 'Rutas',
-          'Producción', 'Inventario',
+          'Producción', 'Inventario', 'Trazabilidad',
           'Ventas', 'Reservas', 'Clientes',
           'Proveedores', 'Proveedores de compra', 'Liquidaciones de leche', 'Desembolsos a proveedores', 'Comunicados',
           'Precios', 'Tipos de precio', 'IGV de las ventas', 'Catálogos', 'Usuarios', 'Acopiadores', 'Unidades'
@@ -187,8 +187,8 @@ describe('Shell — navegación desplegable', () => {
         secciones: ['Acopio y calidad', 'Proveedores y pagos'],
         enlaces: ['Jornadas', 'Recepción', 'Liquidaciones de leche', 'Desembolsos a proveedores']
       },
-      CALIDAD: { secciones: [], enlaces: ['Calidad'] },
-      PRODUCCION: { secciones: ['Producción'], enlaces: ['Producción', 'Inventario'] },
+      CALIDAD: { secciones: [], enlaces: ['Calidad', 'Trazabilidad'] },
+      PRODUCCION: { secciones: ['Producción'], enlaces: ['Producción', 'Inventario', 'Trazabilidad'] },
       VENTAS: { secciones: ['Ventas'], enlaces: ['Inventario', 'Ventas', 'Reservas', 'Clientes'] },
       ACOPIADOR: { secciones: [], enlaces: ['Rutas'] }
     };

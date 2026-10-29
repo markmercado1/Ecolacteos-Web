@@ -96,4 +96,44 @@ describe('IngresoDocumentoDialog', () => {
     expect(c['habituales']().map((i: { id: string }) => i.id)).toEqual(['s']);
     expect(c['otros']().map((i: { id: string }) => i.id)).toEqual(['a']);
   });
+
+  const archivo = (nombre: string, tipo = 'image/jpeg') => new File([new Uint8Array([1, 2, 3])], nombre, { type: tipo });
+  const entrada = (...a: File[]) => ({ files: a, value: 'x' }) as unknown as HTMLInputElement;
+
+  it('el recibo se sube al documento ya registrado y recién entonces se cierra', () => {
+    const { c, http, close } = crear({ insumos: [azucar, sal], insumoInicial: azucar });
+    c['elegirArchivos'](entrada(archivo('recibo.jpg'), archivo('factura.pdf', 'application/pdf')));
+    expect(c['archivos']().length).toBe(2);
+    c['lineas'].at(0).patchValue({ cantidad: 10 });
+    c['enviar']();
+    http.expectOne(url).flush({ id: 'd1', lineas: [] });
+    expect(close).not.toHaveBeenCalled();
+    http.expectOne(`${url}/d1/adjuntos`).flush({ id: 'a1' }, { status: 201, statusText: 'Created' });
+    http.expectOne(`${url}/d1/adjuntos`).flush({ id: 'a2' }, { status: 201, statusText: 'Created' });
+    expect(close).toHaveBeenCalledWith(expect.objectContaining({ id: 'd1' }));
+  });
+
+  it('si un recibo falla, el ingreso queda registrado y se avisa cuál, sin perderlo ni repetirlo', () => {
+    const { f, c, http, close } = crear({ insumos: [azucar, sal], insumoInicial: azucar });
+    c['elegirArchivos'](entrada(archivo('recibo.jpg')));
+    c['lineas'].at(0).patchValue({ cantidad: 10 });
+    c['enviar']();
+    http.expectOne(url).flush({ id: 'd1', lineas: [] });
+    http.expectOne(`${url}/d1/adjuntos`).flush({ mensaje: 'x' }, { status: 400, statusText: 'Bad Request' });
+    f.detectChanges();
+    expect(f.nativeElement.textContent).toContain('El ingreso ya quedó registrado');
+    expect(f.nativeElement.textContent).toContain('recibo.jpg');
+    expect(close).not.toHaveBeenCalled();
+    c['dialogRef'].close(c['registrado']());
+    expect(close).toHaveBeenCalledWith(expect.objectContaining({ id: 'd1' }));
+  });
+
+  it('rechaza antes de subir un archivo que no es imagen ni PDF o pesa más de 10 MB', () => {
+    const { c } = crear({ insumos: [azucar, sal] });
+    c['elegirArchivos'](entrada(archivo('nota.txt', 'text/plain')));
+    expect(c['problemaArchivos']()).toContain('no es una imagen');
+    expect(c['archivos']().length).toBe(0);
+    c['elegirArchivos'](entrada(new File([new Uint8Array(11 * 1024 * 1024)], 'grande.pdf', { type: 'application/pdf' })));
+    expect(c['problemaArchivos']()).toContain('10 MB');
+  });
 });

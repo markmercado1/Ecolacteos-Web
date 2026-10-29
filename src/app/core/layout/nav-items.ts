@@ -56,7 +56,8 @@ export const GRUPOS_NAVEGACION: GrupoNavegacion[] = [
     icono: 'produccion',
     items: [
       { ruta: '/produccion', etiqueta: 'Producción', icono: 'produccion', roles: ['ADMIN', 'PRODUCCION'] },
-      { ruta: '/inventario', etiqueta: 'Inventario', icono: 'inventario', roles: ['ADMIN', 'PRODUCCION', 'VENTAS'] }
+      { ruta: '/inventario', etiqueta: 'Inventario', icono: 'inventario', roles: ['ADMIN', 'PRODUCCION', 'VENTAS'] },
+      { ruta: '/trazabilidad', etiqueta: 'Trazabilidad', icono: 'inventario', roles: ['ADMIN', 'PRODUCCION', 'CALIDAD'] }
     ]
   },
   {

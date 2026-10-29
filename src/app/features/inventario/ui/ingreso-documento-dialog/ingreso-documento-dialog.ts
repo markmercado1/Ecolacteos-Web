@@ -7,6 +7,7 @@ import { InsumoResponse } from '../../../catalogos/data-access/insumo.models';
 import { ProveedorCompraResponse } from '../../../proveedores-compra/data-access/proveedor-compra.models';
 import { ProveedorCompraSelectorComponent } from '../../../proveedores-compra/ui/proveedor-compra-selector/proveedor-compra-selector';
 import { IngresosApi } from '../../data-access/ingresos.api';
+import { ADJUNTO_ACEPTA, TrazabilidadApi, problemaDeAdjunto } from '../../../trazabilidad/data-access/trazabilidad.api';
 import { DocumentoIngresoResponse, ETIQUETA_DOCUMENTO, TipoDocumentoIngreso } from '../../data-access/ingresos.models';
 
 export interface IngresoDocumentoDialogData {
@@ -113,15 +114,29 @@ type LineaForm = FormGroup<{
         <button type="button" class="btn small" (click)="agregarLinea()">+ Agregar línea</button>
       </fieldset>
 
+      <div class="field adjuntos">
+        <label for="ing-recibo">Recibo (opcional): foto o PDF, hasta 10 MB</label>
+        <input id="ing-recibo" type="file" multiple [accept]="acepta" capture="environment" (change)="elegirArchivos($any($event.target))">
+        @for (a of archivos(); track $index) { <span class="archivo">{{ a.name }} <button type="button" class="row-link" (click)="quitarArchivo($index)" [attr.aria-label]="'Quitar ' + a.name">Quitar</button></span> }
+        @if (problemaArchivos()) { <span class="error" role="alert">{{ problemaArchivos() }}</span> }
+      </div>
+
       <div class="field">
         <label for="ing-observacion">Observación (opcional)</label>
         <textarea id="ing-observacion" rows="2" maxlength="500" formControlName="observacion"></textarea>
       </div>
 
       @if (errorServidor()) { <p class="server-error" role="alert">{{ errorServidor() }}</p> }
+      @if (registrado()) {
+        <p class="server-error" role="alert">El ingreso ya quedó registrado, pero no se pudo adjuntar: {{ fallidos().join(', ') }}. Puedes adjuntarlo después en Trazabilidad.</p>
+      }
       <div class="dialog-foot">
-        <button type="button" class="btn" (click)="dialogRef.close()">Cancelar</button>
-        <button type="submit" class="btn primary" [disabled]="enviando()">{{ enviando() ? 'Guardando…' : 'Registrar ingreso' }}</button>
+        @if (registrado(); as r) {
+          <button type="button" class="btn primary" (click)="dialogRef.close(r)">Cerrar</button>
+        } @else {
+          <button type="button" class="btn" (click)="dialogRef.close()">Cancelar</button>
+          <button type="submit" class="btn primary" [disabled]="enviando()">{{ enviando() ? 'Guardando…' : 'Registrar ingreso' }}</button>
+        }
       </div>
       <p class="hint">Cada línea crea un lote y queda en el kardex del insumo con tu usuario, la fecha y hora. Los movimientos no se editan ni se eliminan.</p>
     </form>
@@ -148,6 +163,14 @@ export class IngresoDocumentoDialog {
   protected readonly data = inject<IngresoDocumentoDialogData>(DIALOG_DATA);
   private readonly fb = inject(FormBuilder);
   private readonly api = inject(IngresosApi);
+  private readonly trazabilidadApi = inject(TrazabilidadApi);
+
+  protected readonly acepta = ADJUNTO_ACEPTA;
+  protected readonly archivos = signal<File[]>([]);
+  protected readonly problemaArchivos = signal<string | null>(null);
+  /** El ingreso ya registrado cuando algún adjunto falló (para cerrar sin repetirlo). */
+  protected readonly registrado = signal<DocumentoIngresoResponse | null>(null);
+  protected readonly fallidos = signal<string[]>([]);
 
   protected readonly tipos: TipoDocumentoIngreso[] = ['SIN_DOCUMENTO', 'GUIA', 'FACTURA', 'BOLETA', 'OTRO'];
   protected readonly etiqueta = (t: TipoDocumentoIngreso) => ETIQUETA_DOCUMENTO[t];
@@ -214,6 +237,39 @@ export class IngresoDocumentoDialog {
     return this.tipoActual() !== 'SIN_DOCUMENTO' && !this.form.controls.numero.value.trim() && this.intentado();
   }
 
+  protected elegirArchivos(input: HTMLInputElement): void {
+    const nuevos = Array.from(input.files ?? []);
+    input.value = '';
+    const problema = nuevos.map(problemaDeAdjunto).find((p) => p !== null) ?? null;
+    this.problemaArchivos.set(problema);
+    if (!problema) this.archivos.update((a) => [...a, ...nuevos]);
+  }
+
+  protected quitarArchivo(i: number): void {
+    this.archivos.update((a) => a.filter((_, k) => k !== i));
+  }
+
+  /** Sube los recibos uno por uno al documento ya registrado; los que fallen se avisan sin perder el ingreso. */
+  private adjuntarYCerrar(doc: DocumentoIngresoResponse): void {
+    const pendientes = [...this.archivos()];
+    const fallidos: string[] = [];
+    const siguiente = (): void => {
+      const a = pendientes.shift();
+      if (!a) {
+        if (fallidos.length === 0) {
+          this.dialogRef.close(doc);
+        } else {
+          this.enviando.set(false);
+          this.fallidos.set(fallidos);
+          this.registrado.set(doc);
+        }
+        return;
+      }
+      this.trazabilidadApi.adjuntar(doc.id, a).subscribe({ next: () => siguiente(), error: () => { fallidos.push(a.name); siguiente(); } });
+    };
+    siguiente();
+  }
+
   protected enviar(): void {
     if (this.enviando()) return;
     this.intentado.set(true);
@@ -242,7 +298,7 @@ export class IngresoDocumentoDialog {
         })
       })
       .subscribe({
-        next: (r) => this.dialogRef.close(r),
+        next: (r) => (this.archivos().length > 0 ? this.adjuntarYCerrar(r) : this.dialogRef.close(r)),
         error: (e) => {
           this.enviando.set(false);
           this.errorServidor.set(mapHttpError(e).mensaje);

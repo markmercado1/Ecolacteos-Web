@@ -146,6 +146,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/precios/pages/precios-page/precios-page').then((m) => m.PreciosPage)
       },
       {
+        path: 'trazabilidad',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'PRODUCCION', 'CALIDAD'] },
+        loadComponent: () => import('./features/trazabilidad/pages/trazabilidad-page/trazabilidad-page').then((m) => m.TrazabilidadPage)
+      },
+      {
         path: 'inventario',
         canActivate: [roleGuard],
         data: { roles: ['ADMIN', 'PRODUCCION', 'VENTAS'] },
