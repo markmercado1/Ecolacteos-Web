@@ -184,7 +184,9 @@
   border: 1px solid var(--color-border); border-radius: var(--radius-control);
   display: grid; place-items: center; color: var(--color-primary);
 }
-.mobile-menu { display: none; }
+/* ui-icon no trae tamaño propio: en una grilla centrada se encoge a 0×0 y el botón se veía vacío. */
+.top-circle ui-icon { width: 1.25rem; height: 1.25rem; }
+.mobile-menu { display: none; width: 2.75rem; height: 2.75rem; }
 
 .content {
   max-width: var(--content-max-width);

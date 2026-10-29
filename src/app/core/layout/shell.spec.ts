@@ -133,4 +133,13 @@ describe('Shell — navegación desplegable', () => {
     const f = await crear('ADMIN', '/ventas');
     expect(enlaces(f)).toContain('Ventas');
   });
+
+  it('el icono del botón de menú tiene tamaño propio: sin él se encogía a 0×0 y el botón se veía vacío', async () => {
+    const f = await crear('ADMIN', '/panel');
+    const icono = (f.nativeElement as HTMLElement).querySelector<HTMLElement>('.mobile-menu ui-icon')!;
+    expect(icono).not.toBeNull();
+    const estilo = getComputedStyle(icono);
+    expect(estilo.width).toBe('1.25rem');
+    expect(estilo.height).toBe('1.25rem');
+  });
 });
