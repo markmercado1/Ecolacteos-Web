@@ -2,7 +2,7 @@
   <div>
     <div class="eyebrow">OPERACIÓN</div>
     <h1>Ventas</h1>
-    <p>Registro de venta (una o varias líneas) y consulta de tu historial. Sin facturación ni edición/anulación en esta fase.</p>
+    <p>Registro de venta (una o varias líneas) y consulta de tu historial. No se emiten facturas y las ventas registradas no se pueden editar ni anular.</p>
   </div>
   <div class="heading-actions">
     <button type="button" class="btn primary" (click)="nuevaVenta()">Registrar venta</button>
@@ -16,7 +16,7 @@
   [error]="error()"
   mensajeVacio="No hay ventas registradas con los filtros seleccionados."
   titulo="Historial de ventas"
-  subtitulo="Más recientes primero. Busca por vendedor o producto y filtra por fecha y canal; cada fila abre el detalle confirmado por el servidor."
+  subtitulo="Más recientes primero. Busca por vendedor o producto y filtra por fecha y canal; cada fila abre el detalle de la venta."
   [buscable]="true"
   placeholderBusqueda="Buscar por vendedor o producto"
   etiquetaBusqueda="Buscar ventas por vendedor o producto"

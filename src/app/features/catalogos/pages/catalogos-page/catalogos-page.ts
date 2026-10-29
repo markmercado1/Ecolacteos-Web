@@ -35,7 +35,7 @@ type Pestana = 'zonas' | 'motivos' | 'familias' | 'productos' | 'recetas' | 'con
 const PESTANAS: Pestana[] = ['zonas', 'motivos', 'familias', 'productos', 'recetas', 'configuracion'];
 
 const AVISO_LIMITACION_INACTIVOS =
-  'Este catálogo solo lista registros activos. Al desactivar uno, desaparece de esta lista y no podrás reactivarlo desde aquí (la API no ofrece ver inactivos).';
+  'Este catálogo solo muestra registros activos. Al desactivar uno, desaparece de esta lista y no podrás reactivarlo desde aquí.';
 
 @Component({
   selector: 'app-catalogos-page',
@@ -454,7 +454,7 @@ export class CatalogosPage {
       ariaLabel: 'Desactivar',
       data: {
         titulo: 'Desactivar registro',
-        mensaje: `"${nombre}" se desactivará y desaparecerá de este listado. La API no permite verlo ni reactivarlo después desde esta pantalla.`,
+        mensaje: `"${nombre}" se desactivará y desaparecerá de este listado. Después no podrás verlo ni reactivarlo desde esta pantalla.`,
         etiquetaConfirmar: 'Desactivar',
         peligroso: true
       }

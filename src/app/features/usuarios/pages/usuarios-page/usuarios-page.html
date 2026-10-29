@@ -2,7 +2,7 @@
   <div>
     <div class="eyebrow">ADMINISTRACIÓN</div>
     <h1>Usuarios</h1>
-    <p>Personas con acceso al sistema y su rol asignado, con las más recientes primero. La búsqueda y los filtros se aplican en el servidor, entre todos los usuarios.</p>
+    <p>Personas con acceso al sistema y su rol asignado, con las más recientes primero. La búsqueda y los filtros se aplican a todos los usuarios, no solo a los de la página que ves.</p>
   </div>
   <div class="heading-actions">
     <button type="button" class="btn primary" (click)="nuevoUsuario()">Nuevo usuario</button>
@@ -16,7 +16,7 @@
   [error]="error()"
   mensajeVacio="No hay usuarios que coincidan con el filtro."
   titulo="Equipo y permisos"
-  subtitulo="Los permisos efectivos dependen del rol asignado; el backend los aplica en cada petición."
+  subtitulo="Los permisos de cada persona dependen del rol que tiene asignado."
   [buscable]="true"
   placeholderBusqueda="Buscar por nombre o correo"
   etiquetaBusqueda="Buscar usuarios por nombre o correo"

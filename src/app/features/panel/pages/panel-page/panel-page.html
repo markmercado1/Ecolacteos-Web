@@ -108,7 +108,7 @@
       <div class="card card-pad ventas-consolidado">
         <ui-bar-chart
           titulo="Ventas por canal"
-          subtitulo="Global — todo el histórico de la planta. El backend no las separa por zona, por eso aparecen una sola vez y no se suman."
+          subtitulo="Global — todo el histórico de la planta. Las ventas no se separan por zona, por eso aparecen una sola vez y no se suman entre zonas."
           unidad="S/"
           [datos]="datosVentasConsolidado()"
           [decimales]="2"
@@ -126,7 +126,7 @@
   @if (cargando()) {
     <ui-loading-state mensaje="Cargando panel…" />
   } @else if (sinProyeccion()) {
-    <ui-empty-state mensaje="Sin proyección disponible para esta zona. El backend calcula la proyección semanal por job programado; hasta que exista una para esta zona, todo el panel (incluidos el riesgo valorizado y la simulación) queda sin datos, porque el propio endpoint del panel depende de esa proyección." />
+    <ui-empty-state mensaje="Sin proyección disponible para esta zona. La proyección se calcula de forma automática cada semana; hasta que exista una para esta zona, el panel (incluidos el riesgo valorizado y la simulación) queda sin datos, porque todo depende de esa proyección." />
   } @else if (error()) {
     <ui-error-state [error]="error()" (reintentar)="cargarPanel(zonaSeleccionada())" />
   } @else if (panel(); as p) {
@@ -164,7 +164,7 @@
             <dd>{{ p.forecastSemana.alertaCapacidad ? 'Sí, excede la capacidad de procesamiento diaria' : 'No' }}</dd>
           </div>
         </dl>
-        <p class="hint">Es la única proyección ya calculada por el backend (job semanal); no se genera una serie diaria ni se interpolan semanas faltantes.</p>
+        <p class="hint">Es la única proyección calculada hasta ahora (se actualiza cada semana); no se genera una serie diaria ni se estiman las semanas que faltan.</p>
       </div>
 
       <div class="card card-pad">
