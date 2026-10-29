@@ -1,5 +1,11 @@
+/* Filtros alineados con el buscador y «Exportar»: la etiqueta va junto al campo (no encima), así todos miden lo mismo. */
+.filtros {
+  align-items: center;
+}
 .filtros .field {
   margin: 0;
+  flex-direction: row;
+  align-items: center;
 }
 .filtros .field label {
   font-size: 0.6875rem;
@@ -8,4 +14,6 @@
 }
 .filtros .field input {
   min-height: 2.375rem;
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
 }

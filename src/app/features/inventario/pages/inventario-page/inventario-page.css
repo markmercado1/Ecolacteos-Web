@@ -34,8 +34,11 @@ small {
   color: var(--color-danger);
 }
 
+/* Etiqueta y selector en una sola línea: así quedan a la altura del buscador y de «Exportar a Excel». */
 .filtro-familia {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
   min-width: 14rem;
 }

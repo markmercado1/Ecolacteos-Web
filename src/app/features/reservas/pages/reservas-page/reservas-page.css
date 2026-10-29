@@ -46,6 +46,8 @@
 }
 .filtros .field input {
   min-height: 2.375rem;
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
 }
 
 .codigo {

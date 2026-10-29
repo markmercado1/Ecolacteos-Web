@@ -254,6 +254,12 @@ import { paginaCorregida, TAMANOS_PAGINA, TAMANO_PAGINA_POR_DEFECTO } from '../.
       gap: var(--space-2);
       font-size: var(--font-size-sm);
     }
+    /* El estilo global de .field fuerza width: 100% en todo input; en un checkbox lo estiraba (100 px) y alejaba su texto. */
+    .field.checkbox input {
+      width: auto;
+      padding: 0;
+      flex: none;
+    }
     p {
       color: var(--color-text-muted);
     }
