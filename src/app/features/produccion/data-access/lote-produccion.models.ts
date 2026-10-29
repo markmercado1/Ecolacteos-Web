@@ -33,6 +33,27 @@ export interface InsumoLoteRequest {
   cantidad: number;
 }
 
+/** Fuente: backend dto/IniciarLoteRequest.java y PlanLotesProduccionResponse.java (V43). */
+export interface IniciarLoteRequest {
+  insumos: { insumoId: string; lotes: { loteId: string; cantidad: number }[] }[];
+}
+
+export interface PlanLotesInsumo {
+  insumoId: string;
+  insumoNombre: string;
+  unidadMedida: string;
+  requerido: number;
+  /** El reparto FEFO que se haría sin elegir a mano. */
+  propuesta: { loteId: string; codigo: string; fechaVencimiento: string | null; cantidad: number }[];
+  /** Lotes consumibles (con existencia y no vencidos). */
+  disponibles: { loteId: string; codigo: string; proveedorNombre: string | null; fechaVencimiento: string | null; disponible: number }[];
+}
+
+export interface PlanLotesProduccion {
+  loteProduccionId: string;
+  insumos: PlanLotesInsumo[];
+}
+
 /** Un lote de insumo del que salió lo consumido por un lote de producción (trazabilidad hacia atrás). */
 export interface LoteInsumoUsado {
   loteId: string;

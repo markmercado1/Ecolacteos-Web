@@ -8,7 +8,9 @@ import {
   CrearLoteRequest,
   EstadoLote,
   FinalizarLoteRequest,
+  IniciarLoteRequest,
   LoteProduccion,
+  PlanLotesProduccion,
   PlanificarLoteRequest
 } from './lote-produccion.models';
 
@@ -66,8 +68,14 @@ export class LotesProduccionApi {
     );
   }
 
-  iniciar(id: string): Observable<LoteProduccion> {
-    return this.http.post<LoteProduccion>(`${this.baseUrl}/lotes-produccion/${encodeURIComponent(id)}/iniciar`, {});
+  /** `lotes` (opcional): elige a mano de qué lotes de insumo sale cada insumo; sin él, el consumo se reparte solo en FEFO. */
+  iniciar(id: string, lotes?: IniciarLoteRequest | null): Observable<LoteProduccion> {
+    return this.http.post<LoteProduccion>(`${this.baseUrl}/lotes-produccion/${encodeURIComponent(id)}/iniciar`, lotes ?? {});
+  }
+
+  /** Qué lotes de insumo se usarían al iniciar (FEFO) y cuáles hay para cambiarlos. Solo lectura. */
+  planLotes(id: string): Observable<PlanLotesProduccion> {
+    return this.http.get<PlanLotesProduccion>(`${this.baseUrl}/lotes-produccion/${encodeURIComponent(id)}/plan-lotes`);
   }
 
   finalizar(id: string, datos: FinalizarLoteRequest): Observable<LoteProduccion> {

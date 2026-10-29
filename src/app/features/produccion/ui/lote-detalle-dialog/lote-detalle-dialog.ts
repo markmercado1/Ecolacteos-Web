@@ -25,6 +25,8 @@ import {
 import { VencimientoApi } from '../../../vencimiento/data-access/vencimiento.api';
 import { LotesProduccionApi } from '../../data-access/lotes-produccion.api';
 import { TablaDisponibilidadComponent } from '../tabla-disponibilidad/tabla-disponibilidad';
+import { ElegirLotesInsumoDialog } from '../elegir-lotes-insumo-dialog/elegir-lotes-insumo-dialog';
+import { IniciarLoteRequest } from '../../data-access/lote-produccion.models';
 
 function formatoCantidad(valor: number): string {
   return Number.isInteger(valor) ? String(valor) : valor.toLocaleString('es-PE', { maximumFractionDigits: 3 });
@@ -119,6 +121,7 @@ interface FilaRecepcionConsumida {
               @if (errorAccion()) { <p class="server-error" role="alert">{{ errorAccion() }}</p> }
               <div class="acciones-lote">
                 <button type="button" class="btn danger" (click)="cancelarProduccion()" [disabled]="accionEnCurso()">Cancelar producción</button>
+                <button type="button" class="btn" (click)="elegirLotesYIniciar()" [disabled]="accionEnCurso() || !disponibilidad()?.todoDisponible">Elegir lotes de insumo…</button>
                 <button type="button" class="btn primary" (click)="iniciarProduccion()"
                         [disabled]="accionEnCurso() || !disponibilidad()?.todoDisponible">
                   {{ accionEnCurso() ? 'Procesando…' : 'Iniciar producción' }}
@@ -473,6 +476,19 @@ export class LoteDetalleDialog {
   protected iniciarProduccion(): void {
     if (this.accionEnCurso() || !this.disponibilidad()?.todoDisponible) return;
     this.ejecutar(this.lotesApi.iniciar(this.data.id), () => 'Producción iniciada: la leche y los insumos se descontaron del stock.');
+  }
+
+  /** Abre la elección manual de lotes de insumo (opcional) y, al aceptar, inicia la producción con ella. */
+  protected elegirLotesYIniciar(): void {
+    if (this.accionEnCurso() || !this.disponibilidad()?.todoDisponible) return;
+    const ref = this.dialog.open<IniciarLoteRequest | null | undefined>(ElegirLotesInsumoDialog, {
+      ariaLabel: 'Elegir lotes de insumo',
+      data: { loteProduccionId: this.data.id }
+    });
+    ref.closed.subscribe((eleccion) => {
+      if (eleccion === undefined) return;   // cancelado
+      this.ejecutar(this.lotesApi.iniciar(this.data.id, eleccion), () => 'Producción iniciada con los lotes de insumo elegidos.');
+    });
   }
 
   protected cancelarProduccion(): void {
