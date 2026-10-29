@@ -4,6 +4,9 @@ import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { mapHttpError } from '../../../../core/http/app-error';
 import { InsumoRequest, InsumoResponse } from '../../data-access/insumo.models';
 import { InsumosApi } from '../../data-access/insumos.api';
+import { pendientesDe, resumenPendientes } from '../../../../shared/util/validacion';
+
+const ETIQUETAS: Record<string, string> = {"nombre":"Nombre","unidadMedida":"Unidad de medida","stock":"Stock inicial"};
 
 export interface InsumoFormDialogData {
   insumo?: InsumoResponse;
@@ -22,10 +25,12 @@ export interface InsumoFormDialogData {
       <div class="field" [class.has-error]="invalido('nombre')">
         <label for="nombre">Nombre</label>
         <input id="nombre" type="text" formControlName="nombre" placeholder="Cuajo, Sal…" required>
+        @if (invalido('nombre')) { <span class="error">Escribe el nombre del insumo.</span> }
       </div>
       <div class="field" [class.has-error]="invalido('unidadMedida')">
         <label for="unidad">Unidad de medida</label>
         <input id="unidad" type="text" formControlName="unidadMedida" placeholder="unidades, sacos, kg…" required>
+        @if (invalido('unidadMedida')) { <span class="error">Indica la unidad de medida (unidades, sacos, kg…).</span> }
       </div>
       @if (esEdicion) {
         <!-- V19 (kardex): el stock ya no se edita aquí; cambia solo con movimientos trazables. -->
@@ -45,10 +50,11 @@ export interface InsumoFormDialogData {
           }
         </div>
       }
+      @if (resumen(); as r) { <p class="server-error" role="alert" data-testid="resumen-errores">{{ r }}</p> }
       @if (errorServidor()) { <p class="server-error" role="alert">{{ errorServidor() }}</p> }
       <div class="dialog-foot">
         <button type="button" class="btn" (click)="dialogRef.close()">Cancelar</button>
-        <button type="submit" class="btn primary" [disabled]="form.invalid || enviando()">
+        <button type="submit" class="btn primary" [disabled]="enviando()">
           {{ enviando() ? 'Guardando…' : (esEdicion ? 'Guardar cambios' : 'Crear insumo') }}
         </button>
       </div>
@@ -78,6 +84,8 @@ export class InsumoFormDialog {
 
   protected readonly esEdicion = !!this.data.insumo;
   protected readonly enviando = signal(false);
+  /** Frase general tras un intento de guardar con datos pendientes; el detalle va junto a cada campo. */
+  protected readonly resumen = signal<string | null>(null);
   protected readonly errorServidor = signal<string | null>(null);
 
   protected readonly form = this.fb.group({
@@ -96,10 +104,13 @@ export class InsumoFormDialog {
   }
 
   enviar(): void {
-    if (this.form.invalid || this.enviando()) {
+    if (this.enviando()) return;
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.resumen.set(resumenPendientes(pendientesDe(this.form, ETIQUETAS)));
       return;
     }
+    this.resumen.set(null);
     this.enviando.set(true);
     this.errorServidor.set(null);
     const { nombre, unidadMedida, stock } = this.form.getRawValue();

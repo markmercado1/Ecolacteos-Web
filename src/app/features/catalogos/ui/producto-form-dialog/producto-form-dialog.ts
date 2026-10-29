@@ -160,7 +160,7 @@ export interface ProductoFormDialogResultado {
       </fieldset>
       <div class="dialog-foot">
         <button type="button" class="btn" (click)="cerrar()">Cancelar</button>
-        <button type="submit" class="btn primary" [disabled]="form.invalid || enviando()">
+        <button type="submit" class="btn primary" [disabled]="enviando()">
           {{ enviando() ? 'Guardando…' : esEdicion ? 'Guardar cambios' : 'Crear y continuar' }}
         </button>
       </div>

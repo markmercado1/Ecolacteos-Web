@@ -215,6 +215,30 @@ describe('ProduccionMultipleDialog', () => {
     expect(dialogo['resumen']()?.leche.requerido).toBe(100);
   });
 
+  it('sin fecha explica por qué no se puede guardar ni iniciar, y el aviso desaparece al indicarla', async () => {
+    const { fixture, dialogo, apis } = preparar();
+    fixture.detectChanges();
+    await seleccionarDosRecetas(dialogo);
+    const el = fixture.nativeElement as HTMLElement;
+    fixture.detectChanges();
+    expect(el.querySelector('#fecha-multiple-error')).toBeNull();
+
+    const escribir = (valor: string) => {
+      const campo = el.querySelector<HTMLInputElement>('#fecha-multiple')!;
+      campo.value = valor;
+      campo.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+    };
+    escribir('');
+    expect(el.querySelector('#fecha-multiple-error')?.textContent).toContain('Indica la fecha de producción');
+    expect(el.querySelector('#fecha-multiple')?.getAttribute('aria-invalid')).toBe('true');
+    await dialogo['enviar'](false);
+    expect(apis.lotes.planificar).not.toHaveBeenCalled(); // sin fecha no se envía nada
+
+    escribir('2026-10-28');
+    expect(el.querySelector('#fecha-multiple-error')).toBeNull();
+  });
+
   it('rechaza litros con más de dos decimales o fuera de rango', async () => {
     const { dialogo, apis } = preparar();
     const [fila] = dialogo['filas']();

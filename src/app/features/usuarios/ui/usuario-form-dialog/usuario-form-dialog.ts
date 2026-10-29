@@ -4,6 +4,9 @@ import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { mapHttpError } from '../../../../core/http/app-error';
 import { RolResponse, UsuarioResponse } from '../../data-access/usuario.models';
 import { UsuariosApi } from '../../data-access/usuarios.api';
+import { pendientesDe, resumenPendientes } from '../../../../shared/util/validacion';
+
+const ETIQUETAS: Record<string, string> = {"nombre":"Nombre completo","email":"Correo electrónico","rolNombre":"Rol","password":"Contraseña"};
 
 export interface UsuarioFormDialogData {
   roles: RolResponse[];
@@ -46,16 +49,21 @@ export interface UsuarioFormDialogData {
               <option [value]="rol.nombre">{{ rol.nombre }}</option>
             }
           </select>
+          @if (invalido('rolNombre')) { <span class="error">Elige un rol.</span> }
         </div>
       }
       <div class="field" [class.has-error]="invalido('password')">
         <label for="password">{{ esEdicion ? 'Nueva contraseña (opcional)' : 'Contraseña' }}</label>
         <input id="password" type="password" formControlName="password" autocomplete="new-password">
         <span class="hint">Mínimo 8 caracteres{{ esEdicion ? '. Déjalo vacío para no cambiarla.' : '.' }}</span>
+        @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
+          <span class="error">Escribe una contraseña.</span>
+        }
         @if (form.get('password')?.hasError('minlength') && form.get('password')?.touched) {
           <span class="error">Debe tener al menos 8 caracteres.</span>
         }
       </div>
+      @if (resumen(); as r) { <p class="server-error" role="alert" data-testid="resumen-errores">{{ r }}</p> }
 
       @if (errorServidor()) {
         <p class="server-error" role="alert">{{ errorServidor() }}</p>
@@ -63,7 +71,7 @@ export interface UsuarioFormDialogData {
 
       <div class="dialog-foot">
         <button type="button" class="btn" (click)="dialogRef.close()">Cancelar</button>
-        <button type="submit" class="btn primary" [disabled]="form.invalid || enviando()">
+        <button type="submit" class="btn primary" [disabled]="enviando()">
           {{ enviando() ? 'Guardando…' : (esEdicion ? 'Guardar cambios' : 'Crear usuario') }}
         </button>
       </div>
@@ -103,6 +111,8 @@ export class UsuarioFormDialog {
 
   protected readonly esEdicion = !!this.data.usuario;
   protected readonly enviando = signal(false);
+  /** Frase general tras un intento de guardar con datos pendientes; el detalle va junto a cada campo. */
+  protected readonly resumen = signal<string | null>(null);
   protected readonly errorServidor = signal<string | null>(null);
 
   protected readonly form = this.fb.group({
@@ -124,10 +134,13 @@ export class UsuarioFormDialog {
   }
 
   enviar(): void {
-    if (this.form.invalid || this.enviando()) {
+    if (this.enviando()) return;
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.resumen.set(resumenPendientes(pendientesDe(this.form, ETIQUETAS)));
       return;
     }
+    this.resumen.set(null);
     this.enviando.set(true);
     this.errorServidor.set(null);
     const { nombre, email, rolNombre, password } = this.form.getRawValue();

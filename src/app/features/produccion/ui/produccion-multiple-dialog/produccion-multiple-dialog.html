@@ -19,7 +19,11 @@
   } @else {
     <div class="fecha">
       <label for="fecha-multiple">Fecha de producción</label>
-      <input id="fecha-multiple" type="date" [(ngModel)]="fecha" [disabled]="bloqueado()" required />
+      <input id="fecha-multiple" type="date" [(ngModel)]="fecha" [disabled]="bloqueado()" required
+        [attr.aria-invalid]="!fecha ? 'true' : null" [attr.aria-describedby]="!fecha ? 'fecha-multiple-error' : null" />
+      @if (!fecha) {
+        <p class="error" id="fecha-multiple-error" role="status">Indica la fecha de producción para poder guardar o iniciar.</p>
+      }
     </div>
 
     <div class="recetas">

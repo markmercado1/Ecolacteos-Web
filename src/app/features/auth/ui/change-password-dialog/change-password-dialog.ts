@@ -45,7 +45,7 @@ function coincidenValidator(control: AbstractControl): ValidationErrors | null {
       }
       <div class="dialog-foot">
         <button type="button" class="btn" (click)="dialogRef.close()">Cancelar</button>
-        <button type="submit" class="btn primary" [disabled]="form.invalid || enviando()">
+        <button type="submit" class="btn primary" [disabled]="enviando()">
           {{ enviando() ? 'Guardando…' : 'Guardar cambios' }}
         </button>
       </div>

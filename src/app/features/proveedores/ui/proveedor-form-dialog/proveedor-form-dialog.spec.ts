@@ -90,6 +90,33 @@ describe('ProveedorFormDialog (Fase G: DNI y RUC)', () => {
     http.verify();
   });
 
+  it('el botón de guardar no se deshabilita y los campos con problema quedan señalados y asociados a su mensaje', () => {
+    const { f, http } = crear({ zonas: [] });
+    expect(el(f).querySelector<HTMLButtonElement>('button[type="submit"]')!.disabled).toBe(false);
+    el(f).querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
+    f.detectChanges();
+    http.expectNone(`${base}/proveedores`);
+    expect(el(f).querySelector('#nombre-error')?.textContent).toContain('nombre es obligatorio');
+    expect(el(f).querySelector('#nombre')?.getAttribute('aria-invalid')).toBe('true');
+    expect(el(f).querySelector('#nombre')?.getAttribute('aria-describedby')).toBe('nombre-error');
+
+    elegirTipo(f, 'EMPRESA');
+    el(f).querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
+    f.detectChanges();
+    // el bloque de documentos nombra el primer problema (RUC); la razón social vacía se explica junto a su campo
+    expect(el(f).querySelector('#documentos-error')?.textContent).toContain('RUC es obligatorio');
+    expect(el(f).querySelector('#razonSocial-error')?.textContent).toContain('razón social es obligatoria');
+    expect(el(f).querySelector('#razonSocial')?.getAttribute('aria-describedby')).toBe('razonSocial-error');
+
+    // con el RUC bien escrito, el bloque pasa a nombrar la razón social y el aviso del campo no se duplica
+    comp(f)['form'].patchValue({ ruc: '20601234565' });
+    el(f).querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
+    f.detectChanges();
+    expect(el(f).querySelector('#documentos-error')?.textContent).toContain('razón social');
+    expect(el(f).querySelector('#razonSocial-error')).toBeNull();
+    expect(el(f).querySelector('#razonSocial')?.getAttribute('aria-describedby')).toBe('documentos-error');
+  });
+
   it('una empresa sin razón social o con un RUC de persona natural no se envía', () => {
     const { f, http } = crear({ zonas: [] });
     elegirTipo(f, 'EMPRESA');

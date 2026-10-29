@@ -43,7 +43,7 @@
         <p class="server-error" role="alert">{{ errorServidor() }}</p>
       }
 
-      <button type="submit" class="btn primary" [disabled]="form.invalid || enviando()">
+      <button type="submit" class="btn primary" [disabled]="enviando()">
         {{ enviando() ? 'Ingresando…' : 'Ingresar' }}
       </button>
     </form>

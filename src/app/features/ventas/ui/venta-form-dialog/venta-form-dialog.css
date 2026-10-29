@@ -28,6 +28,9 @@ dd { margin: 0.2rem 0 0; font-weight: 600; overflow-wrap: anywhere; }
 .fila-carrito { border: 1px solid var(--color-border); border-radius: var(--radius-control); padding: var(--space-3); margin-bottom: var(--space-3); }
 .fila-carrito-campos { display: grid; grid-template-columns: 2fr 2fr 1fr auto; gap: var(--space-2); align-items: center; }
 .linea-info { margin: var(--space-2) 0 0; }
+/* Campo de la línea que falta o es incorrecto tras intentar continuar (además del texto, para no depender solo del color). */
+.fila-carrito .invalido { border-color: var(--color-danger); border-width: 2px; }
+.fila-carrito > .error { margin: var(--space-2) 0 0; }
 .btn.danger { color: var(--color-danger); border-color: var(--color-danger); }
 
 .section-head { margin: var(--space-4) 0 var(--space-2); }

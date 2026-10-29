@@ -5,6 +5,9 @@ import { mapHttpError } from '../../../../core/http/app-error';
 import { ZonaResponse } from '../../../catalogos/data-access/zona.models';
 import { ProveedorAdminResponse } from '../../data-access/proveedor.models';
 import { ProveedoresApi } from '../../data-access/proveedores.api';
+import { pendientesDe, resumenPendientes } from '../../../../shared/util/validacion';
+
+const ETIQUETAS: Record<string, string> = {"zonaId":"Nueva zona","motivo":"Motivo"};
 
 export interface CambiarZonaDialogData {
   proveedor: ProveedorAdminResponse;
@@ -35,6 +38,7 @@ export interface CambiarZonaDialogData {
             </option>
           }
         </select>
+        @if (form.get('zonaId')?.invalid && form.get('zonaId')?.touched) { <span class="error">Elige la zona a la que pasa el proveedor.</span> }
       </div>
       <div class="field" [class.has-error]="form.controls.motivo.invalid">
         <label for="motivoZona">Motivo (opcional)</label>
@@ -42,10 +46,11 @@ export interface CambiarZonaDialogData {
                   placeholder="Ej. Cambió su ruta de recojo"></textarea>
         <small class="ayuda">Queda en el historial de zonas del proveedor, con la hora y quién lo hizo. Máximo 200 caracteres.</small>
       </div>
+      @if (resumen(); as r) { <p class="server-error" role="alert" data-testid="resumen-errores">{{ r }}</p> }
       @if (errorServidor()) { <p class="server-error" role="alert">{{ errorServidor() }}</p> }
       <div class="dialog-foot">
         <button type="button" class="btn" (click)="dialogRef.close()">Cancelar</button>
-        <button type="submit" class="btn primary" [disabled]="form.invalid || enviando()">
+        <button type="submit" class="btn primary" [disabled]="enviando()">
           {{ enviando() ? 'Guardando…' : 'Cambiar zona' }}
         </button>
       </div>
@@ -73,6 +78,8 @@ export class CambiarZonaDialog {
   private readonly proveedoresApi = inject(ProveedoresApi);
 
   protected readonly enviando = signal(false);
+  /** Frase general tras un intento de guardar con datos pendientes; el detalle va junto a cada campo. */
+  protected readonly resumen = signal<string | null>(null);
   protected readonly errorServidor = signal<string | null>(null);
   protected readonly form = this.fb.group({
     zonaId: this.fb.nonNullable.control('', Validators.required),
@@ -80,10 +87,13 @@ export class CambiarZonaDialog {
   });
 
   enviar(): void {
-    if (this.form.invalid || this.enviando()) {
+    if (this.enviando()) return;
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.resumen.set(resumenPendientes(pendientesDe(this.form, ETIQUETAS)));
       return;
     }
+    this.resumen.set(null);
     this.enviando.set(true);
     this.errorServidor.set(null);
     const { zonaId, motivo } = this.form.getRawValue();

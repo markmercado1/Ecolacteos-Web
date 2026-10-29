@@ -4,6 +4,9 @@ import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { mapHttpError } from '../../../../core/http/app-error';
 import { AjusteInventarioResponse } from '../../data-access/inventario.models';
 import { InventarioApi } from '../../data-access/inventario.api';
+import { pendientesDe, resumenPendientes } from '../../../../shared/util/validacion';
+
+const ETIQUETAS: Record<string, string> = {"cantidadFisica":"Cantidad contada","motivo":"Motivo"};
 
 export interface AjustarStockDialogData {
   presentacionId: string;
@@ -49,11 +52,12 @@ export interface AjustarStockDialogData {
         <textarea id="aj-motivo" formControlName="motivo" rows="3" required></textarea>
         @if (invalido('motivo')) { <span class="error">Explica la diferencia encontrada (pérdida, rotura, error de conteo…).</span> }
       </div>
+      @if (resumen(); as r) { <p class="server-error" role="alert" data-testid="resumen-errores">{{ r }}</p> }
 
       @if (errorServidor()) { <p class="server-error" role="alert">{{ errorServidor() }}</p> }
       <div class="dialog-foot">
         <button type="button" class="btn" (click)="dialogRef.close()">Cancelar</button>
-        <button type="submit" class="btn primary" [disabled]="form.invalid || enviando()">
+        <button type="submit" class="btn primary" [disabled]="enviando()">
           {{ enviando() ? 'Guardando…' : 'Registrar ajuste' }}
         </button>
       </div>
@@ -87,6 +91,8 @@ export class AjustarStockDialog {
   private readonly inventarioApi = inject(InventarioApi);
 
   protected readonly enviando = signal(false);
+  /** Frase general tras un intento de guardar con datos pendientes; el detalle va junto a cada campo. */
+  protected readonly resumen = signal<string | null>(null);
   protected readonly errorServidor = signal<string | null>(null);
   protected readonly form = this.fb.group({
     cantidadFisica: this.fb.control<number | null>(this.data.stockActual, [Validators.required, Validators.min(0)]),
@@ -99,10 +105,13 @@ export class AjustarStockDialog {
   }
 
   enviar(): void {
-    if (this.form.invalid || this.enviando()) {
+    if (this.enviando()) return;
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.resumen.set(resumenPendientes(pendientesDe(this.form, ETIQUETAS)));
       return;
     }
+    this.resumen.set(null);
     this.enviando.set(true);
     this.errorServidor.set(null);
     const { cantidadFisica, motivo } = this.form.getRawValue();

@@ -147,7 +147,7 @@ const ETIQUETAS_UNIDAD: Record<UnidadContenido, string> = {
 
         <div class="dialog-foot">
           <button type="button" class="btn" (click)="volverALista()" [disabled]="enviando()">Cancelar</button>
-          <button type="submit" class="btn primary" [disabled]="form.invalid || enviando()">
+          <button type="submit" class="btn primary" [disabled]="enviando()">
             {{ enviando() ? 'Guardando…' : 'Guardar presentación' }}
           </button>
         </div>

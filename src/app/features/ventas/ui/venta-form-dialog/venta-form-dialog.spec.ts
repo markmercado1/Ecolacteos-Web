@@ -354,6 +354,47 @@ describe('VentaFormDialog — resumen, envío y UUID estable', () => {
     expect(dialog['paso']()).toBe('formulario');
   });
 
+  it('el botón «Revisar resumen» no se deshabilita por estar incompleto: al pulsarlo explica qué falta, sin avanzar', () => {
+    const { fixture, dialog } = crearConCatalogoListo();
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    const boton = el.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    expect(boton.disabled).toBe(false);
+    expect(el.querySelector('[data-testid="resumen-errores"]')).toBeNull(); // antes de intentar no se muestra nada
+
+    boton.click();
+    fixture.detectChanges();
+    expect(dialog['paso']()).toBe('formulario');
+    expect(el.querySelector('[data-testid="resumen-errores"]')?.textContent).toContain('Canal, Línea 1');
+    expect(el.querySelector('#v-canal-error')?.textContent).toContain('Elige el canal');
+    expect(el.querySelector('#v-linea-0-error')?.textContent).toContain('Línea 1: Elige un producto. Indica una cantidad de 1 o más.');
+    expect(el.querySelector('#v-canal')?.getAttribute('aria-invalid')).toBe('true');
+    expect(el.querySelector('.fila-carrito select')?.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('los mensajes se actualizan solos al corregir y el resumen desaparece cuando ya no falta nada', () => {
+    const { fixture, dialog, http } = crearConCatalogoListo();
+    dialog['form'].controls.tipoCliente.setValue('PUBLICO');
+    dialog['continuarARevision']();
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('[data-testid="resumen-errores"]')?.textContent).toContain('Línea 1');
+
+    llenarLinea(dialog, http, primerId(dialog), { productoId: 'prod-1', presentacionId: 'pres-1', cantidad: 2 });
+    fixture.detectChanges();
+    expect(el.querySelector('[data-testid="resumen-errores"]')).toBeNull();
+    expect(el.querySelector('#v-linea-0-error')).toBeNull();
+
+    dialog['continuarARevision']();
+    expect(dialog['paso']()).toBe('resumen');
+  });
+
+  it('el botón sí se deshabilita mientras no hay productos que vender (cargando o catálogo vacío): no hay nada que corregir', () => {
+    const { fixture } = crear('VENTAS');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBe(true);
+  });
+
   it('avanza al resumen con datos válidos y calcula el total estimado sumando todas las líneas', () => {
     const { dialog, http } = crearConCatalogoListo();
     dialog['comprador'].set(MAYORISTA_HABILITADO); // Fase H: MAYORISTA exige un cliente habilitado

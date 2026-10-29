@@ -11,7 +11,12 @@
   <form [formGroup]="form" (ngSubmit)="continuarARevision()" class="dialog-body" aria-labelledby="venta-form-titulo">
     <div class="field" [class.has-error]="form.controls.fecha.invalid && form.controls.fecha.touched">
       <label for="v-fecha">Fecha de la venta</label>
-      <input id="v-fecha" type="date" formControlName="fecha" required>
+      <input id="v-fecha" type="date" formControlName="fecha" required
+        [attr.aria-invalid]="form.controls.fecha.invalid && form.controls.fecha.touched ? 'true' : null"
+        [attr.aria-describedby]="form.controls.fecha.invalid && form.controls.fecha.touched ? 'v-fecha-error' : null">
+      @if (form.controls.fecha.invalid && form.controls.fecha.touched) {
+        <span class="error" id="v-fecha-error">Indica la fecha de la venta.</span>
+      }
     </div>
 
     <div class="field comprador" data-testid="comprador">
@@ -31,14 +36,18 @@
 
     <div class="field" [class.has-error]="form.controls.tipoCliente.invalid && form.controls.tipoCliente.touched">
       <label for="v-canal">Canal (tipo de cliente)</label>
-      <select id="v-canal" formControlName="tipoCliente" required>
+      <select id="v-canal" formControlName="tipoCliente" required
+        [attr.aria-invalid]="(form.controls.tipoCliente.invalid && form.controls.tipoCliente.touched) || canalIncorrecto() ? 'true' : null"
+        [attr.aria-describedby]="(form.controls.tipoCliente.invalid && form.controls.tipoCliente.touched) || canalIncorrecto() ? 'v-canal-error' : null">
         <option value="" disabled>Selecciona un canal</option>
         @for (t of tiposActivos(); track t.codigo) {
           <option [value]="t.codigo" [disabled]="!canalPermitido(t.codigo)">{{ t.nombre }}{{ canalPermitido(t.codigo) ? '' : ' (' + motivoCanal(t.codigo) + ')' }}</option>
         }
       </select>
       @if (form.controls.tipoCliente.invalid && form.controls.tipoCliente.touched) {
-        <span class="error">Selecciona el canal de la venta.</span>
+        <span class="error" id="v-canal-error">Elige el canal de la venta.</span>
+      } @else if (canalIncorrecto()) {
+        <span class="error" id="v-canal-error">El canal elegido no corresponde al comprador: {{ motivoCanalActual() }}.</span>
       }
     </div>
 
@@ -61,6 +70,9 @@
               [value]="fila.productoId"
               (change)="cambiarProducto(fila.id, $any($event.target).value)"
               [attr.aria-label]="'Producto de la línea ' + (i + 1)"
+              [class.invalido]="intentoFallido() && !fila.productoId"
+              [attr.aria-invalid]="intentoFallido() && !fila.productoId ? 'true' : null"
+              [attr.aria-describedby]="intentoFallido() && erroresFila(fila).length ? 'v-linea-' + i + '-error' : null"
               required
             >
               <option value="" disabled>Selecciona un producto</option>
@@ -74,6 +86,8 @@
               (change)="cambiarPresentacion(fila.id, $any($event.target).value)"
               [disabled]="!fila.productoId"
               [attr.aria-label]="'Presentación de la línea ' + (i + 1)"
+              [class.invalido]="intentoFallido() && !!fila.productoId && !fila.presentacionId"
+              [attr.aria-invalid]="intentoFallido() && !!fila.productoId && !fila.presentacionId ? 'true' : null"
               required
             >
               <option value="" disabled>Selecciona una presentación</option>
@@ -88,12 +102,17 @@
               (input)="cambiarCantidad(fila.id, $any($event.target).value)"
               [attr.aria-label]="'Cantidad de la línea ' + (i + 1)"
               placeholder="Cantidad"
+              [class.invalido]="intentoFallido() && (fila.cantidad === null || fila.cantidad < 1)"
+              [attr.aria-invalid]="intentoFallido() && (fila.cantidad === null || fila.cantidad < 1) ? 'true' : null"
               required
             >
 
             <button type="button" class="btn small danger" (click)="quitarLinea(fila.id)" [attr.aria-label]="'Quitar línea ' + (i + 1)">Quitar</button>
           </div>
 
+          @if (intentoFallido() && erroresFila(fila).length) {
+            <p class="error" role="alert" [id]="'v-linea-' + i + '-error'">Línea {{ i + 1 }}: {{ erroresFila(fila).join(' ') }}</p>
+          }
           @if (fila.presentacionId) {
             <p class="hint linea-info">
               @if (fila.cargandoPrecio) {
@@ -126,9 +145,12 @@
       <p class="estimado">Total estimado: S/ {{ total | number: '1.2-2' }}</p>
     }
 
+    @if (resumen(); as r) { <p class="server-error" role="alert" data-testid="resumen-errores">{{ r }}</p> }
+
     <div class="dialog-foot">
       <button type="button" class="btn" (click)="cerrar()">Cancelar</button>
-      <button type="submit" class="btn primary" [disabled]="!puedeContinuar()">
+      <!-- Solo se deshabilita si no hay productos que vender (cargando o catálogo vacío): ahí no hay nada que corregir. -->
+      <button type="submit" class="btn primary" [disabled]="cargandoProductos() || productos().length === 0">
         Revisar resumen
       </button>
     </div>

@@ -41,7 +41,10 @@ export interface ProveedorFormDialogData {
       @if (esEmpresa()) {
         <div class="field" [class.has-error]="intentado() && !form.controls.razonSocial.value.trim()">
           <label for="razonSocial">Razón social</label>
-          <input id="razonSocial" type="text" formControlName="razonSocial" maxlength="150" required>
+          <input id="razonSocial" type="text" formControlName="razonSocial" maxlength="150" required
+            [attr.aria-invalid]="razonVacia() ? 'true' : null"
+            [attr.aria-describedby]="razonVacia() ? (razonEnBloque() ? 'documentos-error' : 'razonSocial-error') : null">
+          @if (razonVacia() && !razonEnBloque()) { <span class="error" id="razonSocial-error">La razón social es obligatoria.</span> }
         </div>
         <div class="field" [class.has-error]="problemaVisible()?.includes('RUC')">
           <label for="ruc">RUC</label>
@@ -56,8 +59,10 @@ export interface ProveedorFormDialogData {
       } @else {
         <div class="field" [class.has-error]="intentado() && !form.controls.nombre.value.trim()">
           <label for="nombre">Nombre completo</label>
-          <input id="nombre" type="text" formControlName="nombre" maxlength="150" required>
-          @if (intentado() && !form.controls.nombre.value.trim()) { <span class="error">El nombre es obligatorio.</span> }
+          <input id="nombre" type="text" formControlName="nombre" maxlength="150" required
+            [attr.aria-invalid]="intentado() && !form.controls.nombre.value.trim() ? 'true' : null"
+            [attr.aria-describedby]="intentado() && !form.controls.nombre.value.trim() ? 'nombre-error' : null">
+          @if (intentado() && !form.controls.nombre.value.trim()) { <span class="error" id="nombre-error">El nombre es obligatorio.</span> }
         </div>
         <div class="field" [class.has-error]="problemaVisible()?.includes('DNI')">
           <label for="dni">DNI</label>
@@ -69,7 +74,7 @@ export interface ProveedorFormDialogData {
           <span class="ayuda" id="ruc-ayuda">Si tiene RUC: 10 + su DNI + un dígito verificador. Puede quedar vacío.</span>
         </div>
       }
-      @if (problemaVisible(); as p) { <p class="error-bloque" role="alert">{{ p }}</p> }
+      @if (problemaVisible(); as p) { <p class="error-bloque" role="alert" id="documentos-error">{{ p }}</p> }
 
       <div class="field">
         <label for="telefono">Teléfono (opcional)</label>
@@ -144,6 +149,14 @@ export class ProveedorFormDialog {
     telefono: this.fb.control<string | null>(this.data.proveedor?.telefono ?? null),
     zonaActualId: this.fb.nonNullable.control(this.data.proveedor?.zonaActualId ?? '')
   });
+
+  /** Razón social vacía tras intentar guardar; el bloque de documentos solo nombra el primer problema, así que se avisa junto al campo si no la nombra. */
+  protected razonVacia(): boolean {
+    return this.intentado() && !this.form.controls.razonSocial.value.trim();
+  }
+  protected razonEnBloque(): boolean {
+    return !!this.problemaVisible()?.includes('razón social');
+  }
 
   protected cambioTipo(): void {
     this.esEmpresa.set(this.form.controls.tipoPersona.value === 'EMPRESA');

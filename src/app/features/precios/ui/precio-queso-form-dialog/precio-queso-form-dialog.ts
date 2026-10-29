@@ -7,6 +7,9 @@ import { TipoPrecioResponse } from '../../../tipos-precio/data-access/tipo-preci
 import { TiposPrecioApi } from '../../../tipos-precio/data-access/tipos-precio.api';
 import { PrecioQuesoResponse } from '../../data-access/precio-queso.models';
 import { PreciosQuesoApi } from '../../data-access/precios-queso.api';
+import { pendientesDe, resumenPendientes } from '../../../../shared/util/validacion';
+
+const ETIQUETAS: Record<string, string> = {"modalidad":"Modalidad","precio":"Precio","vigenteDesde":"Vigente desde"};
 
 export interface PrecioQuesoFormDialogData {
   presentacion: PresentacionResponse;
@@ -53,13 +56,15 @@ export interface PrecioQuesoFormDialogData {
       <div class="field" [class.has-error]="invalido('vigenteDesde')">
         <label for="pq-vigenteDesde">Vigente desde</label>
         <input id="pq-vigenteDesde" type="date" formControlName="vigenteDesde" required>
+        @if (invalido('vigenteDesde')) { <span class="error">Indica desde qué fecha rige el precio.</span> }
         <span class="hint">Puede ser una fecha futura; el histórico conserva todas las vigencias.</span>
       </div>
+      @if (resumen(); as r) { <p class="server-error" role="alert" data-testid="resumen-errores">{{ r }}</p> }
 
       @if (errorServidor()) { <p class="server-error" role="alert">{{ errorServidor() }}</p> }
       <div class="dialog-foot">
         <button type="button" class="btn" (click)="dialogRef.close()">Cancelar</button>
-        <button type="submit" class="btn primary" [disabled]="form.invalid || enviando()">
+        <button type="submit" class="btn primary" [disabled]="enviando()">
           {{ enviando() ? 'Registrando…' : 'Registrar precio' }}
         </button>
       </div>
@@ -97,6 +102,8 @@ export class PrecioQuesoFormDialog {
   protected readonly tiposActivos = signal<TipoPrecioResponse[]>([]);
 
   protected readonly enviando = signal(false);
+  /** Frase general tras un intento de guardar con datos pendientes; el detalle va junto a cada campo. */
+  protected readonly resumen = signal<string | null>(null);
   protected readonly errorServidor = signal<string | null>(null);
   constructor() {
     this.tiposPrecioApi.listar(true).subscribe({ next: (t) => this.tiposActivos.set(t), error: () => this.tiposActivos.set([]) });
@@ -114,10 +121,13 @@ export class PrecioQuesoFormDialog {
   }
 
   enviar(): void {
-    if (this.form.invalid || this.enviando()) {
+    if (this.enviando()) return;
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.resumen.set(resumenPendientes(pendientesDe(this.form, ETIQUETAS)));
       return;
     }
+    this.resumen.set(null);
     this.enviando.set(true);
     this.errorServidor.set(null);
     const { modalidad, precio, vigenteDesde } = this.form.getRawValue();

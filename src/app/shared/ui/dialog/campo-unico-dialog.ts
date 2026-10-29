@@ -3,6 +3,9 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { Observable } from 'rxjs';
 import { mapHttpError } from '../../../core/http/app-error';
+import { pendientesDe, resumenPendientes } from '../../util/validacion';
+
+const ETIQUETAS: Record<string, string> = {"valor":"Valor"};
 
 export interface CampoUnicoDialogData {
   titulo: string;
@@ -33,12 +36,14 @@ export interface CampoUnicoDialogData {
       <div class="field" [class.has-error]="form.get('valor')?.invalid && form.get('valor')?.touched">
         <label for="campo-valor">{{ data.etiquetaCampo }}</label>
         <input id="campo-valor" [type]="data.tipoInput ?? 'text'" formControlName="valor" required>
+        @if (form.get('valor')?.invalid && form.get('valor')?.touched) { <span class="error">Completa «{{ data.etiquetaCampo }}».</span> }
         @if (data.ayuda) { <span class="hint">{{ data.ayuda }}</span> }
       </div>
+      @if (resumen(); as r) { <p class="server-error" role="alert" data-testid="resumen-errores">{{ r }}</p> }
       @if (errorServidor()) { <p class="server-error" role="alert">{{ errorServidor() }}</p> }
       <div class="dialog-foot">
         <button type="button" class="btn" (click)="dialogRef.close()">Cancelar</button>
-        <button type="submit" class="btn primary" [disabled]="form.invalid || enviando()">
+        <button type="submit" class="btn primary" [disabled]="enviando()">
           {{ enviando() ? 'Guardando…' : (data.etiquetaGuardar ?? 'Guardar') }}
         </button>
       </div>
@@ -63,16 +68,21 @@ export class CampoUnicoDialog {
   private readonly fb = inject(FormBuilder);
 
   protected readonly enviando = signal(false);
+  /** Frase general tras un intento de guardar con datos pendientes; el detalle va junto a cada campo. */
+  protected readonly resumen = signal<string | null>(null);
   protected readonly errorServidor = signal<string | null>(null);
   protected readonly form = this.fb.group({
     valor: this.fb.nonNullable.control(this.data.valorInicial, Validators.required)
   });
 
   enviar(): void {
-    if (this.form.invalid || this.enviando()) {
+    if (this.enviando()) return;
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.resumen.set(resumenPendientes(pendientesDe(this.form, ETIQUETAS)));
       return;
     }
+    this.resumen.set(null);
     this.enviando.set(true);
     this.errorServidor.set(null);
     this.data.guardar(this.form.getRawValue().valor).subscribe({

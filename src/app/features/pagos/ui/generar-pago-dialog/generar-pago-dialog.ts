@@ -5,6 +5,7 @@ import { mapHttpError } from '../../../../core/http/app-error';
 import { ProveedorPublicoResponse } from '../../../proveedores/data-access/proveedor.models';
 import { PagoResponse } from '../../data-access/pago.models';
 import { PagosApi } from '../../data-access/pagos.api';
+import { mensajeError, resumenPendientes } from '../../../../shared/util/validacion';
 
 export interface GenerarPagoDialogData {
   proveedores: ProveedorPublicoResponse[];
@@ -22,28 +23,35 @@ export interface GenerarPagoDialogData {
     <form [formGroup]="form" (ngSubmit)="enviar()" class="dialog-body" aria-labelledby="generar-pago-titulo">
       <div class="field" [class.has-error]="invalido('proveedorId')">
         <label for="proveedorId">Proveedor</label>
-        <select id="proveedorId" formControlName="proveedorId" required>
+        <select id="proveedorId" formControlName="proveedorId" required
+          [attr.aria-invalid]="invalido('proveedorId') ? 'true' : null" [attr.aria-describedby]="invalido('proveedorId') ? 'proveedorId-error' : null">
           <option value="" disabled>Selecciona un proveedor</option>
           @for (proveedor of data.proveedores; track proveedor.id) {
             <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
           }
         </select>
+        @if (mensaje('proveedorId'); as m) { <span class="error" id="proveedorId-error">{{ m }}</span> }
       </div>
       <div class="field" [class.has-error]="invalido('semanaInicio')">
         <label for="semanaInicio">Inicio de semana</label>
-        <input id="semanaInicio" type="date" formControlName="semanaInicio" required>
+        <input id="semanaInicio" type="date" formControlName="semanaInicio" required
+          [attr.aria-invalid]="invalido('semanaInicio') ? 'true' : null" [attr.aria-describedby]="invalido('semanaInicio') ? 'semanaInicio-error' : null">
+        @if (mensaje('semanaInicio'); as m) { <span class="error" id="semanaInicio-error">{{ m }}</span> }
       </div>
       <div class="field" [class.has-error]="invalido('semanaFin')">
         <label for="semanaFin">Fin de semana</label>
-        <input id="semanaFin" type="date" formControlName="semanaFin" required>
+        <input id="semanaFin" type="date" formControlName="semanaFin" required
+          [attr.aria-invalid]="invalido('semanaFin') ? 'true' : null" [attr.aria-describedby]="invalido('semanaFin') ? 'semanaFin-error' : null">
+        @if (mensaje('semanaFin'); as m) { <span class="error" id="semanaFin-error">{{ m }}</span> }
       </div>
       <div class="drawer-info">
         El servidor calcula los litros del período, aplica el precio vigente y rechaza semanas duplicadas, superpuestas o sin entregas.
       </div>
+      @if (resumen(); as r) { <p class="server-error" role="alert" data-testid="resumen-errores">{{ r }}</p> }
       @if (errorServidor()) { <p class="server-error" role="alert">{{ errorServidor() }}</p> }
       <div class="dialog-foot">
         <button type="button" class="btn" (click)="dialogRef.close()">Cancelar</button>
-        <button type="submit" class="btn primary" [disabled]="form.invalid || enviando()">
+        <button type="submit" class="btn primary" [disabled]="enviando()">
           {{ enviando() ? 'Generando…' : 'Generar liquidación' }}
         </button>
       </div>
@@ -82,11 +90,24 @@ export class GenerarPagoDialog {
     return !!control && control.invalid && control.touched;
   }
 
+  /** Frase general tras un intento de guardar con datos pendientes; el detalle va junto a cada campo. */
+  protected readonly resumen = signal<string | null>(null);
+
+  private static readonly ETIQUETAS = { proveedorId: 'Proveedor', semanaInicio: 'Inicio de semana', semanaFin: 'Fin de semana' } as const;
+
+  protected mensaje(campo: keyof typeof GenerarPagoDialog.ETIQUETAS): string | null {
+    return this.invalido(campo) ? mensajeError(this.form.get(campo), GenerarPagoDialog.ETIQUETAS[campo]) : null;
+  }
+
   enviar(): void {
-    if (this.form.invalid || this.enviando()) {
+    if (this.enviando()) return;
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
+      const campos = Object.keys(GenerarPagoDialog.ETIQUETAS) as (keyof typeof GenerarPagoDialog.ETIQUETAS)[];
+      this.resumen.set(resumenPendientes(campos.filter((c) => this.form.get(c)?.invalid).map((c) => GenerarPagoDialog.ETIQUETAS[c])));
       return;
     }
+    this.resumen.set(null);
     this.enviando.set(true);
     this.errorServidor.set(null);
     this.pagosApi.generar(this.form.getRawValue()).subscribe({

@@ -10,6 +10,9 @@ import { RutasApi } from '../../../rutas/data-access/rutas.api';
 import { UsuarioResponse } from '../../../usuarios/data-access/usuario.models';
 import { UnidadRequest, UnidadResponse } from '../../data-access/unidad.models';
 import { UnidadesApi } from '../../data-access/unidades.api';
+import { pendientesDe, resumenPendientes } from '../../../../shared/util/validacion';
+
+const ETIQUETAS: Record<string, string> = {"placa":"Placa","capacidadTon":"Capacidad","responsableId":"Responsable"};
 
 export interface UnidadFormDialogData {
   /** Usuarios elegibles como responsable: rol ACOPIADOR y activos. */
@@ -133,12 +136,13 @@ interface ZonaConRuta {
           <span class="hint">No hay usuarios con rol ACOPIADOR activos. Crea uno primero en Acopiadores.</span>
         }
       </div>
+      @if (resumen(); as r) { <p class="server-error" role="alert" data-testid="resumen-errores">{{ r }}</p> }
 
       @if (errorServidor()) { <p class="server-error" role="alert">{{ errorServidor() }}</p> }
 
       <div class="dialog-foot">
         <button type="button" class="btn" (click)="dialogRef.close()">Cancelar</button>
-        <button type="submit" class="btn primary" [disabled]="form.invalid || enviando()">
+        <button type="submit" class="btn primary" [disabled]="enviando()">
           {{ enviando() ? 'Guardando…' : (esEdicion ? 'Guardar cambios' : 'Crear unidad') }}
         </button>
       </div>
@@ -173,6 +177,8 @@ export class UnidadFormDialog {
 
   protected readonly esEdicion = !!this.data.unidad;
   protected readonly enviando = signal(false);
+  /** Frase general tras un intento de guardar con datos pendientes; el detalle va junto a cada campo. */
+  protected readonly resumen = signal<string | null>(null);
   protected readonly errorServidor = signal<string | null>(null);
 
   protected readonly cargandoZonas = signal(true);
@@ -258,10 +264,13 @@ export class UnidadFormDialog {
   }
 
   enviar(): void {
-    if (this.form.invalid || this.enviando()) {
+    if (this.enviando()) return;
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.resumen.set(resumenPendientes(pendientesDe(this.form, ETIQUETAS)));
       return;
     }
+    this.resumen.set(null);
     this.enviando.set(true);
     this.errorServidor.set(null);
     const { placa, capacidadTon, zonaId, responsableId } = this.form.getRawValue();

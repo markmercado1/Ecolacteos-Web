@@ -47,10 +47,14 @@ export interface NuevoAcopiadorResultado {
         <div class="field" [class.has-error]="tocadoInvalido(formUsuario.controls.nombre)">
           <label for="ac-nombre">Nombre completo</label>
           <input id="ac-nombre" type="text" formControlName="nombre" required />
+          @if (tocadoInvalido(formUsuario.controls.nombre)) { <span class="error">Completa «Nombre completo».</span> }
         </div>
         <div class="field" [class.has-error]="tocadoInvalido(formUsuario.controls.email)">
           <label for="ac-email">Correo electrónico</label>
           <input id="ac-email" type="email" formControlName="email" required />
+          @if (tocadoInvalido(formUsuario.controls.email)) {
+            <span class="error">{{ formUsuario.controls.email.hasError('required') ? 'Completa «Correo electrónico».' : 'Escribe un correo válido, por ejemplo nombre@empresa.pe.' }}</span>
+          }
         </div>
         <div class="field" [class.has-error]="tocadoInvalido(formUsuario.controls.password)">
           <label for="ac-password">Contraseña</label>
@@ -62,6 +66,7 @@ export interface NuevoAcopiadorResultado {
             required
           />
           <span class="hint">Mínimo 8 caracteres.</span>
+          @if (tocadoInvalido(formUsuario.controls.password)) { <span class="error">La contraseña debe tener al menos 8 caracteres.</span> }
         </div>
         @if (errorUsuario()) {
           <p class="server-error" role="alert">{{ errorUsuario() }}</p>
@@ -71,7 +76,7 @@ export interface NuevoAcopiadorResultado {
           <button
             type="submit"
             class="btn primary"
-            [disabled]="formUsuario.invalid || enviandoUsuario()"
+            [disabled]="enviandoUsuario()"
           >
             {{ enviandoUsuario() ? 'Creando…' : 'Crear y continuar' }}
           </button>
@@ -96,6 +101,9 @@ export interface NuevoAcopiadorResultado {
               <option [value]="unidad.id">{{ unidad.placa }}</option>
             }
           </select>
+          @if (tocadoInvalido(formUnidad.controls.unidadId)) {
+            <span class="error">Selecciona la placa de la unidad, o usa «Omitir por ahora».</span>
+          }
           @if (unidadSeleccionada(); as unidad) {
             <p>
               Responsable actual: {{ unidad.responsableNombre }}. Al asignar, pasará al nuevo
@@ -121,7 +129,7 @@ export interface NuevoAcopiadorResultado {
           <button
             type="submit"
             class="btn primary"
-            [disabled]="formUnidad.invalid || enviandoUnidad()"
+            [disabled]="enviandoUnidad()"
           >
             {{ enviandoUnidad() ? 'Asignando…' : 'Asignar unidad' }}
           </button>

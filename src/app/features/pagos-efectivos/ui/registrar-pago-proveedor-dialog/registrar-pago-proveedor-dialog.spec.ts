@@ -122,6 +122,51 @@ describe('RegistrarPagoProveedorDialog', () => {
     expect(close).toHaveBeenCalledWith(respuesta);
   });
 
+  it('el botón no se deshabilita por estar incompleto: al intentar registrar explica qué falta, sin pedir nada al servidor', () => {
+    const { f, http } = crear({ proveedores });
+    const boton = el(f).querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    expect(boton.disabled).toBe(false);
+
+    boton.click();
+    f.detectChanges();
+    http.expectNone(url);
+    expect(el(f).querySelector('[data-testid="resumen-errores"]')?.textContent).toContain('Proveedor, Monto');
+    expect(el(f).querySelector('#pp-proveedor-error')?.textContent).toContain('Completa «Proveedor»');
+    expect(el(f).querySelector('#pp-monto-error')?.textContent).toContain('Completa «Monto»');
+    expect(el(f).querySelector('#pp-monto')?.getAttribute('aria-invalid')).toBe('true');
+    expect(el(f).querySelector('#pp-monto')?.getAttribute('aria-describedby')).toBe('pp-monto-error');
+  });
+
+  it('un monto en cero o con demasiados decimales recibe un mensaje propio; la transferencia sin banco ni operación pide ambos', () => {
+    const { f } = crear(fijo);
+    comp(f)['form'].patchValue({ monto: 0, modalidad: 'TRANSFERENCIA' });
+    comp(f)['enviar']();
+    f.detectChanges();
+    expect(el(f).querySelector('#pp-monto-error')?.textContent).toContain('mayor que cero');
+    expect(el(f).querySelector('#pp-banco-error')?.textContent).toContain('Indica el banco');
+    expect(el(f).querySelector('#pp-operacion-error')?.textContent).toContain('número de operación');
+
+    const monto = el(f).querySelector<HTMLInputElement>('#pp-monto')!;
+    monto.value = '10.123';
+    monto.dispatchEvent(new Event('input'));
+    f.detectChanges();
+    expect(el(f).querySelector('#pp-monto-error')?.textContent).toContain('2 decimales');
+  });
+
+  it('al corregir y volver a intentar, el resumen desaparece y se envía una sola vez', () => {
+    const { f, http } = crear(fijo);
+    comp(f)['enviar']();
+    f.detectChanges();
+    expect(el(f).querySelector('[data-testid="resumen-errores"]')).not.toBeNull();
+
+    comp(f)['form'].patchValue({ monto: 25 });
+    comp(f)['enviar']();
+    f.detectChanges();
+    expect(el(f).querySelector('[data-testid="resumen-errores"]')).toBeNull();
+    http.expectOne(url).flush(respuesta);
+    http.verify();
+  });
+
   it('no envía un formulario inválido ni dos veces mientras envía', () => {
     const { f, http } = crear(fijo);
     comp(f)['enviar']();

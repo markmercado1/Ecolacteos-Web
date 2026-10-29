@@ -7,6 +7,7 @@ import { mapHttpError } from '../../../../core/http/app-error';
 import { ProveedorPublicoResponse } from '../../../proveedores/data-access/proveedor.models';
 import { MODALIDADES, ModalidadPagoProveedor, PagoProveedorRequest, PagoProveedorResponse, exigeDatosBancarios } from '../../data-access/pago-proveedor.models';
 import { PagosProveedorApi } from '../../data-access/pagos-proveedor.api';
+import { mensajeError, resumenPendientes } from '../../../../shared/util/validacion';
 
 export interface RegistrarPagoDialogData {
   /** Para elegir el proveedor cuando no viene fijo. */
@@ -55,12 +56,14 @@ const limpio = (v: string | null | undefined): string | undefined => {
       } @else {
         <div class="field" [class.has-error]="invalido('proveedorId')">
           <label for="pp-proveedor">Proveedor</label>
-          <select id="pp-proveedor" formControlName="proveedorId" required>
+          <select id="pp-proveedor" formControlName="proveedorId" required
+            [attr.aria-invalid]="invalido('proveedorId') ? 'true' : null" [attr.aria-describedby]="invalido('proveedorId') ? 'pp-proveedor-error' : null">
             <option value="" disabled>Selecciona un proveedor</option>
             @for (proveedor of data.proveedores ?? []; track proveedor.id) {
               <option [value]="proveedor.id">{{ proveedor.nombre }}</option>
             }
           </select>
+          @if (mensaje('proveedorId'); as m) { <span class="error" id="pp-proveedor-error">{{ m }}</span> }
         </div>
       }
       <div class="fila">
@@ -72,18 +75,24 @@ const limpio = (v: string | null | undefined): string | undefined => {
         </div>
         <div class="field" [class.has-error]="invalido('monto')">
           <label for="pp-monto">Monto (S/)</label>
-          <input id="pp-monto" type="number" step="0.01" min="0.01" inputmode="decimal" formControlName="monto" required>
+          <input id="pp-monto" type="number" step="0.01" min="0.01" inputmode="decimal" formControlName="monto" required
+            [attr.aria-invalid]="invalido('monto') ? 'true' : null" [attr.aria-describedby]="invalido('monto') ? 'pp-monto-error' : null">
+          @if (mensaje('monto'); as m) { <span class="error" id="pp-monto-error">{{ m }}</span> }
         </div>
       </div>
       @if (bancarios()) {
         <div class="fila" data-testid="datos-bancarios">
           <div class="field" [class.has-error]="invalido('banco')">
             <label for="pp-banco">Banco</label>
-            <input id="pp-banco" type="text" maxlength="80" formControlName="banco" autocomplete="off">
+            <input id="pp-banco" type="text" maxlength="80" formControlName="banco" autocomplete="off"
+              [attr.aria-invalid]="invalido('banco') ? 'true' : null" [attr.aria-describedby]="invalido('banco') ? 'pp-banco-error' : null">
+            @if (mensaje('banco'); as m) { <span class="error" id="pp-banco-error">{{ m }}</span> }
           </div>
           <div class="field" [class.has-error]="invalido('nroOperacion')">
             <label for="pp-operacion">N.º de operación</label>
-            <input id="pp-operacion" type="text" maxlength="80" formControlName="nroOperacion" autocomplete="off">
+            <input id="pp-operacion" type="text" maxlength="80" formControlName="nroOperacion" autocomplete="off"
+              [attr.aria-invalid]="invalido('nroOperacion') ? 'true' : null" [attr.aria-describedby]="invalido('nroOperacion') ? 'pp-operacion-error' : null">
+            @if (mensaje('nroOperacion'); as m) { <span class="error" id="pp-operacion-error">{{ m }}</span> }
           </div>
         </div>
         <small class="hint">Solo banco y número de operación: no se guardan cuentas completas. La misma operación no puede registrarse dos veces.</small>
@@ -113,10 +122,11 @@ const limpio = (v: string | null | undefined): string | undefined => {
         <p class="hint" data-testid="aviso-adelanto">Sin aplicar a una liquidación, el pago queda como adelanto y puede aplicarse después.</p>
       }
 
+      @if (resumen(); as r) { <p class="server-error" role="alert" data-testid="resumen-errores">{{ r }}</p> }
       @if (errorServidor()) { <p class="server-error" role="alert">{{ errorServidor() }}</p> }
       <div class="dialog-foot">
         <button type="button" class="btn" (click)="dialogRef.close()">Cancelar</button>
-        <button type="submit" class="btn primary" [disabled]="form.invalid || enviando()">
+        <button type="submit" class="btn primary" [disabled]="enviando()">
           {{ enviando() ? 'Registrando…' : 'Registrar pago' }}
         </button>
       </div>
@@ -178,11 +188,34 @@ export class RegistrarPagoProveedorDialog {
     return control.invalid;
   }
 
+  /** Frase general tras un intento de guardar con datos pendientes; el detalle va junto a cada campo. */
+  protected readonly resumen = signal<string | null>(null);
+
+  /** Texto del error de un campo (solo si ya se tocó o se intentó guardar). */
+  protected mensaje(campo: 'proveedorId' | 'monto' | 'banco' | 'nroOperacion'): string | null {
+    if (!this.invalido(campo)) return null;
+    if (campo === 'banco') return 'Indica el banco.';
+    if (campo === 'nroOperacion') return 'Indica el número de operación.';
+    return mensajeError(this.form.get(campo), campo === 'monto' ? 'Monto' : 'Proveedor', {
+      min: 'El monto debe ser mayor que cero.',
+      pattern: 'El monto admite como máximo 2 decimales.',
+      max: 'El monto es demasiado grande.'
+    });
+  }
+
   protected enviar(): void {
-    if (this.form.invalid || this.enviando()) {
+    if (this.enviando()) return;
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
+      const pendientes: string[] = [];
+      if (this.invalido('proveedorId')) pendientes.push('Proveedor');
+      if (this.invalido('monto')) pendientes.push('Monto');
+      if (this.invalido('banco')) pendientes.push('Banco');
+      if (this.invalido('nroOperacion')) pendientes.push('N.º de operación');
+      this.resumen.set(resumenPendientes(pendientes) ?? 'Revisa los datos del pago antes de registrarlo.');
       return;
     }
+    this.resumen.set(null);
     const v = this.form.getRawValue();
     const solicitud: PagoProveedorRequest = {
       uuidCliente: this.uuidCliente,

@@ -4,6 +4,9 @@ import { DialogRef } from '@angular/cdk/dialog';
 import { mapHttpError } from '../../../../core/http/app-error';
 import { PrecioLitroResponse } from '../../data-access/precio.models';
 import { PreciosApi } from '../../data-access/precios.api';
+import { pendientesDe, resumenPendientes } from '../../../../shared/util/validacion';
+
+const ETIQUETAS: Record<string, string> = {"precio":"Precio por litro","vigenteDesde":"Vigente desde"};
 
 @Component({
   selector: 'app-precio-form-dialog',
@@ -23,12 +26,14 @@ import { PreciosApi } from '../../data-access/precios.api';
       <div class="field" [class.has-error]="invalido('vigenteDesde')">
         <label for="vigenteDesde">Vigente desde</label>
         <input id="vigenteDesde" type="date" formControlName="vigenteDesde" required>
+        @if (invalido('vigenteDesde')) { <span class="error">Indica desde qué fecha rige el precio.</span> }
         <span class="hint">Puede ser una fecha futura; el histórico conserva todas las vigencias.</span>
       </div>
+      @if (resumen(); as r) { <p class="server-error" role="alert" data-testid="resumen-errores">{{ r }}</p> }
       @if (errorServidor()) { <p class="server-error" role="alert">{{ errorServidor() }}</p> }
       <div class="dialog-foot">
         <button type="button" class="btn" (click)="dialogRef.close()">Cancelar</button>
-        <button type="submit" class="btn primary" [disabled]="form.invalid || enviando()">
+        <button type="submit" class="btn primary" [disabled]="enviando()">
           {{ enviando() ? 'Registrando…' : 'Registrar precio' }}
         </button>
       </div>
@@ -53,6 +58,8 @@ export class PrecioFormDialog {
   private readonly preciosApi = inject(PreciosApi);
 
   protected readonly enviando = signal(false);
+  /** Frase general tras un intento de guardar con datos pendientes; el detalle va junto a cada campo. */
+  protected readonly resumen = signal<string | null>(null);
   protected readonly errorServidor = signal<string | null>(null);
   protected readonly form = this.fb.group({
     precio: this.fb.control<number | null>(null, [Validators.required, Validators.min(0.01)]),
@@ -65,10 +72,13 @@ export class PrecioFormDialog {
   }
 
   enviar(): void {
-    if (this.form.invalid || this.enviando()) {
+    if (this.enviando()) return;
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.resumen.set(resumenPendientes(pendientesDe(this.form, ETIQUETAS)));
       return;
     }
+    this.resumen.set(null);
     this.enviando.set(true);
     this.errorServidor.set(null);
     const { precio, vigenteDesde } = this.form.getRawValue();

@@ -15,6 +15,7 @@ import { CompradorSelectorComponent } from '../../../clientes/ui/comprador-selec
 import { CompradorSeleccion } from '../../../clientes/ui/registro-cliente-dialog/registro-cliente-dialog';
 import { CrearVentaCarritoRequest, DetalleVentaRequest, TipoClienteVenta, VentaResumenResponse } from '../../data-access/venta.models';
 import { VentasApi } from '../../data-access/ventas.api';
+import { resumenPendientes } from '../../../../shared/util/validacion';
 
 type Paso = 'formulario' | 'resumen' | 'resultado';
 
@@ -226,6 +227,52 @@ export class VentaFormDialog {
     );
   });
 
+  // --- Validación al intentar continuar ---
+  // El botón «Revisar resumen» no se deshabilita por estar incompleto: al pulsarlo se marca lo pendiente (junto a cada
+  // campo y en una frase general). Los mensajes se recalculan solos y desaparecen a medida que se corrige.
+
+  /** true tras pulsar «Revisar resumen» con datos pendientes. */
+  protected readonly intentoFallido = signal(false);
+  protected readonly fechaValor = toSignal(this.form.controls.fecha.valueChanges, { initialValue: this.form.controls.fecha.value });
+
+  /** Qué falta en una línea del carrito. El exceso de stock y el error de precio ya se muestran aparte, no se repiten. */
+  protected erroresFila(fila: FilaCarrito): string[] {
+    const errores: string[] = [];
+    if (!fila.productoId) errores.push('Elige un producto.');
+    else if (!fila.presentacionId) errores.push('Elige una presentación.');
+    if (fila.cantidad === null || fila.cantidad < 1) errores.push('Indica una cantidad de 1 o más.');
+    if (fila.presentacionId && fila.cargandoPrecio) errores.push('Espera a que se consulte el precio.');
+    else if (fila.presentacionId && fila.precioVigente === null && !fila.errorPrecio) errores.push('Esta presentación no tiene un precio vigente para el canal y la fecha elegidos.');
+    return errores;
+  }
+
+  protected readonly canalIncorrecto = computed(() => {
+    const canal = this.tipoClienteValor();
+    return !!canal && !this.canalPermitido(canal);
+  });
+
+  /** Por qué el canal elegido no sirve para el comprador actual (vacío si sirve). */
+  protected readonly motivoCanalActual = computed(() => {
+    const canal = this.tipoClienteValor();
+    return canal && !this.canalPermitido(canal) ? this.motivoCanal(canal) : '';
+  });
+
+  /** Etiquetas de lo que falta para continuar (vacío si no falta nada). */
+  protected readonly pendientes = computed(() => {
+    const lista: string[] = [];
+    if (!this.fechaValor()) lista.push('Fecha');
+    if (!this.tipoClienteValor() || this.canalIncorrecto()) lista.push('Canal');
+    const filas = this.filas();
+    if (filas.length === 0) lista.push('Líneas de la venta');
+    filas.forEach((f, i) => {
+      if (this.erroresFila(f).length > 0 || this.cantidadExcedeStock(f)) lista.push(`Línea ${i + 1}`);
+    });
+    return lista;
+  });
+
+  /** Frase general: solo tras un intento fallido, y se apaga sola cuando ya no falta nada. */
+  protected readonly resumen = computed(() => (this.intentoFallido() ? resumenPendientes(this.pendientes()) : null));
+
   constructor() {
     this.tiposPrecioApi.listar(true).subscribe({ next: (t) => this.tiposActivos.set(t), error: () => this.tiposActivos.set([]) });
     this.cargarProductos();
@@ -360,12 +407,15 @@ export class VentaFormDialog {
     if (this.filas().length === 0) {
       this.errorSinFilas.set(true);
       this.form.markAllAsTouched();
+      this.intentoFallido.set(true);
       return;
     }
     if (this.form.invalid || !this.puedeContinuar()) {
       this.form.markAllAsTouched();
+      this.intentoFallido.set(true);
       return;
     }
+    this.intentoFallido.set(false);
     this.paso.set('resumen');
   }
 
