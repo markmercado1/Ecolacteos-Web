@@ -10,6 +10,7 @@ import { InsumoResponse } from '../../../catalogos/data-access/insumo.models';
 import { LotesInsumoApi } from '../../data-access/lotes.api';
 import { ETIQUETA_ESTADO_LOTE, LoteInsumoResponse } from '../../data-access/lotes.models';
 import { KardexVistaComponent } from '../kardex-vista/kardex-vista';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 
 export interface InsumoDetalleDialogData {
   insumo: InsumoResponse;
@@ -25,7 +26,7 @@ export interface InsumoDetalleDialogData {
  */
 @Component({
   selector: 'app-insumo-detalle-dialog',
-  imports: [DatePipe, DecimalPipe, FormsModule, KardexVistaComponent, LoadingStateComponent, ErrorStateComponent],
+  imports: [DatePipe, DecimalPipe, FormsModule, KardexVistaComponent, ExportarExcelComponent, LoadingStateComponent, ErrorStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="dialog-head">
@@ -50,6 +51,7 @@ export interface InsumoDetalleDialogData {
         } @else if (lotes().length === 0) {
           <p class="vacio" role="status">Este insumo todavía no tiene lotes.</p>
         } @else {
+          <div class="barra-lotes"><ui-exportar-excel recurso="lotes-insumo" [filtro]="{ insumoId: data.insumo.id }" /></div>
           <div class="tabla-scroll">
             <table class="tabla">
               <caption class="visually-hidden">Lotes de {{ data.insumo.nombre }}</caption>
@@ -108,6 +110,7 @@ export interface InsumoDetalleDialogData {
     .tab.active { border-bottom-color: var(--color-primary, #145a3c); }
     .dialog-body { padding: var(--space-4) var(--space-6); }
     .dialog-foot { display: flex; justify-content: flex-end; padding: 0 var(--space-6) var(--space-6); }
+    .barra-lotes { display: flex; justify-content: flex-end; margin-bottom: var(--space-2); }
     .tabla-scroll { overflow-x: auto; }
     .tabla { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); }
     .tabla th, .tabla td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--color-border); vertical-align: top; }

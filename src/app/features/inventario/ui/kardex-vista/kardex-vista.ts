@@ -7,6 +7,7 @@ import { LoadingStateComponent } from '../../../../shared/ui/state/loading-state
 import { fechaHoyLima } from '../../../../shared/util/fecha';
 import { ETIQUETA_MOVIMIENTO, Kardex, TipoItemKardex } from '../../data-access/kardex.models';
 import { LoteInsumoResponse } from '../../data-access/lotes.models';
+import { ExportarExcelComponent } from '../../../../shared/ui/exportar-excel/exportar-excel';
 import { KardexApi } from '../../data-access/kardex.api';
 
 const TAMANO_PAGINA = 50;
@@ -23,7 +24,7 @@ function inicioDeMes(): string {
  */
 @Component({
   selector: 'app-kardex-vista',
-  imports: [DecimalPipe, DatePipe, LoadingStateComponent, ErrorStateComponent],
+  imports: [DecimalPipe, DatePipe, LoadingStateComponent, ErrorStateComponent, ExportarExcelComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <form class="filtros-kardex" (submit)="$event.preventDefault(); aplicar()" aria-label="Período del kardex">
@@ -46,6 +47,10 @@ function inicioDeMes(): string {
       }
       <button type="submit" class="btn small">Aplicar</button>
       <button type="button" class="btn small ghost" (click)="todoElHistorial()">Todo el historial</button>
+      @if (tipo() === 'INSUMO' && itemId()) {
+        <!-- Excel del kardex con el mismo período y lote que se ven: lote, proveedor, vencimiento y documento incluidos. -->
+        <ui-exportar-excel [recurso]="'kardex-insumo/' + itemId()" [filtro]="filtroExportacion()" />
+      }
     </form>
     @if (errorFiltro()) { <p class="error" role="alert">{{ errorFiltro() }}</p> }
 
@@ -147,6 +152,7 @@ export class KardexVistaComponent implements OnInit {
   /** Solo insumos: sus lotes, para poder filtrar el kardex por lote. */
   readonly lotes = input<LoteInsumoResponse[]>([]);
   protected readonly loteId = signal('');
+  protected readonly filtroExportacion = computed(() => ({ desde: this.desde() || undefined, hasta: this.hasta() || undefined, loteId: this.loteId() || undefined }));
 
   private readonly api = inject(KardexApi);
   private readonly destroyRef = inject(DestroyRef);
