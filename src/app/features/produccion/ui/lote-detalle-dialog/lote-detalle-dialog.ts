@@ -172,7 +172,13 @@ interface FilaRecepcionConsumida {
         @if (l.insumos?.length) {
           <dl>
             @for (i of l.insumos; track i.insumoId) {
-              <div><dt>{{ i.insumoNombre }}</dt><dd>{{ i.cantidad | number: '1.0-2' }} {{ i.unidadMedida }}</dd></div>
+              <div>
+                <dt>{{ i.insumoNombre }}</dt>
+                <dd>{{ i.cantidad | number: '1.0-2' }} {{ i.unidadMedida }}</dd>
+                @for (lu of i.lotes ?? []; track lu.loteId) {
+                  <dd class="lote-usado">Lote {{ lu.codigo }} · {{ lu.cantidad | number: '1.0-2' }} {{ i.unidadMedida }}{{ lu.proveedorNombre ? ' · ' + lu.proveedorNombre : '' }}{{ lu.fechaVencimiento ? ' · vence ' + lu.fechaVencimiento : '' }}</dd>
+                }
+              </div>
             }
           </dl>
         } @else {
@@ -302,6 +308,7 @@ interface FilaRecepcionConsumida {
     dl { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3) var(--space-4); margin: 0; }
     dt { color: var(--color-text-muted); font-size: 0.75rem; }
     dd { margin: 0.2rem 0 0; font-weight: 600; overflow-wrap: anywhere; }
+    dd.lote-usado { font-weight: 400; font-size: 0.75rem; color: var(--color-text-muted); }
     ui-bar-chart { display: block; margin-top: var(--space-5); }
     .nota { color: var(--color-text-muted); font-size: 0.75rem; margin-top: var(--space-3); }
     .hint { color: var(--color-text-muted); font-size: var(--font-size-sm); }

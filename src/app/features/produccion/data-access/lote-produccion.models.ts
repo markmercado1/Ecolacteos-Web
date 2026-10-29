@@ -33,11 +33,23 @@ export interface InsumoLoteRequest {
   cantidad: number;
 }
 
+/** Un lote de insumo del que salió lo consumido por un lote de producción (trazabilidad hacia atrás). */
+export interface LoteInsumoUsado {
+  loteId: string;
+  codigo: string;
+  codigoProveedor: string | null;
+  proveedorNombre: string | null;
+  fechaVencimiento: string | null;
+  cantidad: number;
+}
+
 export interface InsumoLoteResponse {
   insumoId: string;
   insumoNombre: string;
   unidadMedida: string;
   cantidad: number;
+  /** Lotes de insumo de los que salió (FEFO), en el orden del kardex; vacío si aún no consumió. Opcional por compatibilidad. */
+  lotes?: LoteInsumoUsado[];
 }
 
 /**

@@ -125,6 +125,24 @@ describe('LoteDetalleDialog', () => {
     http.verify();
   });
 
+  it('muestra de qué lotes de insumo salió cada insumo (trazabilidad hacia atrás)', () => {
+    const http = setup();
+    const f = TestBed.createComponent(LoteDetalleDialog);
+    http.expectOne(`${base}/lotes-produccion/l1`).flush({
+      ...loteNuevo,
+      insumos: [{ insumoId: 'i1', insumoNombre: 'Azúcar', unidadMedida: 'kg', cantidad: 10, lotes: [
+        { loteId: 'a', codigo: 'AZU-20261029-01', codigoProveedor: 'P-77', proveedorNombre: 'Distribuidora Andina', fechaVencimiento: '2027-01-31', cantidad: 7 },
+        { loteId: 'b', codigo: 'INICIAL', codigoProveedor: null, proveedorNombre: null, fechaVencimiento: null, cantidad: 3 }
+      ] }]
+    });
+    f.detectChanges();
+    const texto = f.nativeElement.textContent;
+    expect(texto).toContain('Lote AZU-20261029-01');
+    expect(texto).toContain('Distribuidora Andina');
+    expect(texto).toContain('vence 2027-01-31');
+    expect(texto).toContain('Lote INICIAL');
+  });
+
   it('rendimiento null se muestra como "Sin cálculo", no como 0%', () => {
     const http = setup();
     const f = TestBed.createComponent(LoteDetalleDialog);
