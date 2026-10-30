@@ -6,6 +6,8 @@ export interface ItemNavegacion {
   etiqueta: string;
   icono: NombreIcono;
   roles: RolNombre[];
+  /** true = el ítem solo se resalta con su ruta exacta (no con las rutas que cuelgan de ella: «Ventas» no se resalta en «Nueva venta»). */
+  exacta?: boolean;
 }
 
 export interface GrupoNavegacion {
@@ -65,7 +67,8 @@ export const GRUPOS_NAVEGACION: GrupoNavegacion[] = [
     titulo: 'Ventas',
     icono: 'ventas',
     items: [
-      { ruta: '/ventas', etiqueta: 'Ventas', icono: 'ventas', roles: ['ADMIN', 'VENTAS'] },
+      { ruta: '/ventas/nueva', etiqueta: 'Nueva venta', icono: 'ventas', roles: ['ADMIN', 'VENTAS'] },
+      { ruta: '/ventas', etiqueta: 'Ventas', icono: 'ventas', roles: ['ADMIN', 'VENTAS'], exacta: true },
       { ruta: '/reservas', etiqueta: 'Reservas', icono: 'reservas', roles: ['ADMIN', 'VENTAS'] },
       { ruta: '/clientes', etiqueta: 'Clientes', icono: 'usuarios', roles: ['ADMIN', 'VENTAS'] }
     ]

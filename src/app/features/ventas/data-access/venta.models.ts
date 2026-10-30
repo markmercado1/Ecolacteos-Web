@@ -3,6 +3,14 @@ import { CompradorRef, CompradorResumen } from '../../clientes/data-access/clien
 /** Fuente: docs/CONTRATOS.md, VentaRequest.java. Código de un tipo de precio del catálogo (`/api/tipos-precio`): MAYORISTA, PROVEEDOR, PUBLICO u otro creado por ADMIN. */
 export type TipoClienteVenta = string;
 
+/** V48: tipo de comprobante de la venta. Cada tipo lleva su propia serie y su propio correlativo (NOTA_VENTA: NV01, BOLETA: B001). */
+export type TipoComprobante = 'NOTA_VENTA' | 'BOLETA';
+
+export const ETIQUETAS_COMPROBANTE: Record<TipoComprobante, string> = {
+  NOTA_VENTA: 'Nota de venta',
+  BOLETA: 'Boleta de venta electrónica'
+};
+
 /**
  * Fase 4 (Venta multi-línea / carrito): una línea del carrito enviada al confirmar la venta. El precio se
  * resuelve siempre en el servidor -- nunca se envía aquí.
@@ -24,6 +32,8 @@ export interface CrearVentaCarritoRequest {
   detalles: DetalleVentaRequest[];
   /** Fase H (opcional): quien compra. Sin comprador = cliente varios (solo en canal PÚBLICO). */
   comprador?: CompradorRef | null;
+  /** V48 (opcional): NOTA_VENTA (por defecto) o BOLETA. */
+  tipoComprobante?: TipoComprobante;
 }
 
 /** Fuente: docs/CONTRATOS.md, DetalleVentaResponse.java. Una línea ya confirmada por el servidor. */
@@ -42,6 +52,8 @@ export interface DetalleVentaResponse {
   tasaIgv?: number | null;
   valorVenta?: number | null;
   igv?: number | null;
+  /** V48: código de la presentación (PRD-001...). Puede faltar si el backend es anterior. */
+  codigo?: string | null;
 }
 
 /** Fase G: resumen del IGV contenido en el total de una venta (VentaResumenResponse.ResumenIgvVenta). */
@@ -72,4 +84,25 @@ export interface VentaResumenResponse {
   comprador?: CompradorResumen | null;
   reservaId?: string | null;
   reservaCodigo?: string | null;
+  /** V48: comprobante («NV01-00000041»), quién registró la venta y la hora real del registro (hora local de la planta, sin zona). Pueden faltar si el backend es anterior. */
+  tipoComprobante?: TipoComprobante | null;
+  comprobante?: string | null;
+  vendedorNombre?: string | null;
+  creadoEn?: string | null;
+}
+
+/**
+ * Resultado del buscador de «Nueva venta» (GET /api/ventas/presentaciones). `disponible` = false (con su `motivo`) se muestra pero no se puede
+ * agregar. El precio es el vigente para el canal y la fecha pedidos; el servidor vuelve a resolverlo al registrar la venta.
+ */
+export interface PresentacionVentaResultado {
+  presentacionId: string;
+  productoId: string;
+  productoNombre: string;
+  presentacionNombre: string;
+  codigo: string;
+  stockVendible: number;
+  precio: number | null;
+  disponible: boolean;
+  motivo: 'SIN_STOCK' | 'SIN_PRECIO' | null;
 }

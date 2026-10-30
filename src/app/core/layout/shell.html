@@ -19,7 +19,7 @@
         @if (grupo.items.length === 1) {
           <!-- Un solo destino para este rol: enlace directo, sin desplegable. -->
           @let item = grupo.items[0];
-          <a class="nav-item nav-directo" [routerLink]="item.ruta" routerLinkActive="active" (click)="cerrarMenu()">
+          <a class="nav-item nav-directo" [routerLink]="item.ruta" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: !!item.exacta }" (click)="cerrarMenu()">
             <ui-icon [name]="item.icono" />
             <span>{{ item.etiqueta }}</span>
           </a>
@@ -40,7 +40,7 @@
             @if (estaAbierto(grupo.id)) {
               <div class="nav-group-items" [id]="'nav-grupo-' + grupo.id">
                 @for (item of grupo.items; track item.ruta) {
-                  <a class="nav-item" [routerLink]="item.ruta" routerLinkActive="active" (click)="cerrarMenu()">
+                  <a class="nav-item" [routerLink]="item.ruta" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: !!item.exacta }" (click)="cerrarMenu()">
                     <span>{{ item.etiqueta }}</span>
                   </a>
                 }

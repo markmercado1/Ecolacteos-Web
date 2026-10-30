@@ -64,7 +64,7 @@ describe('Shell — navegación desplegable', () => {
   it('VENTAS ve Inventario como enlace directo y Ventas, Reservas y Clientes dentro de Ventas', async () => {
     const f = await crear('VENTAS', '/ventas');
     expect(toggles(f).map((b) => b.textContent?.trim())).toEqual(['Ventas']);
-    expect(enlaces(f)).toEqual(['Inventario', 'Ventas', 'Reservas', 'Clientes']);
+    expect(enlaces(f)).toEqual(['Inventario', 'Nueva venta', 'Ventas', 'Reservas', 'Clientes']);
   });
 
   it('solo ADMIN y VENTAS ven Reservas en la navegación', async () => {
@@ -178,7 +178,7 @@ describe('Shell — navegación desplegable', () => {
           'Panel económico',
           'Acopios', 'Calidad', 'Jornadas', 'Recepción', 'Rutas',
           'Producción', 'Inventario', 'Trazabilidad',
-          'Ventas', 'Reservas', 'Clientes',
+          'Nueva venta', 'Ventas', 'Reservas', 'Clientes',
           'Proveedores', 'Proveedores de compra', 'Liquidaciones de leche', 'Desembolsos a proveedores', 'Comunicados',
           'Precios', 'Tipos de precio', 'IGV de las ventas', 'Catálogos', 'Usuarios', 'Acopiadores', 'Unidades'
         ]
@@ -189,7 +189,7 @@ describe('Shell — navegación desplegable', () => {
       },
       CALIDAD: { secciones: [], enlaces: ['Calidad', 'Trazabilidad'] },
       PRODUCCION: { secciones: ['Producción'], enlaces: ['Producción', 'Inventario', 'Trazabilidad'] },
-      VENTAS: { secciones: ['Ventas'], enlaces: ['Inventario', 'Ventas', 'Reservas', 'Clientes'] },
+      VENTAS: { secciones: ['Ventas'], enlaces: ['Inventario', 'Nueva venta', 'Ventas', 'Reservas', 'Clientes'] },
       ACOPIADOR: { secciones: [], enlaces: ['Rutas'] }
     };
 
@@ -215,6 +215,18 @@ describe('Shell — navegación desplegable', () => {
 
     const g = await crear('ADMIN', '/ventas'); // la sección y la página se llaman igual: solo la página
     expect((g.nativeElement as HTMLElement).querySelector('.crumb')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('Ventas');
+  });
+
+  it('«Ventas» no se resalta cuando se está en «Nueva venta» (cada uno solo con su ruta exacta)', async () => {
+    const f = await crear('ADMIN', '/ventas/nueva');
+    const activos = () => Array.from((f.nativeElement as HTMLElement).querySelectorAll('a.nav-item.active')).map((a) => a.textContent?.trim());
+    expect(activos()).toEqual(['Nueva venta']);
+    expect(f.componentInstance['tituloActual']()).toBe('Nueva venta');
+    TestBed.resetTestingModule();
+
+    const g = await crear('ADMIN', '/ventas');
+    expect(Array.from((g.nativeElement as HTMLElement).querySelectorAll('a.nav-item.active')).map((a) => a.textContent?.trim())).toEqual(['Ventas']);
+    expect(g.componentInstance['tituloActual']()).toBe('Ventas');
   });
 
   it('el rol de la cuenta se muestra con su nombre legible', async () => {

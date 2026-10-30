@@ -54,23 +54,28 @@ describe('Exportar a Excel en las pantallas', () => {
     expect(guardar.mock.calls[0][1]).toBe('proveedores-20261022-1100.xlsx');
   });
 
-  it('Ventas: el botón pide el archivo con fecha, canal y búsqueda vigentes, sin paginar', () => {
+  it('Ventas: el botón pide el archivo con el rango de fechas, canal y búsqueda vigentes, sin paginar', () => {
     const fixture = TestBed.createComponent(VentasPage);
     http.expectOne((r) => r.url.endsWith('/tipos-precio')).flush([]);
     http.expectOne((r) => r.url === `${base}/ventas`).flush(vacia);
+    http.expectOne((r) => r.url === `${base}/ventas/resumen`).flush({ cantidad: 0, total: 0 });
     const pagina = fixture.componentInstance as unknown as Record<string, (...a: unknown[]) => void>;
-    pagina['cambiarFiltroFecha']('2026-09-17');
-    http.expectOne((r) => r.url === `${base}/ventas`).flush(vacia);
-    pagina['cambiarFiltroTipoCliente']('MAYORISTA');
-    http.expectOne((r) => r.url === `${base}/ventas`).flush(vacia);
-    pagina['buscar']('queso');
-    http.expectOne((r) => r.url === `${base}/ventas`).flush(vacia);
+    // cada filtro vuelve a pedir la lista y los totales
+    const refrescar = () => {
+      http.expectOne((r) => r.url === `${base}/ventas`).flush(vacia);
+      http.expectOne((r) => r.url === `${base}/ventas/resumen`).flush({ cantidad: 0, total: 0 });
+    };
+    pagina['cambiarFiltroDesde']('2026-09-01'); refrescar();
+    pagina['cambiarFiltroHasta']('2026-09-17'); refrescar();
+    pagina['cambiarFiltroTipoCliente']('MAYORISTA'); refrescar();
+    pagina['buscar']('queso'); refrescar();
     fixture.detectChanges();
 
     (fixture.nativeElement.querySelector('ui-exportar-excel button') as HTMLButtonElement).click();
 
     const req = http.expectOne((r) => r.url === `${base}/exportaciones/ventas`);
-    expect(req.request.params.get('fecha')).toBe('2026-09-17');
+    expect(req.request.params.get('desde')).toBe('2026-09-01');
+    expect(req.request.params.get('hasta')).toBe('2026-09-17');
     expect(req.request.params.get('tipoCliente')).toBe('MAYORISTA');
     expect(req.request.params.get('busqueda')).toBe('queso');
     expect(req.request.params.has('page')).toBe(false);

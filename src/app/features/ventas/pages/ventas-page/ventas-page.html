@@ -2,24 +2,40 @@
   <div>
     <div class="eyebrow">VENTAS</div>
     <h1>Ventas</h1>
-    <p>Registro de venta (una o varias líneas) y consulta de tu historial. No se emiten facturas y las ventas registradas no se pueden editar ni anular.</p>
+    <p>Historial de comprobantes: consulta, imprime o descarga cada uno. Las ventas registradas no se pueden editar ni anular.</p>
   </div>
   <div class="heading-actions">
-    <button type="button" class="btn primary" (click)="nuevaVenta()">Registrar venta</button>
+    <ui-exportar-excel recurso="ventas" [filtro]="filtroExportacion()" />
+    <a class="btn primary" routerLink="/ventas/nueva" data-testid="nueva-venta">+ Nueva venta</a>
   </div>
 </div>
+
+<section class="kpis" aria-label="Totales del filtro">
+  <div class="kpi" data-testid="kpi-cantidad">
+    <span>Ventas</span>
+    <strong>{{ resumen() ? (resumen()!.cantidad | number: '1.0-0') : '—' }}</strong>
+  </div>
+  <div class="kpi destacado" data-testid="kpi-total">
+    <span>Total vendido</span>
+    <strong>{{ resumen() ? 'S/ ' + (resumen()!.total | number: '1.2-2') : '—' }}</strong>
+  </div>
+  <div class="kpi" data-testid="kpi-promedio">
+    <span>Promedio por venta</span>
+    <strong>{{ promedio() !== null ? 'S/ ' + (promedio()! | number: '1.2-2') : '—' }}</strong>
+  </div>
+</section>
 
 <ui-data-table
   [columnas]="columnas"
   [filas]="ventas()"
   [cargando]="cargando()"
   [error]="error()"
-  mensajeVacio="No hay ventas registradas con los filtros seleccionados."
+  mensajeVacio="No hay ventas con los filtros seleccionados."
   titulo="Historial de ventas"
-  subtitulo="Más recientes primero. Busca por vendedor o producto y filtra por fecha y canal; cada fila abre el detalle de la venta."
+  subtitulo="Más recientes primero. Busca por comprobante, comprador, vendedor o producto y filtra por fechas y canal."
   [buscable]="true"
-  placeholderBusqueda="Buscar por vendedor o producto"
-  etiquetaBusqueda="Buscar ventas por vendedor o producto"
+  placeholderBusqueda="Comprobante, comprador, vendedor o producto"
+  etiquetaBusqueda="Buscar ventas por comprobante, comprador, vendedor o producto"
   [pagina]="pagina()"
   [totalPaginas]="totalPaginas()"
   [totalElementos]="totalElementos()"
@@ -33,13 +49,12 @@
 >
   <div toolbar class="filtros">
     <div class="field">
-      <label for="filtro-fecha">Fecha</label>
-      <input
-        id="filtro-fecha"
-        type="date"
-        [value]="filtroFecha()"
-        (change)="cambiarFiltroFecha($any($event.target).value)"
-      >
+      <label for="filtro-desde">Desde</label>
+      <input id="filtro-desde" type="date" [value]="filtroDesde()" [max]="filtroHasta() || null" (change)="cambiarFiltroDesde($any($event.target).value)">
+    </div>
+    <div class="field">
+      <label for="filtro-hasta">Hasta</label>
+      <input id="filtro-hasta" type="date" [value]="filtroHasta()" [min]="filtroDesde() || null" (change)="cambiarFiltroHasta($any($event.target).value)">
     </div>
     <select
       [value]="filtroTipoCliente()"
@@ -47,19 +62,34 @@
       aria-label="Filtrar por canal"
     >
       <option value="">Todos los canales</option>
-      @for (t of tiposPrecio(); track t.codigo) { <option [value]="t.codigo">{{ t.nombre }}{{ t.activo ? '' : ' (desactivado)' }}</option> }
+      @for (t of tiposPrecio(); track t.codigo) { <option [value]="t.codigo" [selected]="t.codigo === filtroTipoCliente()">{{ t.nombre }}{{ t.activo ? '' : ' (desactivado)' }}</option> }
     </select>
-    <ui-exportar-excel recurso="ventas" [filtro]="filtroExportacion()" />
+    @if (hayFiltros()) {
+      <button type="button" class="btn small" data-testid="limpiar" (click)="limpiarFiltros()">Limpiar filtros</button>
+    }
+    @if (rangoInvalido()) {
+      <span class="error" role="alert" data-testid="rango-invalido">«Desde» no puede ser posterior a «Hasta».</span>
+    }
   </div>
 
   <ng-template #celda let-fila let-columna="columna">
     @switch (columna) {
-      @case ('fecha') { {{ formatearFecha(fila.fecha) }} }
+      @case ('comprobante') {
+        <span class="comprobante" [class.boleta]="fila.tipoComprobante === 'BOLETA'" [attr.title]="tipoComprobante(fila)">{{ fila.comprobante ?? '—' }}</span>
+      }
+      @case ('fecha') { {{ formatearFecha(fila.fecha) }} @if (hora(fila)) { <span class="hora">{{ hora(fila) }}</span> } }
+      @case ('comprador') { <span [class.apagado]="!fila.comprador?.nombre">{{ comprador(fila) }}</span> }
+      @case ('vendedor') { {{ fila.vendedorNombre ?? '—' }} }
       @case ('canal') { {{ etiquetaCanal(fila.tipoCliente) }} }
       @case ('lineas') { {{ resumenLineas(fila) }} }
       @case ('total') { <strong>S/ {{ fila.total.toFixed(2) }}</strong> }
       @case ('acciones') {
-        <button type="button" class="row-link" (click)="abrirDetalle(fila.id)">Ver detalle</button>
+        <span class="acciones">
+          <button type="button" class="row-link" data-testid="ver" (click)="abrirDetalle(fila)">Ver</button>
+          <button type="button" class="row-link" data-testid="imprimir" [disabled]="!!trabajando()" (click)="imprimir(fila)">{{ estaTrabajando(fila, 'imprimir') ? 'Preparando…' : 'Imprimir' }}</button>
+          <button type="button" class="row-link" data-testid="descargar" [disabled]="!!trabajando()" (click)="descargar(fila)">{{ estaTrabajando(fila, 'descargar') ? 'Descargando…' : 'PDF' }}</button>
+          <button type="button" class="row-link" data-testid="whatsapp" (click)="enviarWhatsapp(fila)">WhatsApp</button>
+        </span>
       }
       @default { {{ fila[columna] ?? '—' }} }
     }

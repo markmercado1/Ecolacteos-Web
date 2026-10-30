@@ -1,14 +1,19 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { AppError, mapHttpError } from '../../../../core/http/app-error';
 import { ErrorStateComponent } from '../../../../shared/ui/state/error-state';
 import { LoadingStateComponent } from '../../../../shared/ui/state/loading-state';
-import { TipoClienteVenta, VentaResumenResponse } from '../../data-access/venta.models';
+import { ToastService } from '../../../../shared/ui/toast/toast.service';
+import { formatearFecha } from '../../../../shared/util/fecha';
+import { ComprobanteVentaService } from '../../data-access/comprobante-venta.service';
+import { ETIQUETAS_COMPROBANTE, TipoClienteVenta, VentaResumenResponse } from '../../data-access/venta.models';
 import { VentasApi } from '../../data-access/ventas.api';
 
 export interface VentaDetalleDialogData {
   id: string;
+  /** Nombre del canal según el catálogo de tipos de precio (quien abre el diálogo ya lo tiene); sin él, se usa el código estable. */
+  etiquetaCanal?: string;
 }
 
 const ETIQUETAS_CANAL: Record<TipoClienteVenta, string> = {
@@ -21,7 +26,7 @@ const ETIQUETAS_CANAL: Record<TipoClienteVenta, string> = {
  *  (Venta multi-línea / carrito): muestra todas las líneas de la venta, no solo una. */
 @Component({
   selector: 'app-venta-detalle-dialog',
-  imports: [DatePipe, DecimalPipe, LoadingStateComponent, ErrorStateComponent],
+  imports: [DecimalPipe, LoadingStateComponent, ErrorStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="dialog-head">
@@ -35,8 +40,12 @@ const ETIQUETAS_CANAL: Record<TipoClienteVenta, string> = {
         <ui-error-state [error]="error()" (reintentar)="cargar()" />
       } @else if (venta(); as v) {
         <dl>
-          <div><dt>Fecha</dt><dd>{{ v.fecha | date: 'dd/MM/yyyy' }}</dd></div>
+          @if (v.comprobante) {
+            <div><dt>{{ v.tipoComprobante ? etiquetasComprobante[v.tipoComprobante] : 'Comprobante' }}</dt><dd data-testid="comprobante-venta">{{ v.comprobante }}</dd></div>
+          }
+          <div><dt>Fecha</dt><dd>{{ fecha(v) }}</dd></div>
           <div><dt>Canal</dt><dd>{{ etiquetaCanal(v.tipoCliente) }}</dd></div>
+          @if (v.vendedorNombre) { <div><dt>Vendedor</dt><dd data-testid="vendedor-venta">{{ v.vendedorNombre }}</dd></div> }
           <div><dt>Identificador</dt><dd class="codigo">{{ v.id }}</dd></div>
           <div><dt>Comprador</dt><dd data-testid="comprador-venta">{{ comprador(v) }}</dd></div>
           @if (v.reservaCodigo) { <div><dt>Reserva de origen</dt><dd data-testid="reserva-origen">{{ v.reservaCodigo }}</dd></div> }
@@ -44,6 +53,7 @@ const ETIQUETAS_CANAL: Record<TipoClienteVenta, string> = {
         <table class="tabla-lineas">
           <thead>
             <tr>
+              <th>Código</th>
               <th>Producto</th>
               <th>Presentación</th>
               <th class="align-end">Cantidad</th>
@@ -55,6 +65,7 @@ const ETIQUETAS_CANAL: Record<TipoClienteVenta, string> = {
           <tbody>
             @for (linea of v.detalles; track linea.presentacionId) {
               <tr>
+                <td class="muted">{{ linea.codigo ?? '' }}</td>
                 <td>{{ linea.productoNombre }}</td>
                 <td>{{ linea.presentacionNombre }}</td>
                 <td class="align-end">{{ linea.cantidad }}</td>
@@ -84,6 +95,10 @@ const ETIQUETAS_CANAL: Record<TipoClienteVenta, string> = {
     </div>
     <div class="dialog-foot">
       <button type="button" class="btn" (click)="dialogRef.close()">Cerrar</button>
+      @if (venta()) {
+        <button type="button" class="btn" data-testid="descargar-pdf" [disabled]="trabajando()" (click)="descargar()">Descargar PDF</button>
+        <button type="button" class="btn primary" data-testid="imprimir" [disabled]="trabajando()" (click)="imprimir()">{{ trabajando() ? 'Preparando…' : 'Imprimir' }}</button>
+      }
     </div>
   `,
   styles: `
@@ -106,7 +121,7 @@ const ETIQUETAS_CANAL: Record<TipoClienteVenta, string> = {
     .desglose { text-align: right; font-size: var(--font-size-sm); }
     .desglose p { margin: 0.2rem 0; }
     .muted { color: var(--color-text-muted); }
-    .dialog-foot { display: flex; justify-content: flex-end; padding: 0 var(--space-6) var(--space-6); }
+    .dialog-foot { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--space-2); padding: 0 var(--space-6) var(--space-6); }
     @media (max-width: 480px) { dl { grid-template-columns: 1fr; } }
   `
 })
@@ -114,7 +129,11 @@ export class VentaDetalleDialog {
   protected readonly dialogRef = inject(DialogRef<void>);
   protected readonly data = inject<VentaDetalleDialogData>(DIALOG_DATA);
   private readonly ventasApi = inject(VentasApi);
+  private readonly comprobanteService = inject(ComprobanteVentaService);
+  private readonly toast = inject(ToastService);
+  protected readonly etiquetasComprobante = ETIQUETAS_COMPROBANTE;
 
+  protected readonly trabajando = signal(false);
   protected readonly cargando = signal(true);
   protected readonly error = signal<AppError | null>(null);
   protected readonly venta = signal<VentaResumenResponse | null>(null);
@@ -141,7 +160,34 @@ export class VentaDetalleDialog {
   }
 
   protected etiquetaCanal(canal: TipoClienteVenta): string {
-    return ETIQUETAS_CANAL[canal] ?? canal;   // un tipo nuevo se muestra con su código estable
+    // el nombre del catálogo (si quien abrió el diálogo lo pasó); si no, el de siempre y, para un tipo nuevo, su código estable
+    return this.data.etiquetaCanal ?? ETIQUETAS_CANAL[canal] ?? canal;
+  }
+
+  /** «30/10/2026 12:34»: la fecha de la venta y, si el servidor la trae, la hora real del registro. */
+  protected fecha(v: VentaResumenResponse): string {
+    const hora = /[T ](\d{2}:\d{2})/.exec(v.creadoEn ?? '')?.[1];
+    return hora ? `${formatearFecha(v.fecha)} ${hora}` : formatearFecha(v.fecha);
+  }
+
+  protected imprimir(): void {
+    this.ejecutar(this.comprobanteService.imprimir(this.data.id));
+  }
+
+  protected descargar(): void {
+    this.ejecutar(this.comprobanteService.descargar(this.data.id, this.venta()?.comprobante));
+  }
+
+  private ejecutar(trabajo: ReturnType<ComprobanteVentaService['imprimir']>): void {
+    if (this.trabajando()) return;
+    this.trabajando.set(true);
+    trabajo.subscribe({
+      next: () => this.trabajando.set(false),
+      error: (e) => {
+        this.trabajando.set(false);
+        this.toast.error(mapHttpError(e).mensaje);
+      }
+    });
   }
 
   protected cargar(): void {

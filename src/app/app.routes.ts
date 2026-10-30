@@ -85,6 +85,12 @@ export const routes: Routes = [
           import('./features/comunicados/pages/comunicados-page/comunicados-page').then((m) => m.ComunicadosPage)
       },
       {
+        path: 'ventas/nueva',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'VENTAS'] },
+        loadComponent: () => import('./features/ventas/pages/nueva-venta-page/nueva-venta-page').then((m) => m.NuevaVentaPage)
+      },
+      {
         path: 'ventas',
         canActivate: [roleGuard],
         data: { roles: ['ADMIN', 'VENTAS'] },

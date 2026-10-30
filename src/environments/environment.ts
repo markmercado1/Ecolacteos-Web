@@ -4,5 +4,7 @@
 // CORS_ALLOWED_ORIGINS del backend.
 export const environment = {
   production: true,
-  apiBaseUrl: '/api'
+  apiBaseUrl: '/api',
+  /** Número de WhatsApp que se propone al enviar un comprobante la primera vez (FICTICIO: se cambia en el propio diálogo y se recuerda el último usado). */
+  whatsappPorDefecto: '51900000000'
 };

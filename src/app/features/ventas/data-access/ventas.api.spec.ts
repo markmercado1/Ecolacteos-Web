@@ -77,4 +77,37 @@ describe('VentasApi', () => {
     expect(req.request.params.get('fecha')).toBe('2026-09-17');
     req.flush({ id: 'p-1', presentacionId: 'pres-1', presentacionNombre: 'Botella 1 L', productoId: 'prod-1', productoNombre: 'Yogurt', modalidad: 'MAYORISTA', precio: 13.5, vigenteDesde: '2026-09-01' });
   });
+
+  it('buscarPresentaciones() hace GET con q, canal, fecha y límite (10 por defecto)', () => {
+    api.buscarPresentaciones('lec', 'PUBLICO', '2026-10-30').subscribe();
+    const req = http.expectOne((r) => r.url === `${base}/ventas/presentaciones`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('q')).toBe('lec');
+    expect(req.request.params.get('tipoCliente')).toBe('PUBLICO');
+    expect(req.request.params.get('fecha')).toBe('2026-10-30');
+    expect(req.request.params.get('limite')).toBe('10');
+    req.flush([]);
+
+    api.buscarPresentaciones('lec', 'MAYORISTA', '2026-10-30', 5).subscribe();
+    const otro = http.expectOne((r) => r.url === `${base}/ventas/presentaciones`);
+    expect(otro.request.params.get('limite')).toBe('5');
+    otro.flush([]);
+  });
+
+  it('comprobante() descarga el PDF de la venta como Blob', () => {
+    let recibido: Blob | undefined;
+    api.comprobante('venta/1').subscribe((b) => (recibido = b));
+    const req = http.expectOne(`${base}/ventas/venta%2F1/comprobante`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.responseType).toBe('blob');
+    req.flush(new Blob(['%PDF'], { type: 'application/pdf' }));
+    expect(recibido?.type).toBe('application/pdf');
+  });
+
+  it('crearCarrito() manda el tipo de comprobante cuando se indica', () => {
+    api.crearCarrito({ uuidCliente: 'u-1', fecha: '2026-10-30', tipoCliente: 'PUBLICO', detalles: [{ presentacionId: 'p-1', cantidad: 1 }], tipoComprobante: 'BOLETA' }).subscribe();
+    const req = http.expectOne(`${base}/ventas/carrito`);
+    expect(req.request.body.tipoComprobante).toBe('BOLETA');
+    req.flush({});
+  });
 });

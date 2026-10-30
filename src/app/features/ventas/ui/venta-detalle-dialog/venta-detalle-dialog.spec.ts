@@ -3,6 +3,8 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { environment } from '../../../../../environments/environment';
+import { of } from 'rxjs';
+import { ComprobanteVentaService } from '../../data-access/comprobante-venta.service';
 import { VentaDetalleDialog, VentaDetalleDialogData } from './venta-detalle-dialog';
 
 const base = environment.apiBaseUrl;
@@ -144,5 +146,64 @@ describe('VentaDetalleDialog — Fase H: comprador', () => {
     const raiz = conComprador.fixture.nativeElement as HTMLElement;
     expect(raiz.querySelector('[data-testid="comprador-venta"]')?.textContent).toContain('Rosa Quispe (cliente)');
     expect(raiz.querySelector('[data-testid="reserva-origen"]')?.textContent).toContain('ABC123');
+  });
+});
+
+describe('VentaDetalleDialog — comprobante', () => {
+  const venta = {
+    ...ventaDeUnaLinea,
+    id: 'v-9',
+    tipoComprobante: 'BOLETA',
+    comprobante: 'B001-00000213',
+    vendedorNombre: 'Ana Pérez',
+    creadoEn: '2026-09-17T16:27:05',
+    detalles: [{ ...ventaDeUnaLinea.detalles[0], codigo: 'PRD-003' }]
+  };
+
+  it('muestra el comprobante, la hora, el vendedor, el código de cada línea y el nombre del canal que le pasaron', () => {
+    const { fixture, http } = crear({ id: 'v-9', etiquetaCanal: 'Proveedor habitual' });
+    http.expectOne(`${base}/ventas/v-9`).flush(venta);
+    fixture.detectChanges();
+    const raiz = fixture.nativeElement as HTMLElement;
+    const texto = raiz.textContent ?? '';
+
+    expect(raiz.querySelector('[data-testid="comprobante-venta"]')?.textContent).toBe('B001-00000213');
+    expect(texto).toContain('Boleta de venta electrónica');
+    expect(texto).toContain('17/09/2026 16:27');
+    expect(raiz.querySelector('[data-testid="vendedor-venta"]')?.textContent).toBe('Ana Pérez');
+    expect(texto).toContain('PRD-003');
+    expect(texto).toContain('Proveedor habitual');
+    http.verify();
+  });
+
+  it('una venta anterior (sin comprobante, vendedor ni hora) se ve como siempre, solo con la fecha', () => {
+    const { fixture, http } = crear({ id: 'v-1' });
+    http.expectOne(`${base}/ventas/v-1`).flush(ventaDeUnaLinea);
+    fixture.detectChanges();
+    const raiz = fixture.nativeElement as HTMLElement;
+
+    expect(raiz.querySelector('[data-testid="comprobante-venta"]')).toBeNull();
+    expect(raiz.querySelector('[data-testid="vendedor-venta"]')).toBeNull();
+    expect(raiz.textContent).toContain('17/09/2026');
+    expect(raiz.textContent).not.toContain('17/09/2026 ');
+    http.verify();
+  });
+
+  it('«Imprimir» y «Descargar PDF» piden el comprobante de ESTA venta; mientras no hay venta cargada no se ofrecen', () => {
+    const { fixture, http } = crear({ id: 'v-9' });
+    const servicio = TestBed.inject(ComprobanteVentaService);
+    const imprimir = vi.spyOn(servicio, 'imprimir').mockReturnValue(of(undefined));
+    const descargar = vi.spyOn(servicio, 'descargar').mockReturnValue(of(undefined));
+    const raiz = fixture.nativeElement as HTMLElement;
+    expect(raiz.querySelector('[data-testid="imprimir"]')).toBeNull();
+
+    http.expectOne(`${base}/ventas/v-9`).flush(venta);
+    fixture.detectChanges();
+    (raiz.querySelector('[data-testid="imprimir"]') as HTMLButtonElement).click();
+    (raiz.querySelector('[data-testid="descargar-pdf"]') as HTMLButtonElement).click();
+
+    expect(imprimir).toHaveBeenCalledWith('v-9');
+    expect(descargar).toHaveBeenCalledWith('v-9', 'B001-00000213');
+    http.verify();
   });
 });

@@ -1,0 +1,136 @@
+/* Pantalla «Nueva venta»: dos columnas (cliente + carrito | comprobante y total). Solo usa tokens de theme.css. */
+:host { display: block; }
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 23rem;
+  gap: var(--space-6);
+  align-items: start;
+}
+.columna { display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; }
+.resumen { position: sticky; top: var(--space-4); }
+
+/* El desplegable del buscador no se puede recortar. */
+.card { overflow: visible; }
+
+.paso-cab { display: flex; align-items: flex-start; gap: var(--space-3); margin-bottom: var(--space-4); }
+.paso-cab .crece { flex: 1; min-width: 0; }
+.paso-cab h2 { margin: 0; font-size: var(--font-size-lg); }
+.paso-cab p { margin: 0.1rem 0 0; font-size: var(--font-size-sm); color: var(--color-text-muted); }
+.num {
+  flex: none; display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%;
+  background: var(--color-primary); color: var(--color-on-primary); font-weight: 800;
+}
+.pildora {
+  flex: none; padding: 0.25rem 0.75rem; border-radius: 999px; background: var(--color-surface-soft);
+  font-size: 0.75rem; font-weight: 800; color: var(--color-text-muted);
+}
+
+.muted { color: var(--color-text-muted); font-weight: 400; }
+.bloque { display: block; font-size: var(--font-size-sm); }
+.hint { font-size: var(--font-size-sm); color: var(--color-text-muted); margin: var(--space-2) 0 0; }
+.error { color: var(--color-danger); font-size: var(--font-size-sm); }
+.server-error {
+  margin: var(--space-3) 0 0; padding: var(--space-3); border-radius: var(--radius-control);
+  background: var(--color-danger-bg); color: var(--color-danger); font-size: var(--font-size-sm);
+}
+.solo-lectores { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* Comprador */
+.comprador { margin-bottom: var(--space-4); }
+.comprador-varios, .comprador-elegido {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin: 0;
+  padding: var(--space-3) var(--space-4); border: 1px dashed var(--color-border); border-radius: var(--radius-control);
+  background: var(--color-canvas); color: var(--color-text-muted);
+}
+.comprador-elegido { border-style: solid; color: var(--color-text); }
+.comprador-varios span { flex: 1; min-width: 10rem; }
+
+/* Carrito */
+.vacio {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-8) var(--space-4);
+  text-align: center; color: var(--color-text-muted);
+}
+.vacio svg { color: var(--color-border); margin-bottom: var(--space-2); }
+.vacio strong { color: var(--color-text); }
+
+.tabla-wrap { margin-top: var(--space-4); overflow-x: auto; }
+.tabla-carrito { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); }
+.tabla-carrito th {
+  text-align: left; padding: var(--space-2) var(--space-3); background: var(--color-canvas);
+  font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-muted);
+}
+.tabla-carrito td { padding: var(--space-3); border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+.tabla-carrito .num-col { width: 2rem; color: var(--color-text-muted); }
+.tabla-carrito .centro { text-align: center; }
+.tabla-carrito .fin { text-align: right; white-space: nowrap; }
+.stock { display: block; font-size: 0.6875rem; margin-top: 0.15rem; }
+
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--color-border); border-radius: var(--radius-control); overflow: hidden; }
+.stepper input {
+  width: 3.25rem; border: 0; text-align: center; padding: var(--space-2) 0; background: var(--color-surface);
+  -moz-appearance: textfield; appearance: textfield;
+}
+.stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.paso-btn { border: 0; background: var(--color-canvas); width: 2rem; align-self: stretch; font-weight: 800; font-size: 1rem; }
+.paso-btn:hover:not(:disabled) { background: var(--color-surface-soft); }
+.quitar {
+  border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-danger);
+  width: 2rem; height: 2rem; border-radius: var(--radius-control); font-size: 1.1rem; line-height: 1;
+}
+.quitar:hover { background: var(--color-danger-bg); }
+
+/* Comprobante y total */
+.numero-prevision {
+  display: flex; flex-direction: column; gap: 0.15rem; margin: 0 0 var(--space-4); padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control); background: var(--color-canvas); font-size: var(--font-size-sm);
+}
+.numero-prevision > span { color: var(--color-text-muted); }
+.cifras { margin: 0 0 var(--space-4); }
+.cifras div { display: flex; justify-content: space-between; padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); font-size: var(--font-size-sm); }
+.cifras dt { color: var(--color-text-muted); }
+.cifras dd { margin: 0; font-weight: 800; }
+.total {
+  display: flex; flex-direction: column; gap: 0.25rem; padding: var(--space-4); margin-bottom: var(--space-4);
+  border-radius: var(--radius-card); background: var(--color-primary); color: var(--color-on-primary);
+}
+.total span { font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; opacity: 0.85; }
+.total strong { font-size: 2rem; line-height: 1.1; }
+.registrar { width: 100%; min-height: 3rem; font-size: 1rem; }
+.pendientes { text-align: center; }
+
+/* Venta registrada */
+.exito { max-width: 32rem; margin: var(--space-8) auto; text-align: center; }
+.exito-icono {
+  display: grid; place-items: center; width: 4rem; height: 4rem; margin: 0 auto var(--space-3); border-radius: 50%;
+  background: var(--color-success-bg); color: var(--color-success);
+}
+.exito h1 { margin: 0; font-size: var(--font-size-title); }
+.exito-tipo { margin: var(--space-3) 0 0; color: var(--color-text-muted); }
+.exito-numero { margin: 0; font-size: 1.75rem; font-weight: 800; color: var(--color-primary); letter-spacing: 0.02em; }
+.exito-total { margin: var(--space-2) 0 var(--space-6); }
+.exito-acciones, .exito-siguiente { display: flex; justify-content: center; flex-wrap: wrap; gap: var(--space-3); }
+.exito-siguiente { margin-top: var(--space-3); }
+
+/* Barra inferior: solo en pantallas chicas. */
+.barra-movil { display: none; }
+
+@media (max-width: 62rem) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .resumen { position: static; }
+  .codigo-col { display: none; }
+  .barra-movil {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-overlay);
+    padding: var(--space-3) var(--space-4); background: var(--color-surface); border-top: 1px solid var(--color-border); box-shadow: var(--shadow-overlay);
+  }
+  .barra-total { display: flex; flex-direction: column; line-height: 1.2; }
+  .barra-total span { font-size: 0.6875rem; color: var(--color-text-muted); font-weight: 800; text-transform: uppercase; }
+  .barra-total strong { font-size: 1.25rem; }
+  :host { padding-bottom: 5rem; }
+}
+
+/* Columnas del carrito: el código no se parte y el producto conserva un ancho legible aunque la tabla esté apretada. */
+.tabla-carrito .codigo-col { white-space: nowrap; }
+.tabla-carrito td:nth-child(3), .tabla-carrito th:nth-child(3) { min-width: 9.5rem; }
+.tabla-carrito th, .tabla-carrito td { padding-left: var(--space-2); padding-right: var(--space-2); }

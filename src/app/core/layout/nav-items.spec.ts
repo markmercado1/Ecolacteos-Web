@@ -18,7 +18,7 @@ const items = GRUPOS_NAVEGACION.flatMap((g) => g.items);
 const RUTAS_DEL_MENU = [
   '/acopios', '/acopiadores', '/calidad', '/catalogos', '/clientes', '/comunicados', '/igv', '/inventario', '/jornadas',
   '/pagos', '/pagos-efectivos', '/panel', '/precios', '/produccion', '/proveedores', '/proveedores-compra', '/recepcion', '/reservas', '/rutas', '/trazabilidad',
-  '/tipos-precio', '/unidades', '/usuarios', '/ventas'
+  '/tipos-precio', '/unidades', '/usuarios', '/ventas', '/ventas/nueva'
 ];
 
 describe('Navegación — coherencia con los permisos de las rutas', () => {
